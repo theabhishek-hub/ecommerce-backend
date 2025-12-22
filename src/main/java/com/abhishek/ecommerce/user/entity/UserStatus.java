@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.user.entity;
 
 public enum UserStatus {
-    ACTIVE, BLOCKED, DELETED
+    ACTIVE, INACTIVE, BLOCKED, DELETED
 }
 
 

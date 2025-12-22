@@ -2,6 +2,7 @@ package com.abhishek.ecommerce.user.entity;
 
 import com.abhishek.ecommerce.common.entity.Address;
 import com.abhishek.ecommerce.common.entity.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +33,8 @@ public class User extends BaseEntity {
     /**
      * One user can have multiple addresses.
      */
-    @OneToMany(fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     private List<Address> addresses = new ArrayList<>();
 }

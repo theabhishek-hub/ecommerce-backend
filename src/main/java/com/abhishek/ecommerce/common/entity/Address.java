@@ -1,6 +1,9 @@
 package com.abhishek.ecommerce.common.entity;
 
+import com.abhishek.ecommerce.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,5 +20,9 @@ public class Address extends BaseEntity {
     private String state;
     private String country;
     private String postalCode;
+
+    @JsonBackReference
+    @ManyToOne
+    private User user;
 }
 
