@@ -12,8 +12,6 @@ import lombok.Setter;
 @Table(name = "products")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Product extends BaseEntity {
 
     @Column(nullable = false, length = 200)
