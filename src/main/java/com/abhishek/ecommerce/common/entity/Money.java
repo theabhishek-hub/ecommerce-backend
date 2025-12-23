@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Setter
 public class Money {
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 38, scale = 2)
     private BigDecimal amount;
 
     @Column(nullable = false, length = 3)

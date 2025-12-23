@@ -1,25 +1,29 @@
 package com.abhishek.ecommerce.product.entity;
 
 import com.abhishek.ecommerce.common.entity.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "categories")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Category extends BaseEntity {
 
+    @Column(nullable = false, unique = true, length = 150)
     private String name;
 
-    /**
-     * Supports category hierarchy (Furniture → Chairs).
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Category parent;
+    @Column(length = 500)
+    private String description;
+
+    @Column(nullable = false)
+    private Boolean active = true;
 }
+
+
 
