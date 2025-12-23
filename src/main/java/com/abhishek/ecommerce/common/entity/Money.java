@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @Embeddable
 @Getter
 @Setter
+
 public class Money {
 
     @Column(nullable = false, precision = 38, scale = 2)
@@ -17,5 +18,17 @@ public class Money {
 
     @Column(nullable = false, length = 3)
     private String currency;
+
+    protected Money()
+    {
+
+    }
+
+    public Money(BigDecimal amount, String currency)
+    {
+        this.amount = amount;
+        this.currency = currency;
+    }
+
 }
 
