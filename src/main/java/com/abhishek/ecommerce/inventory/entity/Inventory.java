@@ -9,12 +9,14 @@ import lombok.*;
 @Table(name = "inventory")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Inventory extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name = "product_id", unique = true)
     private Product product;
 
-    private Integer availableQuantity;
+    private Integer Quantity;
 }
 
