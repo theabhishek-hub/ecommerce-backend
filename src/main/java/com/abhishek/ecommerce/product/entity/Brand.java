@@ -1,9 +1,7 @@
 package com.abhishek.ecommerce.product.entity;
 
 import com.abhishek.ecommerce.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,8 +24,9 @@ public class Brand extends BaseEntity {
     @Column(length = 100)
     private String country;
 
-    @Column(nullable = false)
-    private Boolean active = true;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private BrandStatus status;
 }
 
 

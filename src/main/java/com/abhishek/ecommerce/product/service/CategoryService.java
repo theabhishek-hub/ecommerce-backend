@@ -5,10 +5,16 @@ import com.abhishek.ecommerce.product.entity.Category;
 import java.util.List;
 
 public interface CategoryService {
-    Category create(Category category);
-    Category getById(Long id);
-    List<Category> getAll();
-    Category update(Long id, Category category);
-    void deactivate(Long id);
+    Category createCategory(Category category);
+    Category getCategoryById(Long categoryId);
+    List<Category> getAllCategories();
+    Category updateCategory(Long categoryId, Category category);
+    List<Category> getAllActiveCategories();
+
+    void deactivateCategory(Long categoryId);
+
+    void activateCategory(Long categoryId);
+
+    void deleteCategory(Long categoryId);
 }
 

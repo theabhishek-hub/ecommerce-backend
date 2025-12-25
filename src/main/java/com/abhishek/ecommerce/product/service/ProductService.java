@@ -5,10 +5,17 @@ import com.abhishek.ecommerce.product.entity.Product;
 import java.util.List;
 
 public interface ProductService {
-    Product create(Product product);
-    Product getById(Long id);
-    List<Product> getAll();
-    Product update(Long id, Product product);
-    void delete(Long id);
+    Product createProduct(Product product);
+    Product getProductById(Long ProductId);
+    List<Product> getAllProducts();
+    Product updateProduct(Long ProductId, Product product);
+
+    void deactivateProduct(Long productId);
+
+    void activateProduct(Long productId);
+
+    List<Product> getAllActiveProducts();
+
+    void deleteProduct(Long productId);
 }
 

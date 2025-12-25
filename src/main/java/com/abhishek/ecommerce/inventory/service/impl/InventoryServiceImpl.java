@@ -30,7 +30,7 @@ public class InventoryServiceImpl implements InventoryService {
      */
     @Override
     @Transactional
-    public void addStock(Long productId, int quantity) {
+    public void increaseStock(Long productId, int quantity) {
 
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseGet(() -> {

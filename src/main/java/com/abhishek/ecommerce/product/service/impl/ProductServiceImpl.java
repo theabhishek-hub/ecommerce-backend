@@ -1,10 +1,12 @@
 package com.abhishek.ecommerce.product.service.impl;
 
 import com.abhishek.ecommerce.product.entity.Product;
+import com.abhishek.ecommerce.product.entity.ProductStatus;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
 import com.abhishek.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,20 +16,20 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
 
-    public Product create(Product product) {
+    public Product createProduct(Product product) {
         return productRepository.save(product);
     }
 
-    public Product getById(Long id) {
-        return productRepository.findById(id).orElseThrow();
+    public Product getProductById(Long productId) {
+        return productRepository.findById(productId).orElseThrow();
     }
 
-    public List<Product> getAll() {
+    public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-    public Product update(Long id, Product product) {
-        Product existing = getById(id);
+    public Product updateProduct(Long productId, Product product) {
+        Product existing = getProductById(productId);
         existing.setName(product.getName());
         existing.setDescription(product.getDescription());
         existing.setPrice(product.getPrice());
@@ -39,7 +41,37 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(existing);
     }
 
-    public void delete(Long id) {
-        productRepository.deleteById(id);
+    @Override
+    @Transactional
+    public void deactivateProduct(Long productId) {
+        Product product = getProduct(productId);
+        product.setStatus(ProductStatus.INACTIVE);
+        productRepository.save(product);
     }
+
+    @Override
+    @Transactional
+    public void activateProduct(Long productId) {
+        Product product = getProduct(productId);
+        product.setStatus(ProductStatus.ACTIVE);
+        productRepository.save(product);
+    }
+
+    @Override
+    public List<Product> getAllActiveProducts() {
+        return productRepository.findAllByStatus(ProductStatus.ACTIVE);
+    }
+
+    private Product getProduct(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+    }
+
+    @Override
+    public void deleteProduct(Long productId) {
+        Product product = getProduct(productId);
+        product.setStatus(ProductStatus.INACTIVE);
+        productRepository.save(product);
+    }
+
 }

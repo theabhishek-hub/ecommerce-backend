@@ -14,7 +14,5 @@ public interface CartService {
 
     void clearCart(Long userId);
 
-    Cart decreaseQuantity(Long userId, Long productId);
-
 }
 

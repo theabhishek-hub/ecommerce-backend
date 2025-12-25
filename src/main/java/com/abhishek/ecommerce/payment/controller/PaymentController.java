@@ -1,44 +1,51 @@
 package com.abhishek.ecommerce.payment.controller;
 
+import com.abhishek.ecommerce.common.api.ApiResponse;
+import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
 import com.abhishek.ecommerce.payment.entity.Payment;
 import com.abhishek.ecommerce.payment.entity.PaymentMethod;
 import com.abhishek.ecommerce.payment.service.PaymentService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/payments")
-@RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/initiate")
-    public Payment initiatePayment(
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Payment> createPayment(
             @RequestParam Long orderId,
             @RequestParam PaymentMethod method
     ) {
-        return paymentService.initiatePayment(orderId, method);
+        return ApiResponseBuilder.success("Payment created successfully", paymentService.createPayment(orderId, method));
     }
 
     @GetMapping("/{paymentId}")
-    public Payment getPaymentById(@PathVariable Long paymentId) {
-        return paymentService.getPaymentById(paymentId);
+    public ApiResponse<Payment> getPaymentById(@PathVariable Long paymentId) {
+        return ApiResponseBuilder.success("Payment fetched successfully", paymentService.getPaymentById(paymentId));
     }
 
-    @GetMapping("/order/{orderId}")
-    public Payment getPaymentByOrderId(@PathVariable Long orderId) {
-        return paymentService.getPaymentByOrderId(orderId);
+    @GetMapping("/orders/{orderId}")
+    public ApiResponse<Payment> getPaymentByOrderId(@PathVariable Long orderId) {
+        return ApiResponseBuilder.success("Payment fetched successfully", paymentService.getPaymentByOrderId(orderId));
     }
 
-    @PutMapping("/{paymentId}/success")
-    public Payment markPaymentSuccess(@PathVariable Long paymentId) {
-        return paymentService.markPaymentSuccess(paymentId);
+    @PatchMapping("/{paymentId}/success")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Payment> markPaymentSuccess(@PathVariable Long paymentId) {
+        return ApiResponseBuilder.success("Payment marked success", paymentService.markPaymentSuccess(paymentId));
     }
 
-    @PutMapping("/refund/order/{orderId}")
-    public Payment refundPayment(@PathVariable Long orderId) {
-        return paymentService.refundPayment(orderId);
+    @PatchMapping("/refund/{paymentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Payment> refundPayment(@PathVariable Long paymentId) {
+        return ApiResponseBuilder.success("Payment refunded successfully", paymentService.refundPayment(paymentId));
     }
 }
-

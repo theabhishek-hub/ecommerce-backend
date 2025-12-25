@@ -1,17 +1,18 @@
 package com.abhishek.ecommerce.user.service.impl;
 
 import com.abhishek.ecommerce.user.entity.User;
+import com.abhishek.ecommerce.user.entity.UserStatus;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
  * Concrete implementation of UserService.
- *
  * Contains:
  * - Business rules
  * - Transaction boundaries (later)
@@ -24,10 +25,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(User user) {
-        // In real systems:
-        // - password hashing
-        // - duplicate email checks
-        // will be added later (security phase)
         return userRepository.save(user);
     }
 
@@ -54,9 +51,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void deactivateUser(Long userId) {
+        User user = getUserById(userId);
+        user.setStatus(UserStatus.INACTIVE);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void activateUser(Long userId) {
+        User user = getUserById(userId);
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
+    }
+
+    public List<User> getAllActiveUsers() {
+        return userRepository.findAllByStatus(UserStatus.ACTIVE);
+    }
+
+    @Override
     public void deleteUser(Long userId) {
         User user = getUserById(userId);
-        userRepository.delete(user);
+        user.setStatus(UserStatus.INACTIVE);
+        userRepository.save(user);
     }
+
 }
 

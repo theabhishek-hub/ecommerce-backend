@@ -21,8 +21,9 @@ public class Category extends BaseEntity {
     @Column(length = 500)
     private String description;
 
-    @Column(nullable = false)
-    private Boolean active = true;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private CategoryStatus status;
 }
 
 

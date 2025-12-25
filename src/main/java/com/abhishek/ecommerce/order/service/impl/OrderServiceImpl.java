@@ -86,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // Create payment entry (COD for now)
-        paymentService.initiatePayment(
+        paymentService.createPayment(
                 savedOrder.getId(),
                 PaymentMethod.COD
         );

@@ -19,7 +19,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public Payment initiatePayment(Long orderId, PaymentMethod method) {
+    public Payment createPayment(Long orderId, PaymentMethod method) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -95,9 +95,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Transactional
-    public Payment refundPayment(Long orderId) {
+    public Payment refundPayment(Long paymentId) {
 
-        Payment payment = paymentRepository.findByOrderId(orderId)
+        Payment payment = paymentRepository.findByOrderId(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {

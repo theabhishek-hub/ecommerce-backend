@@ -4,11 +4,6 @@ import com.abhishek.ecommerce.user.entity.User;
 
 import java.util.List;
 
-/**
- * Defines business operations related to users.
- *
- * This interface hides persistence details from controllers.
- */
 public interface UserService {
 
     User createUser(User user);
@@ -19,6 +14,13 @@ public interface UserService {
 
     User updateUser(Long userId, User updatedUser);
 
-    void deleteUser(Long userId);
+    void deactivateUser(Long userId);
+
+    void activateUser(Long userId);
+
+    List<User> getAllActiveUsers();
+
+    void deleteUser(Long userId);        // soft delete
+
 }
 

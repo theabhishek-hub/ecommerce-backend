@@ -5,7 +5,7 @@ import com.abhishek.ecommerce.payment.entity.PaymentMethod;
 
 public interface PaymentService {
 
-    Payment initiatePayment(Long orderId, PaymentMethod method);
+    Payment createPayment(Long orderId, PaymentMethod method);
 
     Payment getPaymentById(Long paymentId);
 
@@ -13,6 +13,6 @@ public interface PaymentService {
 
     Payment markPaymentSuccess(Long PaymentId);
 
-    Payment refundPayment(Long orderId);
+    Payment refundPayment(Long paymentId);
 }
 

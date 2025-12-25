@@ -1,43 +1,70 @@
 package com.abhishek.ecommerce.product.controller;
 
+import com.abhishek.ecommerce.common.api.ApiResponse;
+import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.abhishek.ecommerce.product.service.ProductService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/products")
-@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping
-    public Product create(@RequestBody Product product) {
-        return productService.create(product);
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
-    @GetMapping("/{id}")
-    public Product getById(@PathVariable Long id) {
-        return productService.getById(id);
+    @PostMapping
+    public ApiResponse<Product> create(@RequestBody Product product) {
+        return ApiResponseBuilder.success("Product created successfully", productService.createProduct(product));
+    }
+
+    @GetMapping("/{productId}")
+    public ApiResponse<Product> getById(@PathVariable Long productId) {
+        return ApiResponseBuilder.success("Product fetched successfully", productService.getProductById(productId));
     }
 
     @GetMapping
-    public List<Product> getAll() {
-        return productService.getAll();
+    public ApiResponse<List<Product>> getAllProducts() {
+        return ApiResponseBuilder.success("Products fetched successfully", productService.getAllProducts());
     }
 
-    @PutMapping("/{id}")
-    public Product update(@PathVariable Long id, @RequestBody Product product) {
-        return productService.update(id, product);
+    @PutMapping("/{productId}")
+    public ApiResponse<Product> update(@PathVariable Long id, @RequestBody Product product) {
+        return ApiResponseBuilder.success("Product updated successfully", productService.updateProduct(id, product));
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        productService.delete(id);
+    @PatchMapping("/{productId}/deactivate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ApiResponse<Void> deactivateProduct(@PathVariable Long id) {
+        productService.deactivateProduct(id);
+        return ApiResponseBuilder.success("Product deactivated successfully");
     }
+
+    @PatchMapping("/{productId}/activate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ApiResponse<Void> activateProduct(@PathVariable Long id) {
+        productService.activateProduct(id);
+        return ApiResponseBuilder.success("Product activated successfully");
+    }
+
+    @DeleteMapping("/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ApiResponse<Void> delete(@PathVariable Long productId)
+    {
+        productService.deleteProduct(productId);
+        return ApiResponseBuilder.success("Product deleted successfully");
+    }
+
+    @GetMapping("/active")
+    public ApiResponse<List<Product>> getAllActiveProducts()
+    {
+        return ApiResponseBuilder.success("Active products fetched successfully", productService.getAllActiveProducts());
+    }
+
 }
-
-
