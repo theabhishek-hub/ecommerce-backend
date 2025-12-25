@@ -14,6 +14,12 @@ public interface OrderService {
     List<Order> getOrdersByUser(Long userId);
 
     Order getOrderById(Long orderId);
+
+    Order shipOrder(Long orderId);
+
+    Order deliverOrder(Long orderId);
+
+    Order cancelOrder(Long orderId);
 }
 
 

@@ -39,8 +39,26 @@ public class OrderController {
      * Get order by ID
      */
     @GetMapping("/{orderId}")
-    public Order getOrder(@PathVariable Long orderId) {
+    public Order getOrder(@PathVariable Long orderId)
+    {
         return orderService.getOrderById(orderId);
     }
+
+    @PutMapping("/{orderId}/ship")
+    public Order shipOrder(@PathVariable Long orderId) {
+        return orderService.shipOrder(orderId);
+    }
+
+    @PutMapping("/{orderId}/deliver")
+    public Order deliverOrder(@PathVariable Long orderId) {
+        return orderService.deliverOrder(orderId);
+    }
+
+    @PutMapping("/{orderId}/cancel")
+    public Order cancelOrder(@PathVariable Long orderId) {
+        return orderService.cancelOrder(orderId);
+    }
+
+
 }
 

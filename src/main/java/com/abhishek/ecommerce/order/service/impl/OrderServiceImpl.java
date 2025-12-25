@@ -9,6 +9,8 @@ import com.abhishek.ecommerce.order.entity.OrderItem;
 import com.abhishek.ecommerce.order.entity.OrderStatus;
 import com.abhishek.ecommerce.order.repository.OrderRepository;
 import com.abhishek.ecommerce.order.service.OrderService;
+import com.abhishek.ecommerce.payment.entity.PaymentMethod;
+import com.abhishek.ecommerce.payment.service.PaymentService;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.common.entity.Money;
@@ -29,6 +31,8 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final InventoryService inventoryService;
+    private final PaymentService paymentService;
+
 
     @Override
     public Order placeOrder(Long userId) {
@@ -81,9 +85,17 @@ public class OrderServiceImpl implements OrderService {
         // 6️⃣ Save order
         Order savedOrder = orderRepository.save(order);
 
+        // Create payment entry (COD for now)
+        paymentService.initiatePayment(
+                savedOrder.getId(),
+                PaymentMethod.COD
+        );
+
+
         // 7️⃣ Clear cart SAFELY
         cart.getItems().clear();
         cartRepository.save(cart);
+
 
         return savedOrder;
     }
@@ -94,10 +106,70 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Order shipOrder(Long orderId) {
+        Order order = getOrderOrThrow(orderId);
+
+        if (order.getStatus() != OrderStatus.PAID) {
+            throw new IllegalStateException("Only PAID orders can be shipped");
+        }
+
+        order.setStatus(OrderStatus.SHIPPED);
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public Order deliverOrder(Long orderId) {
+        Order order = getOrderOrThrow(orderId);
+
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new IllegalStateException("Only SHIPPED orders can be delivered");
+        }
+
+        order.setStatus(OrderStatus.DELIVERED);
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order cancelOrder(Long orderId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        switch (order.getStatus()) {
+
+            case CREATED:
+                // No payment → no refund
+                order.setStatus(OrderStatus.CANCELLED);
+                break;
+
+            case PAID:
+            case SHIPPED:
+                // Payment exists → refund required
+                paymentService.refundPayment(order.getId());
+                order.setStatus(OrderStatus.REFUNDED);
+                break;
+
+            case DELIVERED:
+                throw new RuntimeException("Delivered order cannot be cancelled");
+
+            default:
+                throw new RuntimeException("Invalid order state");
+        }
+
+        return orderRepository.save(order);
+    }
+
+
+    @Override
     public Order getOrderById(Long orderId) {
+        return getOrderOrThrow(orderId);
+    }
+
+    private Order getOrderOrThrow(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
     }
+
 }
 
 
