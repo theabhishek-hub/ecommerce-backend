@@ -1,18 +1,18 @@
 package com.abhishek.ecommerce.payment.service;
 
-import com.abhishek.ecommerce.payment.entity.Payment;
-import com.abhishek.ecommerce.payment.entity.PaymentMethod;
+import com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto;
+import com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto;
 
 public interface PaymentService {
 
-    Payment createPayment(Long orderId, PaymentMethod method);
+    PaymentResponseDto createPayment(PaymentCreateRequestDto requestDto);
 
-    Payment getPaymentById(Long paymentId);
+    PaymentResponseDto getPaymentById(Long paymentId);
 
-    Payment getPaymentByOrderId(Long OrderId);
+    PaymentResponseDto getPaymentByOrderId(Long orderId);
 
-    Payment markPaymentSuccess(Long PaymentId);
+    PaymentResponseDto markPaymentSuccess(Long paymentId);
 
-    Payment refundPayment(Long paymentId);
+    PaymentResponseDto refundPayment(Long paymentId);
 }
 

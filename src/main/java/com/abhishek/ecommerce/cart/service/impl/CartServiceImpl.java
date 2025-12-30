@@ -1,13 +1,20 @@
 package com.abhishek.ecommerce.cart.service.impl;
 
+import com.abhishek.ecommerce.cart.dto.request.AddToCartRequestDto;
+import com.abhishek.ecommerce.cart.dto.request.UpdateCartItemRequestDto;
+import com.abhishek.ecommerce.cart.dto.response.CartResponseDto;
 import com.abhishek.ecommerce.cart.entity.Cart;
 import com.abhishek.ecommerce.cart.entity.CartItem;
+import com.abhishek.ecommerce.cart.exception.CartItemNotFoundException;
+import com.abhishek.ecommerce.cart.mapper.CartMapper;
 import com.abhishek.ecommerce.cart.repository.CartItemRepository;
 import com.abhishek.ecommerce.cart.repository.CartRepository;
 import com.abhishek.ecommerce.cart.service.CartService;
 import com.abhishek.ecommerce.product.entity.Product;
+import com.abhishek.ecommerce.product.exception.ProductNotFoundException;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
 import com.abhishek.ecommerce.user.entity.User;
+import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,34 +29,28 @@ public class CartServiceImpl implements CartService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CartMapper cartMapper;
 
-//    public CartServiceImpl(
-//            CartRepository cartRepository,
-//            CartItemRepository cartItemRepository,
-//            UserRepository userRepository,
-//            ProductRepository productRepository) {
-//        this.cartRepository = cartRepository;
-//        this.cartItemRepository = cartItemRepository;
-//        this.userRepository = userRepository;
-//        this.productRepository = productRepository;
-//    }
-
+    // ========================= READ =========================
     @Override
-    public Cart getCartByUserId(Long userId) {
-        return cartRepository.findByUserId(userId)
+    @Transactional(readOnly = true)
+    public CartResponseDto getCartByUserId(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> createCart(userId));
+        return cartMapper.toDto(cart);
     }
 
+    // ========================= ADD PRODUCT =========================
     @Override
-    public Cart addProduct(Long userId, Long productId, Integer quantity) {
+    public CartResponseDto addProduct(Long userId, AddToCartRequestDto requestDto) {
 
-        Cart cart = getCartByUserId(userId);
+        Cart cart = getCartEntityByUserId(userId);
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(requestDto.getProductId())
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + requestDto.getProductId()));
 
         CartItem item = cartItemRepository
-                .findByCartIdAndProductId(cart.getId(), productId)
+                .findByCartIdAndProductId(cart.getId(), requestDto.getProductId())
                 .orElse(null);
 
         if (item == null) {
@@ -57,80 +58,67 @@ public class CartServiceImpl implements CartService {
             item.setCart(cart);
             item.setProduct(product);
             item.setPrice(product.getPrice());
-            item.setQuantity(quantity);
+            item.setQuantity(requestDto.getQuantity());
             cart.getItems().add(item);
         } else {
-            item.setQuantity(item.getQuantity() + quantity);
+            item.setQuantity(item.getQuantity() + requestDto.getQuantity());
         }
 
-        return cartRepository.save(cart);
+        Cart savedCart = cartRepository.save(cart);
+        return cartMapper.toDto(savedCart);
     }
 
+    // ========================= UPDATE QUANTITY =========================
     @Override
-    public Cart updateQuantity(Long userId, Long productId, Integer quantity) {
+    public CartResponseDto updateQuantity(Long userId, Long productId, UpdateCartItemRequestDto requestDto) {
 
-        Cart cart = getCartByUserId(userId);
+        Cart cart = getCartEntityByUserId(userId);
 
         CartItem item = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), productId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+                .orElseThrow(() -> new CartItemNotFoundException("Cart item not found for product id: " + productId));
 
-        item.setQuantity(quantity);
-        return cart;
+        item.setQuantity(requestDto.getQuantity());
+        cartRepository.save(cart);
+        
+        return cartMapper.toDto(cart);
     }
 
+    // ========================= REMOVE PRODUCT =========================
     @Override
     public void removeProduct(Long userId, Long productId) {
 
-        Cart cart = getCartByUserId(userId);
+        Cart cart = getCartEntityByUserId(userId);
 
         CartItem item = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), productId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+                .orElseThrow(() -> new CartItemNotFoundException("Cart item not found for product id: " + productId));
 
         cart.getItems().remove(item);
+        cartRepository.save(cart);
     }
 
+    // ========================= CLEAR CART =========================
     @Override
     public void clearCart(Long userId) {
-        Cart cart = getCartByUserId(userId);
+        Cart cart = getCartEntityByUserId(userId);
         cart.getItems().clear();
+        cartRepository.save(cart);
+    }
+
+    // ========================= PRIVATE HELPERS =========================
+    private Cart getCartEntityByUserId(Long userId) {
+        return cartRepository.findByUserId(userId)
+                .orElseGet(() -> createCart(userId));
     }
 
     private Cart createCart(Long userId) {
-
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         Cart cart = new Cart();
         cart.setUser(user);
         return cartRepository.save(cart);
     }
-
-//    @Override
-//    @Transactional
-//    public Cart decreaseQuantity(Long userId, Long productId) {
-//        Cart cart = getCartByUserId(userId);
-//        Iterator<CartItem> iterator = cart.getItems().iterator();
-//
-//        while (iterator.hasNext()) {
-//            CartItem item = iterator.next();
-//
-//            if (item.getProduct().getId().equals(productId)) {
-//                // Decrease quantity by 1 (since the method is called decreaseQuantity)
-//                if (item.getQuantity() > 1) {
-//                    item.setQuantity(item.getQuantity() - 1);
-//                } else {
-//                    iterator.remove(); // Remove item if quantity would go to 0
-//                }
-//                break;
-//            }
-//        }
-//
-//        return cartRepository.save(cart);
-//    }
-
-
-
 }
 

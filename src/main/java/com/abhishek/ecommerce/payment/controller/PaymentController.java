@@ -2,50 +2,60 @@ package com.abhishek.ecommerce.payment.controller;
 
 import com.abhishek.ecommerce.common.api.ApiResponse;
 import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
-import com.abhishek.ecommerce.payment.entity.Payment;
-import com.abhishek.ecommerce.payment.entity.PaymentMethod;
+import com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto;
+import com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto;
 import com.abhishek.ecommerce.payment.service.PaymentService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/payments")
+@RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
 
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
-    }
-
+    // ========================= CREATE =========================
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Payment> createPayment(
-            @RequestParam Long orderId,
-            @RequestParam PaymentMethod method
+    public ApiResponse<PaymentResponseDto> createPayment(
+            @Valid @RequestBody PaymentCreateRequestDto requestDto
     ) {
-        return ApiResponseBuilder.success("Payment created successfully", paymentService.createPayment(orderId, method));
+        PaymentResponseDto response = paymentService.createPayment(requestDto);
+        return ApiResponseBuilder.created("Payment created successfully", response);
     }
 
+    // ========================= GET BY ID =========================
     @GetMapping("/{paymentId}")
-    public ApiResponse<Payment> getPaymentById(@PathVariable Long paymentId) {
-        return ApiResponseBuilder.success("Payment fetched successfully", paymentService.getPaymentById(paymentId));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PaymentResponseDto> getPaymentById(@PathVariable Long paymentId) {
+        PaymentResponseDto response = paymentService.getPaymentById(paymentId);
+        return ApiResponseBuilder.success("Payment fetched successfully", response);
     }
 
+    // ========================= GET BY ORDER ID =========================
     @GetMapping("/orders/{orderId}")
-    public ApiResponse<Payment> getPaymentByOrderId(@PathVariable Long orderId) {
-        return ApiResponseBuilder.success("Payment fetched successfully", paymentService.getPaymentByOrderId(orderId));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PaymentResponseDto> getPaymentByOrderId(@PathVariable Long orderId) {
+        PaymentResponseDto response = paymentService.getPaymentByOrderId(orderId);
+        return ApiResponseBuilder.success("Payment fetched successfully", response);
     }
 
-    @PatchMapping("/{paymentId}/success")
+    // ========================= MARK SUCCESS =========================
+    @PutMapping("/{paymentId}/success")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<Payment> markPaymentSuccess(@PathVariable Long paymentId) {
-        return ApiResponseBuilder.success("Payment marked success", paymentService.markPaymentSuccess(paymentId));
+    public ApiResponse<PaymentResponseDto> markPaymentSuccess(@PathVariable Long paymentId) {
+        PaymentResponseDto response = paymentService.markPaymentSuccess(paymentId);
+        return ApiResponseBuilder.success("Payment marked success", response);
     }
 
-    @PatchMapping("/refund/{paymentId}")
+    // ========================= REFUND =========================
+    @PutMapping("/refund/{paymentId}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<Payment> refundPayment(@PathVariable Long paymentId) {
-        return ApiResponseBuilder.success("Payment refunded successfully", paymentService.refundPayment(paymentId));
+    public ApiResponse<PaymentResponseDto> refundPayment(@PathVariable Long paymentId) {
+        PaymentResponseDto response = paymentService.refundPayment(paymentId);
+        return ApiResponseBuilder.success("Payment refunded successfully", response);
     }
 }

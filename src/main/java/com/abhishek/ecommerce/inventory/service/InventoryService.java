@@ -1,11 +1,14 @@
 package com.abhishek.ecommerce.inventory.service;
 
+import com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto;
+import com.abhishek.ecommerce.inventory.dto.response.InventoryResponseDto;
+
 public interface InventoryService {
 
-    void increaseStock(Long productId, int quantity);
+    InventoryResponseDto increaseStock(Long productId, UpdateStockRequestDto requestDto);
 
-    void reduceStock(Long productId, int quantity);
+    InventoryResponseDto reduceStock(Long productId, UpdateStockRequestDto requestDto);
 
-    int getAvailableStock(Long productId);
+    InventoryResponseDto getAvailableStock(Long productId);
 }
 

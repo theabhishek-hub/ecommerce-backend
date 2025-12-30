@@ -1,62 +1,67 @@
 package com.abhishek.ecommerce.cart.controller;
 
+import com.abhishek.ecommerce.cart.dto.request.AddToCartRequestDto;
+import com.abhishek.ecommerce.cart.dto.request.UpdateCartItemRequestDto;
+import com.abhishek.ecommerce.cart.dto.response.CartResponseDto;
+import com.abhishek.ecommerce.cart.service.CartService;
 import com.abhishek.ecommerce.common.api.ApiResponse;
 import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
-import com.abhishek.ecommerce.cart.entity.Cart;
-import com.abhishek.ecommerce.cart.service.CartService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/cart")
+@RequestMapping("/api/v1/users/{userId}/cart")
+@RequiredArgsConstructor
 public class CartController {
 
     private final CartService cartService;
 
-    public CartController(CartService cartService) {
-        this.cartService = cartService;
-    }
-
-    @GetMapping
-    public ApiResponse<Cart> getCart(@PathVariable Long userId) {
-        Cart cart = cartService.getCartByUserId(userId);
-        return ApiResponseBuilder.success("Cart fetched successfully", cart);
-    }
-
-    @PostMapping("/products")
-    public ApiResponse<Cart> addProduct(
+    // ========================= ADD PRODUCT =========================
+    @PostMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<CartResponseDto> addProduct(
             @PathVariable Long userId,
-            @RequestParam Long productId,
-            @RequestParam Integer quantity) {
-        Cart cart = cartService.addProduct(userId, productId, quantity);
-        return ApiResponseBuilder.success("Product added to cart successfully", cart);
+            @Valid @RequestBody AddToCartRequestDto requestDto) {
+        CartResponseDto response = cartService.addProduct(userId, requestDto);
+        return ApiResponseBuilder.success("Product added to cart successfully", response);
     }
 
+    // ========================= GET CART =========================
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<CartResponseDto> getCart(@PathVariable Long userId) {
+        CartResponseDto response = cartService.getCartByUserId(userId);
+        return ApiResponseBuilder.success("Cart fetched successfully", response);
+    }
+
+    // ========================= UPDATE QUANTITY =========================
     @PutMapping("/products/{productId}")
-    public ApiResponse<Cart> updateQuantity(
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<CartResponseDto> updateQuantity(
             @PathVariable Long userId,
             @PathVariable Long productId,
-            @RequestParam Integer quantity) {
-        Cart cart = cartService.updateQuantity(userId, productId, quantity);
-        return ApiResponseBuilder.success("Cart updated successfully", cart);
+            @Valid @RequestBody UpdateCartItemRequestDto requestDto) {
+        CartResponseDto response = cartService.updateQuantity(userId, productId, requestDto);
+        return ApiResponseBuilder.success("Cart updated successfully", response);
     }
 
+    // ========================= REMOVE PRODUCT =========================
     @DeleteMapping("/products/{productId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Void> removeProduct(
             @PathVariable Long userId,
             @PathVariable Long productId) {
         cartService.removeProduct(userId, productId);
-        return ApiResponseBuilder.success("Product removed from cart successfully");
+        return ApiResponseBuilder.success("Product removed from cart successfully", null);
     }
 
+    // ========================= CLEAR CART =========================
     @DeleteMapping("/clear")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ApiResponse<Void> clearCart(@PathVariable Long userId)
-    {
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Void> clearCart(@PathVariable Long userId) {
         cartService.clearCart(userId);
-        return ApiResponseBuilder.success("Cart cleared successfully");
+        return ApiResponseBuilder.success("Cart cleared successfully", null);
     }
-
-
 }

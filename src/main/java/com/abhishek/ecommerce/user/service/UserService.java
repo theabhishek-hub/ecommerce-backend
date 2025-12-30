@@ -1,26 +1,34 @@
 package com.abhishek.ecommerce.user.service;
 
-import com.abhishek.ecommerce.user.entity.User;
+import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
+import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
+import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
 
 import java.util.List;
 
 public interface UserService {
 
-    User createUser(User user);
+    // CREATE
+    UserResponseDto createUser(UserCreateRequestDto requestDto);
 
-    User getUserById(Long userId);
+    // UPDATE
+    UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto);
 
-    List<User> getAllUsers();
+    // READ
+    UserResponseDto getUserById(Long userId);
 
-    User updateUser(Long userId, User updatedUser);
+    List<UserResponseDto> getAllUsers();
+
+    List<UserResponseDto> getAllActiveUsers();
+
+    // STATUS OPERATIONS
+    void activateUser(Long userId);
 
     void deactivateUser(Long userId);
 
-    void activateUser(Long userId);
-
-    List<User> getAllActiveUsers();
-
-    void deleteUser(Long userId);        // soft delete
-
+    // DELETE (soft delete)
+    void deleteUser(Long userId);
 }
+
+
 

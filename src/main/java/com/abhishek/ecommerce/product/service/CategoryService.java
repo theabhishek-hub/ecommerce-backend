@@ -1,20 +1,29 @@
 package com.abhishek.ecommerce.product.service;
 
-import com.abhishek.ecommerce.product.entity.Category;
+import com.abhishek.ecommerce.product.dto.request.CategoryCreateRequestDto;
+import com.abhishek.ecommerce.product.dto.request.CategoryUpdateRequestDto;
+import com.abhishek.ecommerce.product.dto.response.CategoryResponseDto;
 
 import java.util.List;
 
 public interface CategoryService {
-    Category createCategory(Category category);
-    Category getCategoryById(Long categoryId);
-    List<Category> getAllCategories();
-    Category updateCategory(Long categoryId, Category category);
-    List<Category> getAllActiveCategories();
-
-    void deactivateCategory(Long categoryId);
-
+    
+    // CREATE
+    CategoryResponseDto createCategory(CategoryCreateRequestDto requestDto);
+    
+    // READ
+    CategoryResponseDto getCategoryById(Long categoryId);
+    List<CategoryResponseDto> getAllCategories();
+    List<CategoryResponseDto> getAllActiveCategories();
+    
+    // UPDATE
+    CategoryResponseDto updateCategory(Long categoryId, CategoryUpdateRequestDto requestDto);
+    
+    // STATUS OPERATIONS
     void activateCategory(Long categoryId);
-
+    void deactivateCategory(Long categoryId);
+    
+    // DELETE (soft delete)
     void deleteCategory(Long categoryId);
 }
 

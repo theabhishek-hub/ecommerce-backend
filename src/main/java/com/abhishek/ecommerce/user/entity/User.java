@@ -24,9 +24,9 @@ public class User extends BaseEntity {
     private String email;
 
     /**
-     * Store hashed password only (BCrypt).
+     * Store hashed password only bcrypt
      */
-    @Column(nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     private String fullName;
@@ -42,4 +42,3 @@ public class User extends BaseEntity {
     @JoinColumn(name = "user_id")
     private List<Address> addresses = new ArrayList<>();
 }
-

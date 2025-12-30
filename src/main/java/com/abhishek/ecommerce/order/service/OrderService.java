@@ -1,6 +1,6 @@
 package com.abhishek.ecommerce.order.service;
 
-import com.abhishek.ecommerce.order.entity.Order;
+import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 
 import java.util.List;
 
@@ -9,17 +9,17 @@ import java.util.List;
  */
 public interface OrderService {
 
-    Order placeOrder(Long userId);
+    OrderResponseDto placeOrder(Long userId);
 
-    List<Order> getOrdersByUser(Long userId);
+    List<OrderResponseDto> getOrdersByUser(Long userId);
 
-    Order getOrderById(Long orderId);
+    OrderResponseDto getOrderById(Long orderId);
 
-    Order shipOrder(Long orderId);
+    OrderResponseDto shipOrder(Long orderId);
 
-    Order deliverOrder(Long orderId);
+    OrderResponseDto deliverOrder(Long orderId);
 
-    Order cancelOrder(Long orderId);
+    OrderResponseDto cancelOrder(Long orderId);
 }
 
 

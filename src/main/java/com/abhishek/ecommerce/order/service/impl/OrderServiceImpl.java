@@ -2,25 +2,31 @@ package com.abhishek.ecommerce.order.service.impl;
 
 import com.abhishek.ecommerce.cart.entity.Cart;
 import com.abhishek.ecommerce.cart.entity.CartItem;
+import com.abhishek.ecommerce.cart.exception.CartNotFoundException;
 import com.abhishek.ecommerce.cart.repository.CartRepository;
 import com.abhishek.ecommerce.inventory.service.InventoryService;
+import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.entity.Order;
 import com.abhishek.ecommerce.order.entity.OrderItem;
 import com.abhishek.ecommerce.order.entity.OrderStatus;
+import com.abhishek.ecommerce.order.exception.OrderNotFoundException;
+import com.abhishek.ecommerce.order.mapper.OrderMapper;
 import com.abhishek.ecommerce.order.repository.OrderRepository;
 import com.abhishek.ecommerce.order.service.OrderService;
 import com.abhishek.ecommerce.payment.entity.PaymentMethod;
 import com.abhishek.ecommerce.payment.service.PaymentService;
 import com.abhishek.ecommerce.user.entity.User;
+import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.common.entity.Money;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,18 +38,19 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final InventoryService inventoryService;
     private final PaymentService paymentService;
+    private final OrderMapper orderMapper;
 
 
     @Override
-    public Order placeOrder(Long userId) {
+    public OrderResponseDto placeOrder(Long userId) {
 
         // 1️⃣ Fetch user
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         // 2️⃣ Fetch cart
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user id: " + userId));
 
         if (cart.getItems().isEmpty()) {
             throw new RuntimeException("Cannot place order with empty cart");
@@ -60,10 +67,10 @@ public class OrderServiceImpl implements OrderService {
         for (CartItem cartItem : cart.getItems()) {
 
             // 🔥 THIS WAS MISSING
-            inventoryService.reduceStock(
-                    cartItem.getProduct().getId(),
-                    cartItem.getQuantity()
-            );
+            com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto stockRequest = 
+                new com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto();
+            stockRequest.setQuantity(cartItem.getQuantity());
+            inventoryService.reduceStock(cartItem.getProduct().getId(), stockRequest);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -86,27 +93,31 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // Create payment entry (COD for now)
-        paymentService.createPayment(
-                savedOrder.getId(),
-                PaymentMethod.COD
-        );
+        com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto paymentRequest = 
+            new com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto();
+        paymentRequest.setOrderId(savedOrder.getId());
+        paymentRequest.setPaymentMethod(PaymentMethod.COD);
+        paymentService.createPayment(paymentRequest);
 
 
         // 7️⃣ Clear cart SAFELY
         cart.getItems().clear();
         cartRepository.save(cart);
 
-
-        return savedOrder;
+        return orderMapper.toDto(savedOrder);
     }
 
     @Override
-    public List<Order> getOrdersByUser(Long userId) {
-        return orderRepository.findByUserId(userId);
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getOrdersByUser(Long userId) {
+        return orderRepository.findByUserId(userId)
+                .stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Order shipOrder(Long orderId) {
+    public OrderResponseDto shipOrder(Long orderId) {
         Order order = getOrderOrThrow(orderId);
 
         if (order.getStatus() != OrderStatus.PAID) {
@@ -114,11 +125,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setStatus(OrderStatus.SHIPPED);
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return orderMapper.toDto(savedOrder);
     }
 
     @Override
-    public Order deliverOrder(Long orderId) {
+    public OrderResponseDto deliverOrder(Long orderId) {
         Order order = getOrderOrThrow(orderId);
 
         if (order.getStatus() != OrderStatus.SHIPPED) {
@@ -126,14 +138,16 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setStatus(OrderStatus.DELIVERED);
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return orderMapper.toDto(savedOrder);
     }
 
+    @Override
     @Transactional
-    public Order cancelOrder(Long orderId) {
+    public OrderResponseDto cancelOrder(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
 
         switch (order.getStatus()) {
 
@@ -150,24 +164,26 @@ public class OrderServiceImpl implements OrderService {
                 break;
 
             case DELIVERED:
-                throw new RuntimeException("Delivered order cannot be cancelled");
+                throw new IllegalStateException("Delivered order cannot be cancelled");
 
             default:
-                throw new RuntimeException("Invalid order state");
+                throw new IllegalStateException("Invalid order state");
         }
 
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return orderMapper.toDto(savedOrder);
     }
 
-
     @Override
-    public Order getOrderById(Long orderId) {
-        return getOrderOrThrow(orderId);
+    @Transactional(readOnly = true)
+    public OrderResponseDto getOrderById(Long orderId) {
+        Order order = getOrderOrThrow(orderId);
+        return orderMapper.toDto(order);
     }
 
     private Order getOrderOrThrow(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
     }
 
 }

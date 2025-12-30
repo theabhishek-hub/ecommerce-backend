@@ -1,17 +1,29 @@
 package com.abhishek.ecommerce.product.service;
 
-import com.abhishek.ecommerce.product.entity.Brand;
+import com.abhishek.ecommerce.product.dto.request.BrandCreateRequestDto;
+import com.abhishek.ecommerce.product.dto.request.BrandUpdateRequestDto;
+import com.abhishek.ecommerce.product.dto.response.BrandResponseDto;
 
 import java.util.List;
 
 public interface BrandService {
-    Brand createBrand(Brand brand);
-    Brand getBrandById(Long brandId);
-    List<Brand> getAllBrands();
-    Brand updateBrand(Long brandId, Brand brand);
-    void deactivateBrand(Long brandId);
+    
+    // CREATE
+    BrandResponseDto createBrand(BrandCreateRequestDto requestDto);
+    
+    // READ
+    BrandResponseDto getBrandById(Long brandId);
+    List<BrandResponseDto> getAllBrands();
+    List<BrandResponseDto> getAllActiveBrands();
+    
+    // UPDATE
+    BrandResponseDto updateBrand(Long brandId, BrandUpdateRequestDto requestDto);
+    
+    // STATUS OPERATIONS
     void activateBrand(Long brandId);
-    List<Brand> getAllActiveBrands();
+    void deactivateBrand(Long brandId);
+    
+    // DELETE (soft delete)
     void deleteBrand(Long brandId);
 }
 
