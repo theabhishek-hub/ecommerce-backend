@@ -11,12 +11,14 @@ import com.abhishek.ecommerce.product.mapper.BrandMapper;
 import com.abhishek.ecommerce.product.repository.BrandRepository;
 import com.abhishek.ecommerce.product.service.BrandService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,9 +30,11 @@ public class BrandServiceImpl implements BrandService {
     // ========================= CREATE =========================
     @Override
     public BrandResponseDto createBrand(BrandCreateRequestDto requestDto) {
+        log.info("createBrand started for name={}", requestDto.getName());
 
         // Check duplicate name
         if (brandRepository.existsByName(requestDto.getName())) {
+            log.warn("createBrand duplicate name={}", requestDto.getName());
             throw new BrandAlreadyExistsException(
                     "Brand already exists with name: " + requestDto.getName()
             );
@@ -40,12 +44,14 @@ public class BrandServiceImpl implements BrandService {
         brand.setStatus(BrandStatus.ACTIVE);
 
         Brand savedBrand = brandRepository.save(brand);
+        log.info("createBrand completed brandId={} name={}", savedBrand.getId(), requestDto.getName());
         return brandMapper.toDto(savedBrand);
     }
 
     // ========================= UPDATE =========================
     @Override
     public BrandResponseDto updateBrand(Long brandId, BrandUpdateRequestDto requestDto) {
+        log.info("updateBrand started for brandId={}", brandId);
 
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
@@ -56,6 +62,7 @@ public class BrandServiceImpl implements BrandService {
             brandRepository.findByName(requestDto.getName())
                     .ifPresent(existingBrand -> {
                         if (!existingBrand.getId().equals(brandId)) {
+                            log.warn("updateBrand duplicate name={} brandId={}", requestDto.getName(), brandId);
                             throw new BrandAlreadyExistsException("Brand already exists with name: " + requestDto.getName());
                         }
                     });
@@ -69,6 +76,7 @@ public class BrandServiceImpl implements BrandService {
         }
 
         Brand updatedBrand = brandRepository.save(brand);
+        log.info("updateBrand completed brandId={}", brandId);
         return brandMapper.toDto(updatedBrand);
     }
 
@@ -105,33 +113,39 @@ public class BrandServiceImpl implements BrandService {
     @Override
     @Transactional
     public void activateBrand(Long brandId) {
+        log.info("activateBrand started for brandId={}", brandId);
 
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
 
         brand.setStatus(BrandStatus.ACTIVE);
         brandRepository.save(brand);
+        log.info("activateBrand completed brandId={}", brandId);
     }
 
     @Override
     @Transactional
     public void deactivateBrand(Long brandId) {
+        log.info("deactivateBrand started for brandId={}", brandId);
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
 
         brand.setStatus(BrandStatus.INACTIVE);
         brandRepository.save(brand);
+        log.info("deactivateBrand completed brandId={}", brandId);
     }
 
     // ========================= DELETE (SOFT) =========================
     @Override
     @Transactional
     public void deleteBrand(Long brandId) {
+        log.info("deleteBrand started for brandId={}", brandId);
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
 
         brand.setStatus(BrandStatus.INACTIVE);
         brandRepository.save(brand);
+        log.info("deleteBrand completed brandId={}", brandId);
     }
 }
 

@@ -11,12 +11,14 @@ import com.abhishek.ecommerce.product.mapper.CategoryMapper;
 import com.abhishek.ecommerce.product.repository.CategoryRepository;
 import com.abhishek.ecommerce.product.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,9 +30,11 @@ public class CategoryServiceImpl implements CategoryService {
     // ========================= CREATE =========================
     @Override
     public CategoryResponseDto createCategory(CategoryCreateRequestDto requestDto) {
+        log.info("createCategory started for name={}", requestDto.getName());
 
         // Check duplicate name
         if (categoryRepository.existsByName(requestDto.getName())) {
+            log.warn("createCategory duplicate name={}", requestDto.getName());
             throw new CategoryAlreadyExistsException(
                     "Category already exists with name: " + requestDto.getName()
             );
@@ -40,12 +44,14 @@ public class CategoryServiceImpl implements CategoryService {
         category.setStatus(CategoryStatus.ACTIVE);
 
         Category savedCategory = categoryRepository.save(category);
+        log.info("createCategory completed categoryId={} name={}", savedCategory.getId(), requestDto.getName());
         return categoryMapper.toDto(savedCategory);
     }
 
     // ========================= UPDATE =========================
     @Override
     public CategoryResponseDto updateCategory(Long categoryId, CategoryUpdateRequestDto requestDto) {
+        log.info("updateCategory started for categoryId={}", categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
@@ -56,6 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryRepository.findByName(requestDto.getName())
                     .ifPresent(existingCategory -> {
                         if (!existingCategory.getId().equals(categoryId)) {
+                            log.warn("updateCategory duplicate name={} categoryId={}", requestDto.getName(), categoryId);
                             throw new CategoryAlreadyExistsException("Category already exists with name: " + requestDto.getName());
                         }
                     });
@@ -66,6 +73,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category updatedCategory = categoryRepository.save(category);
+        log.info("updateCategory completed categoryId={}", categoryId);
         return categoryMapper.toDto(updatedCategory);
     }
 
@@ -102,33 +110,38 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void activateCategory(Long categoryId) {
+        log.info("activateCategory started for categoryId={}", categoryId);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
 
         category.setStatus(CategoryStatus.ACTIVE);
         categoryRepository.save(category);
+        log.info("activateCategory completed categoryId={}", categoryId);
     }
 
     @Override
     @Transactional
     public void deactivateCategory(Long categoryId) {
+        log.info("deactivateCategory started for categoryId={}", categoryId);
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
 
         category.setStatus(CategoryStatus.INACTIVE);
         categoryRepository.save(category);
+        log.info("deactivateCategory completed categoryId={}", categoryId);
     }
 
     // ========================= DELETE (SOFT) =========================
     @Override
     @Transactional
     public void deleteCategory(Long categoryId) {
+        log.info("deleteCategory started for categoryId={}", categoryId);
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
 
         category.setStatus(CategoryStatus.INACTIVE);
         categoryRepository.save(category);
+        log.info("deleteCategory completed categoryId={}", categoryId);
     }
 }
-

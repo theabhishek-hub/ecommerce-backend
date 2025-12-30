@@ -22,12 +22,14 @@ import com.abhishek.ecommerce.common.entity.Money;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional   // 🔥 VERY IMPORTANT
@@ -43,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto placeOrder(Long userId) {
+        log.info("placeOrder started for userId={}", userId);
 
         // 1️⃣ Fetch user
         User user = userRepository.findById(userId)
@@ -53,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new CartNotFoundException("Cart not found for user id: " + userId));
 
         if (cart.getItems().isEmpty()) {
+            log.warn("placeOrder empty cart for userId={}", userId);
             throw new RuntimeException("Cannot place order with empty cart");
         }
 
@@ -91,6 +95,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 6️⃣ Save order
         Order savedOrder = orderRepository.save(order);
+        log.info("placeOrder completed orderId={} userId={}", savedOrder.getId(), userId);
 
         // Create payment entry (COD for now)
         com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto paymentRequest = 
@@ -98,7 +103,6 @@ public class OrderServiceImpl implements OrderService {
         paymentRequest.setOrderId(savedOrder.getId());
         paymentRequest.setPaymentMethod(PaymentMethod.COD);
         paymentService.createPayment(paymentRequest);
-
 
         // 7️⃣ Clear cart SAFELY
         cart.getItems().clear();
@@ -118,33 +122,40 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto shipOrder(Long orderId) {
+        log.info("shipOrder started for orderId={}", orderId);
         Order order = getOrderOrThrow(orderId);
 
         if (order.getStatus() != OrderStatus.PAID) {
+            log.warn("shipOrder invalid status orderId={} status={}", orderId, order.getStatus());
             throw new IllegalStateException("Only PAID orders can be shipped");
         }
 
         order.setStatus(OrderStatus.SHIPPED);
         Order savedOrder = orderRepository.save(order);
+        log.info("shipOrder completed orderId={}", orderId);
         return orderMapper.toDto(savedOrder);
     }
 
     @Override
     public OrderResponseDto deliverOrder(Long orderId) {
+        log.info("deliverOrder started for orderId={}", orderId);
         Order order = getOrderOrThrow(orderId);
 
         if (order.getStatus() != OrderStatus.SHIPPED) {
+            log.warn("deliverOrder invalid status orderId={} status={}", orderId, order.getStatus());
             throw new IllegalStateException("Only SHIPPED orders can be delivered");
         }
 
         order.setStatus(OrderStatus.DELIVERED);
         Order savedOrder = orderRepository.save(order);
+        log.info("deliverOrder completed orderId={}", orderId);
         return orderMapper.toDto(savedOrder);
     }
 
     @Override
     @Transactional
     public OrderResponseDto cancelOrder(Long orderId) {
+        log.info("cancelOrder started for orderId={}", orderId);
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
@@ -154,23 +165,28 @@ public class OrderServiceImpl implements OrderService {
             case CREATED:
                 // No payment → no refund
                 order.setStatus(OrderStatus.CANCELLED);
+                log.info("cancelOrder CREATED->CANCELLED orderId={}", orderId);
                 break;
 
             case PAID:
             case SHIPPED:
                 // Payment exists → refund required
+                log.info("cancelOrder processing refund orderId={}", orderId);
                 paymentService.refundPayment(order.getId());
                 order.setStatus(OrderStatus.REFUNDED);
                 break;
 
             case DELIVERED:
+                log.warn("cancelOrder cannot cancel delivered order orderId={}", orderId);
                 throw new IllegalStateException("Delivered order cannot be cancelled");
 
             default:
+                log.error("cancelOrder invalid order state orderId={} status={}", orderId, order.getStatus());
                 throw new IllegalStateException("Invalid order state");
         }
 
         Order savedOrder = orderRepository.save(order);
+        log.info("cancelOrder completed orderId={}", orderId);
         return orderMapper.toDto(savedOrder);
     }
 
@@ -187,5 +203,4 @@ public class OrderServiceImpl implements OrderService {
     }
 
 }
-
 

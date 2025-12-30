@@ -15,12 +15,14 @@ import com.abhishek.ecommerce.product.repository.CategoryRepository;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
 import com.abhishek.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,9 +36,11 @@ public class ProductServiceImpl implements ProductService {
     // ========================= CREATE =========================
     @Override
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto) {
+        log.info("createProduct started for sku={}", requestDto.getSku());
 
         // Check duplicate SKU
         if (productRepository.existsBySku(requestDto.getSku())) {
+            log.warn("createProduct duplicate sku={}", requestDto.getSku());
             throw new ProductAlreadyExistsException(
                     "Product already exists with SKU: " + requestDto.getSku()
             );
@@ -57,12 +61,15 @@ public class ProductServiceImpl implements ProductService {
         product.setStatus(ProductStatus.ACTIVE);
 
         Product savedProduct = productRepository.save(product);
+
+        log.info("createProduct completed for sku={}", requestDto.getSku());
         return productMapper.toDto(savedProduct);
     }
 
     // ========================= UPDATE =========================
     @Override
     public ProductResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
+        log.info("updateProduct started for productId={}", productId);
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
@@ -102,6 +109,8 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Product updatedProduct = productRepository.save(product);
+
+        log.info("updateProduct completed for productId={}", productId);
         return productMapper.toDto(updatedProduct);
     }
 
@@ -138,32 +147,40 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void activateProduct(Long productId) {
+        log.info("activateProduct started for productId={}", productId);
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 
         product.setStatus(ProductStatus.ACTIVE);
         productRepository.save(product);
+
+        log.info("activateProduct completed for productId={}", productId);
     }
 
     @Override
     @Transactional
     public void deactivateProduct(Long productId) {
+        log.info("deactivateProduct started for productId={}", productId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 
         product.setStatus(ProductStatus.INACTIVE);
         productRepository.save(product);
+
+        log.info("deactivateProduct completed for productId={}", productId);
     }
 
     // ========================= DELETE (SOFT) =========================
     @Override
     @Transactional
     public void deleteProduct(Long productId) {
+        log.info("deleteProduct started for productId={}", productId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 
         product.setStatus(ProductStatus.INACTIVE);
         productRepository.save(product);
+        log.info("deleteProduct completed for productId={}", productId);
     }
 }

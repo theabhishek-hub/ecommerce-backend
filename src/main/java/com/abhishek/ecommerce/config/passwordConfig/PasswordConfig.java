@@ -1,4 +1,4 @@
-package com.abhishek.ecommerce.config;
+package com.abhishek.ecommerce.config.passwordConfig;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

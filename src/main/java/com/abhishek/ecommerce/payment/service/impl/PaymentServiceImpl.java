@@ -13,8 +13,10 @@ import com.abhishek.ecommerce.payment.repository.PaymentRepository;
 import com.abhishek.ecommerce.payment.service.PaymentService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,11 +29,13 @@ public class PaymentServiceImpl implements PaymentService {
     // ========================= CREATE =========================
     @Override
     public PaymentResponseDto createPayment(PaymentCreateRequestDto requestDto) {
+        log.info("createPayment started for orderId={} method={}", requestDto.getOrderId(), requestDto.getPaymentMethod());
 
         Order order = orderRepository.findById(requestDto.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + requestDto.getOrderId()));
 
         paymentRepository.findByOrderId(requestDto.getOrderId()).ifPresent(p -> {
+            log.warn("createPayment duplicate payment orderId={}", requestDto.getOrderId());
             throw new RuntimeException("Payment already exists for this order");
         });
 
@@ -43,13 +47,16 @@ public class PaymentServiceImpl implements PaymentService {
         if (requestDto.getPaymentMethod() == PaymentMethod.COD) {
             payment.setStatus(PaymentStatus.PENDING);
             payment.setTransactionId(null);
+            log.info("createPayment COD orderId={}", requestDto.getOrderId());
         } else {
             // ONLINE (mock)
             payment.setStatus(PaymentStatus.SUCCESS);
             payment.setTransactionId("TXN-" + System.currentTimeMillis());
+            log.info("createPayment ONLINE orderId={} txnId={}", requestDto.getOrderId(), payment.getTransactionId());
         }
 
         Payment savedPayment = paymentRepository.save(payment);
+        log.info("createPayment completed paymentId={} orderId={}", savedPayment.getId(), requestDto.getOrderId());
         return paymentMapper.toDto(savedPayment);
     }
 
@@ -73,12 +80,14 @@ public class PaymentServiceImpl implements PaymentService {
     // ========================= MARK SUCCESS =========================
     @Override
     public PaymentResponseDto markPaymentSuccess(Long paymentId) {
+        log.info("markPaymentSuccess started for paymentId={}", paymentId);
 
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + paymentId));
 
         // Prevent duplicate success
         if (payment.getStatus() == PaymentStatus.SUCCESS) {
+            log.warn("markPaymentSuccess already SUCCESS paymentId={}", paymentId);
             return paymentMapper.toDto(payment);
         }
 
@@ -94,6 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
         // Fetch related order
         Order order = payment.getOrder();
         if (order == null) {
+            log.error("markPaymentSuccess no order linked paymentId={}", paymentId);
             throw new RuntimeException("Order not linked with payment");
         }
 
@@ -105,22 +115,26 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Save payment
         Payment savedPayment = paymentRepository.save(payment);
+        log.info("markPaymentSuccess completed paymentId={} orderId={}", paymentId, order.getId());
         return paymentMapper.toDto(savedPayment);
     }
 
     // ========================= REFUND =========================
     @Override
     public PaymentResponseDto refundPayment(Long paymentId) {
+        log.info("refundPayment started for paymentId={}", paymentId);
 
         Payment payment = paymentRepository.findByOrderId(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order id: " + paymentId));
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
+            log.warn("refundPayment invalid status paymentId={} status={}", paymentId, payment.getStatus());
             throw new IllegalStateException("Only successful payments can be refunded");
         }
 
         payment.setStatus(PaymentStatus.REFUNDED);
         Payment savedPayment = paymentRepository.save(payment);
+        log.info("refundPayment completed paymentId={}", paymentId);
         return paymentMapper.toDto(savedPayment);
     }
 

@@ -17,9 +17,11 @@ import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional(readOnly = true)
     public CartResponseDto getCartByUserId(Long userId) {
+        log.debug("getCartByUserId for userId={}", userId);
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> createCart(userId));
         return cartMapper.toDto(cart);
@@ -43,6 +46,7 @@ public class CartServiceImpl implements CartService {
     // ========================= ADD PRODUCT =========================
     @Override
     public CartResponseDto addProduct(Long userId, AddToCartRequestDto requestDto) {
+        log.info("addProduct started for userId={} productId={}", userId, requestDto.getProductId());
 
         Cart cart = getCartEntityByUserId(userId);
 
@@ -60,17 +64,21 @@ public class CartServiceImpl implements CartService {
             item.setPrice(product.getPrice());
             item.setQuantity(requestDto.getQuantity());
             cart.getItems().add(item);
+            log.info("addProduct new item cartId={} productId={} qty={}", cart.getId(), requestDto.getProductId(), requestDto.getQuantity());
         } else {
             item.setQuantity(item.getQuantity() + requestDto.getQuantity());
+            log.info("addProduct updated item cartId={} productId={} qty={}", cart.getId(), requestDto.getProductId(), item.getQuantity());
         }
 
         Cart savedCart = cartRepository.save(cart);
+        log.info("addProduct completed for userId={}", userId);
         return cartMapper.toDto(savedCart);
     }
 
     // ========================= UPDATE QUANTITY =========================
     @Override
     public CartResponseDto updateQuantity(Long userId, Long productId, UpdateCartItemRequestDto requestDto) {
+        log.info("updateQuantity started for userId={} productId={} qty={}", userId, productId, requestDto.getQuantity());
 
         Cart cart = getCartEntityByUserId(userId);
 
@@ -81,12 +89,14 @@ public class CartServiceImpl implements CartService {
         item.setQuantity(requestDto.getQuantity());
         cartRepository.save(cart);
         
+        log.info("updateQuantity completed for userId={} productId={}", userId, productId);
         return cartMapper.toDto(cart);
     }
 
     // ========================= REMOVE PRODUCT =========================
     @Override
     public void removeProduct(Long userId, Long productId) {
+        log.info("removeProduct started for userId={} productId={}", userId, productId);
 
         Cart cart = getCartEntityByUserId(userId);
 
@@ -96,14 +106,18 @@ public class CartServiceImpl implements CartService {
 
         cart.getItems().remove(item);
         cartRepository.save(cart);
+
+        log.info("removeProduct completed for userId={} productId={}", userId, productId);
     }
 
     // ========================= CLEAR CART =========================
     @Override
     public void clearCart(Long userId) {
+        log.info("clearCart started for userId={}", userId);
         Cart cart = getCartEntityByUserId(userId);
         cart.getItems().clear();
         cartRepository.save(cart);
+        log.info("clearCart completed for userId={}", userId);
     }
 
     // ========================= PRIVATE HELPERS =========================
@@ -113,12 +127,15 @@ public class CartServiceImpl implements CartService {
     }
 
     private Cart createCart(Long userId) {
+        log.info("createCart for userId={}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         Cart cart = new Cart();
         cart.setUser(user);
-        return cartRepository.save(cart);
+        Cart savedCart = cartRepository.save(cart);
+        log.info("createCart completed cartId={} userId={}", savedCart.getId(), userId);
+        return savedCart;
     }
 }
 
