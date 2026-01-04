@@ -9,6 +9,7 @@ import com.abhishek.ecommerce.product.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class CategoryController {
     // ========================= CREATE =========================
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<CategoryResponseDto> createCategory(
             @Valid @RequestBody CategoryCreateRequestDto requestDto
     ) {
@@ -33,6 +35,7 @@ public class CategoryController {
     // ========================= UPDATE =========================
     @PutMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<CategoryResponseDto> updateCategory(
             @PathVariable Long categoryId,
             @Valid @RequestBody CategoryUpdateRequestDto requestDto
@@ -68,6 +71,7 @@ public class CategoryController {
     // ========================= ACTIVATE =========================
     @PutMapping("/{categoryId}/activate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> activateCategory(@PathVariable Long categoryId) {
         categoryService.activateCategory(categoryId);
         return ApiResponseBuilder.success("Category activated successfully", null);
@@ -76,6 +80,7 @@ public class CategoryController {
     // ========================= DEACTIVATE =========================
     @PutMapping("/{categoryId}/deactivate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deactivateCategory(@PathVariable Long categoryId) {
         categoryService.deactivateCategory(categoryId);
         return ApiResponseBuilder.success("Category deactivated successfully", null);
@@ -84,6 +89,7 @@ public class CategoryController {
     // ========================= DELETE (SOFT DELETE) =========================
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteCategory(@PathVariable Long categoryId) {
         categoryService.deleteCategory(categoryId);
         return ApiResponseBuilder.success("Category deleted successfully", null);

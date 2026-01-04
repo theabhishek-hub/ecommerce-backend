@@ -9,6 +9,7 @@ import com.abhishek.ecommerce.product.service.BrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class BrandController {
     // ========================= CREATE =========================
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<BrandResponseDto> createBrand(
             @Valid @RequestBody BrandCreateRequestDto requestDto
     ) {
@@ -33,6 +35,7 @@ public class BrandController {
     // ========================= UPDATE =========================
     @PutMapping("/{brandId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<BrandResponseDto> updateBrand(
             @PathVariable Long brandId,
             @Valid @RequestBody BrandUpdateRequestDto requestDto
@@ -68,6 +71,7 @@ public class BrandController {
     // ========================= ACTIVATE =========================
     @PutMapping("/{brandId}/activate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> activateBrand(@PathVariable Long brandId) {
         brandService.activateBrand(brandId);
         return ApiResponseBuilder.success("Brand activated successfully", null);
@@ -76,6 +80,7 @@ public class BrandController {
     // ========================= DEACTIVATE =========================
     @PutMapping("/{brandId}/deactivate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deactivateBrand(@PathVariable Long brandId) {
         brandService.deactivateBrand(brandId);
         return ApiResponseBuilder.success("Brand deactivated successfully", null);
@@ -84,6 +89,7 @@ public class BrandController {
     // ========================= DELETE (SOFT DELETE) =========================
     @DeleteMapping("/{brandId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteBrand(@PathVariable Long brandId) {
         brandService.deleteBrand(brandId);
         return ApiResponseBuilder.success("Brand deleted successfully", null);

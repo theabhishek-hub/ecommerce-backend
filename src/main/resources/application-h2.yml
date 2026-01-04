@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:ecommerce_db;DB_CLOSE_DELAY=-1;MODE=MySQL;INIT=CREATE SCHEMA IF NOT EXISTS ecommerce
+    url: jdbc:h2:file:./ecommerce_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -14,6 +14,10 @@ spring:
       hibernate:
         format_sql: true
 
+  sql:
+    init:
+      mode: always
+
   h2:
     console:
       enabled: true
@@ -22,10 +26,8 @@ spring:
 app:
   jwt:
     secret: ZmFrZS1zZWNyZXQta2V5LWZvci1kZXYtcHVycG9zZXM=
-    expiration-ms: 3600000
+    expiration-ms: 3600000  # 1 hour for testing
 
 logging:
   level:
-    root: INFO
-    com.abhishek.ecommerce: DEBUG
-
+    org.hibernate.SQL: DEBUG

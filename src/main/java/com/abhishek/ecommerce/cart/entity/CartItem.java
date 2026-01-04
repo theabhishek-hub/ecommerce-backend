@@ -3,10 +3,10 @@ package com.abhishek.ecommerce.cart.entity;
 import com.abhishek.ecommerce.common.entity.BaseEntity;
 import com.abhishek.ecommerce.common.entity.Money;
 import com.abhishek.ecommerce.product.entity.Product;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
 
 @Entity
 @Table(
@@ -19,11 +19,13 @@ import java.util.ArrayList;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "cart")
+@EqualsAndHashCode(exclude = "cart", callSuper = false)
 public class CartItem extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonBackReference
     private Cart cart;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,5 +1,6 @@
 package com.abhishek.ecommerce.user.repository;
 
+import com.abhishek.ecommerce.user.entity.Role;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.entity.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByIdAndStatus(Long id, UserStatus status);
 
     List<User> findAllByStatus(UserStatus status);
+
+    boolean existsByRole(Role role);
 }

@@ -13,6 +13,7 @@ import com.abhishek.ecommerce.cart.service.CartService;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.abhishek.ecommerce.product.exception.ProductNotFoundException;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
+import com.abhishek.ecommerce.security.SecurityUtils;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
@@ -32,10 +33,11 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CartMapper cartMapper;
+    private final SecurityUtils securityUtils;
 
     // ========================= READ =========================
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public CartResponseDto getCartByUserId(Long userId) {
         log.debug("getCartByUserId for userId={}", userId);
         Cart cart = cartRepository.findByUserId(userId)
@@ -118,6 +120,53 @@ public class CartServiceImpl implements CartService {
         cart.getItems().clear();
         cartRepository.save(cart);
         log.info("clearCart completed for userId={}", userId);
+    }
+
+    // ========================= CURRENT USER METHODS =========================
+    @Override
+    @Transactional
+    public CartResponseDto getCartForCurrentUser() {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return getCartByUserId(userId);
+    }
+
+    @Override
+    public CartResponseDto addProductForCurrentUser(AddToCartRequestDto requestDto) {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return addProduct(userId, requestDto);
+    }
+
+    @Override
+    public CartResponseDto updateQuantityForCurrentUser(Long productId, UpdateCartItemRequestDto requestDto) {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return updateQuantity(userId, productId, requestDto);
+    }
+
+    @Override
+    public void removeProductForCurrentUser(Long productId) {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        removeProduct(userId, productId);
+    }
+
+    @Override
+    public void clearCartForCurrentUser() {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        clearCart(userId);
     }
 
     // ========================= PRIVATE HELPERS =========================

@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long>
 {
+    List<Product> findAll();
+
     List<Product> findAllByStatus(ProductStatus status);
     
     boolean existsBySku(String sku);

@@ -8,6 +8,7 @@ import com.abhishek.ecommerce.inventory.service.InventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -23,6 +24,7 @@ public class InventoryController {
     // ========================= INCREASE STOCK =========================
     @PutMapping("/products/{productId}/stock/increase")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<InventoryResponseDto> increaseStock(
             @PathVariable Long productId,
             @Valid @RequestBody UpdateStockRequestDto requestDto
@@ -34,6 +36,7 @@ public class InventoryController {
     // ========================= REDUCE STOCK =========================
     @PutMapping("/products/{productId}/stock/reduce")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<InventoryResponseDto> reduceStock(
             @PathVariable Long productId,
             @Valid @RequestBody UpdateStockRequestDto requestDto
@@ -45,6 +48,7 @@ public class InventoryController {
     // ========================= GET STOCK =========================
     @GetMapping("/products/{productId}/stock")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<InventoryResponseDto> getStock(@PathVariable Long productId) {
         InventoryResponseDto response = inventoryService.getAvailableStock(productId);
         return ApiResponseBuilder.success("Stock fetched successfully", response);

@@ -7,13 +7,9 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class AuthResponseDto {
-
-    private String token;
-    private Long userId;
+public class SignupResponseDto {
+    private Long id;
     private String email;
     private String role;
-    private String tokenType;
-    private String refreshToken;
-    private Long refreshTokenExpiryMs;
 }
+

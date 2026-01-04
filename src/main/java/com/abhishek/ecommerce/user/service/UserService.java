@@ -3,6 +3,7 @@ package com.abhishek.ecommerce.user.service;
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
+import com.abhishek.ecommerce.user.entity.UserStatus;
 
 import java.util.List;
 
@@ -28,6 +29,11 @@ public interface UserService {
 
     // DELETE (soft delete)
     void deleteUser(Long userId);
+
+    // ADMIN OPERATIONS
+    void updateUserStatus(Long userId, UserStatus status);
+
+    void unlockUser(Long userId);
 }
 
 

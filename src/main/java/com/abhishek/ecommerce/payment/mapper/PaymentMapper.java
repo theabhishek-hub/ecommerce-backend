@@ -2,15 +2,27 @@ package com.abhishek.ecommerce.payment.mapper;
 
 import com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto;
 import com.abhishek.ecommerce.payment.entity.Payment;
-import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface PaymentMapper {
+@Component
+public class PaymentMapper {
 
     // ================= RESPONSE =================
-    @Mapping(target = "orderId", expression = "java(payment.getOrder() != null ? payment.getOrder().getId() : null)")
-    @Mapping(target = "amount", expression = "java(payment.getAmount() != null ? payment.getAmount().getAmount() : null)")
-    @Mapping(target = "currency", expression = "java(payment.getAmount() != null ? payment.getAmount().getCurrency() : null)")
-    PaymentResponseDto toDto(Payment payment);
+    public PaymentResponseDto toDto(Payment payment) {
+        if (payment == null) {
+            return null;
+        }
+
+        PaymentResponseDto dto = new PaymentResponseDto();
+        dto.setId(payment.getId());
+        dto.setOrderId(payment.getOrder() != null ? payment.getOrder().getId() : null);
+        dto.setPaymentMethod(payment.getPaymentMethod());
+        dto.setStatus(payment.getStatus());
+        dto.setAmount(payment.getAmount() != null ? payment.getAmount().getAmount() : null);
+        dto.setCurrency(payment.getAmount() != null ? payment.getAmount().getCurrency() : null);
+        dto.setTransactionId(payment.getTransactionId());
+
+        return dto;
+    }
 }
 

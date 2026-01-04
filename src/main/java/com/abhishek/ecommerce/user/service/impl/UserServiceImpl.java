@@ -148,6 +148,36 @@ public class UserServiceImpl implements UserService {
         log.info("deleteUser completed for userId={}", userId);
     }
 
+    // ========================= ADMIN OPERATIONS =========================
+    @Override
+    @Transactional
+    public void updateUserStatus(Long userId, UserStatus status) {
+        log.info("updateUserStatus started for userId={}, status={}", userId, status);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+        
+        user.setStatus(status);
+        userRepository.save(user);
+        
+        log.info("updateUserStatus completed for userId={}, status={}", userId, status);
+    }
+
+    @Override
+    @Transactional
+    public void unlockUser(Long userId) {
+        log.info("unlockUser started for userId={}", userId);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+        
+        user.setLockedUntil(null);
+        user.setFailedLoginAttempts(0);
+        userRepository.save(user);
+        
+        log.info("unlockUser completed for userId={}", userId);
+    }
+
     // ========================= PRIVATE HELPER =========================
     private User getUserOrThrow(Long userId) {
         return userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)

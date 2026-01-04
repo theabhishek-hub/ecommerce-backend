@@ -1,0 +1,46 @@
+package com.abhishek.ecommerce.auth.controller;
+
+import com.abhishek.ecommerce.auth.dto.PasswordChangeRequestDto;
+import com.abhishek.ecommerce.auth.dto.PasswordResetConfirmDto;
+import com.abhishek.ecommerce.auth.dto.PasswordResetRequestDto;
+import com.abhishek.ecommerce.auth.service.PasswordService;
+import com.abhishek.ecommerce.common.api.ApiResponse;
+import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/auth/password")
+@RequiredArgsConstructor
+public class PasswordController {
+
+    private final PasswordService passwordService;
+
+    @PostMapping("/change")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody PasswordChangeRequestDto request) {
+        passwordService.changePassword(request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponseBuilder.success("Password changed successfully", null));
+    }
+
+    @PostMapping("/reset-request")
+    public ResponseEntity<ApiResponse<Void>> requestPasswordReset(
+            @Valid @RequestBody PasswordResetRequestDto request) {
+        passwordService.requestPasswordReset(request.getEmail());
+        // Don't reveal if email exists (security best practice)
+        return ResponseEntity.ok(ApiResponseBuilder.success(
+                "If the email exists, a password reset link has been sent", null));
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody PasswordResetConfirmDto request) {
+        passwordService.resetPassword(request.getResetToken(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponseBuilder.success("Password reset successfully", null));
+    }
+}
+

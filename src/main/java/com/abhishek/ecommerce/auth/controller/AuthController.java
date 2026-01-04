@@ -1,40 +1,82 @@
 package com.abhishek.ecommerce.auth.controller;
 
+import com.abhishek.ecommerce.auth.dto.AuthResponseDto;
+import com.abhishek.ecommerce.auth.dto.LoginRequestDto;
+import com.abhishek.ecommerce.auth.dto.SignupRequestDto;
+import com.abhishek.ecommerce.auth.dto.SignupResponseDto;
+import com.abhishek.ecommerce.auth.service.AuthService;
+import com.abhishek.ecommerce.auth.service.RefreshTokenService;
 import com.abhishek.ecommerce.common.api.ApiResponse;
 import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
-import com.abhishek.ecommerce.config.security.JwtUtil;
-import com.abhishek.ecommerce.user.dto.request.UserLoginRequestDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.abhishek.ecommerce.security.SecurityUtils;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
+    private final SecurityUtils securityUtils;
 
+    // ============================
+    // SIGNUP (REGISTER)
+    // ============================
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<SignupResponseDto>> signup(
+            @Valid @RequestBody SignupRequestDto request
+    ) {
+        log.info("Signup attempt for email={}", request.getEmail());
+
+        SignupResponseDto response = authService.signup(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                        ApiResponseBuilder.created(
+                                "User registered successfully",
+                                response
+                        )
+                );
+    }
+
+    // ============================
+    // LOGIN
+    // ============================
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestBody UserLoginRequestDto dto) {
-        try {
-            Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
-            );
+    public ResponseEntity<ApiResponse<AuthResponseDto>> login(
+            @Valid @RequestBody LoginRequestDto request
+    ) {
+        log.info("Login attempt for email={}", request.getEmail());
 
-            String token = jwtUtil.generateToken(dto.getEmail());
-            return ResponseEntity.ok(ApiResponseBuilder.success("Login successful", token));
-        } catch (AuthenticationException ex) {
-            return ResponseEntity.status(401).body(ApiResponseBuilder.failed(null, "Invalid credentials"));
+        AuthResponseDto response = authService.login(request);
+
+        return ResponseEntity.ok(
+                ApiResponseBuilder.success(
+                        "Login successful",
+                        response
+                )
+        );
+    }
+
+    // ============================
+    // LOGOUT (revoke refresh token)
+    // ============================
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        String username = securityUtils.getCurrentUsername();
+        if (username != null) {
+            refreshTokenService.deleteByUsername(username);
         }
+        return ResponseEntity.ok(ApiResponseBuilder.success("Logged out successfully", null));
     }
 }
-

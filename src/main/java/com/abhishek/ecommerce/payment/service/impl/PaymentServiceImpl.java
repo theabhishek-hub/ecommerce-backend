@@ -11,6 +11,11 @@ import com.abhishek.ecommerce.payment.exception.PaymentNotFoundException;
 import com.abhishek.ecommerce.payment.mapper.PaymentMapper;
 import com.abhishek.ecommerce.payment.repository.PaymentRepository;
 import com.abhishek.ecommerce.payment.service.PaymentService;
+import com.abhishek.ecommerce.security.SecurityUtils;
+import com.abhishek.ecommerce.user.entity.Role;
+import com.abhishek.ecommerce.user.entity.User;
+import com.abhishek.ecommerce.user.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +30,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final PaymentMapper paymentMapper;
+    private final SecurityUtils securityUtils;
+    private final UserRepository userRepository;
 
     // ========================= CREATE =========================
     @Override
@@ -33,6 +40,25 @@ public class PaymentServiceImpl implements PaymentService {
 
         Order order = orderRepository.findById(requestDto.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + requestDto.getOrderId()));
+
+        // Check ownership: User can only create payment for their own order, or admin
+        String currentUsername = securityUtils.getCurrentUsername();
+        if (currentUsername == null) {
+            throw new AccessDeniedException("User not authenticated");
+        }
+
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new IllegalStateException("Current user not found"));
+
+        // Admin can create payment for any order, regular users only for their own
+        if (currentUser.getRole() != Role.ROLE_ADMIN) {
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (order.getUser() == null || !order.getUser().getId().equals(currentUserId)) {
+                log.warn("Access denied: User {} attempted to create payment for order {} owned by user {}",
+                        currentUserId, requestDto.getOrderId(), order.getUser() != null ? order.getUser().getId() : "null");
+                throw new AccessDeniedException("You do not have permission to create payment for this order");
+            }
+        }
 
         paymentRepository.findByOrderId(requestDto.getOrderId()).ifPresent(p -> {
             log.warn("createPayment duplicate payment orderId={}", requestDto.getOrderId());
@@ -66,6 +92,10 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDto getPaymentById(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + paymentId));
+
+        // Ownership check is handled by @PreAuthorize in controller, but add service-level check as defense
+        validatePaymentAccess(payment);
+        
         return paymentMapper.toDto(payment);
     }
 
@@ -74,7 +104,39 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDto getPaymentByOrderId(Long orderId) {
         Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order id: " + orderId));
+
+        // Ownership check is handled by @PreAuthorize in controller, but add service-level check as defense
+        validatePaymentAccess(payment);
+        
         return paymentMapper.toDto(payment);
+    }
+
+    private void validatePaymentAccess(Payment payment) {
+        String currentUsername = securityUtils.getCurrentUsername();
+        if (currentUsername == null) {
+            throw new AccessDeniedException("User not authenticated");
+        }
+
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new IllegalStateException("Current user not found"));
+
+        // Admin can access any payment
+        if (currentUser.getRole() == Role.ROLE_ADMIN) {
+            return;
+        }
+
+        // Regular users can only access their own payments
+        if (payment.getOrder() == null || payment.getOrder().getUser() == null) {
+            throw new AccessDeniedException("Payment is not associated with a valid order");
+        }
+
+        Long currentUserId = securityUtils.getCurrentUserId();
+        if (!payment.getOrder().getUser().getId().equals(currentUserId)) {
+            log.warn("Access denied: User {} attempted to access payment {} for order {} owned by user {}",
+                    currentUserId, payment.getId(), payment.getOrder().getId(),
+                    payment.getOrder().getUser().getId());
+            throw new AccessDeniedException("You do not have permission to access this payment");
+        }
     }
 
     // ========================= MARK SUCCESS =========================
@@ -124,8 +186,8 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDto refundPayment(Long paymentId) {
         log.info("refundPayment started for paymentId={}", paymentId);
 
-        Payment payment = paymentRepository.findByOrderId(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order id: " + paymentId));
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + paymentId));
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
             log.warn("refundPayment invalid status paymentId={} status={}", paymentId, payment.getStatus());

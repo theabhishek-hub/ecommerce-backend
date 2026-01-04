@@ -9,6 +9,7 @@ import com.abhishek.ecommerce.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ProductController {
     // ========================= CREATE =========================
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponseDto> createProduct(
             @Valid @RequestBody ProductCreateRequestDto requestDto
     ) {
@@ -33,6 +35,7 @@ public class ProductController {
     // ========================= UPDATE =========================
     @PutMapping("/{productId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponseDto> updateProduct(
             @PathVariable Long productId,
             @Valid @RequestBody ProductUpdateRequestDto requestDto
@@ -54,7 +57,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<ProductResponseDto>> getAllProducts() {
         List<ProductResponseDto> products = productService.getAllProducts();
-        return ApiResponseBuilder.success("Products fetched successfully", products);
+        return ApiResponseBuilder.success("All products fetched", products);
     }
 
     // ========================= GET ALL ACTIVE =========================
@@ -68,6 +71,7 @@ public class ProductController {
     // ========================= ACTIVATE =========================
     @PutMapping("/{productId}/activate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> activateProduct(@PathVariable Long productId) {
         productService.activateProduct(productId);
         return ApiResponseBuilder.success("Product activated successfully", null);
@@ -76,6 +80,7 @@ public class ProductController {
     // ========================= DEACTIVATE =========================
     @PutMapping("/{productId}/deactivate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deactivateProduct(@PathVariable Long productId) {
         productService.deactivateProduct(productId);
         return ApiResponseBuilder.success("Product deactivated successfully", null);
@@ -84,6 +89,7 @@ public class ProductController {
     // ========================= DELETE (SOFT DELETE) =========================
     @DeleteMapping("/{productId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteProduct(@PathVariable Long productId) {
         productService.deleteProduct(productId);
         return ApiResponseBuilder.success("Product deleted successfully", null);

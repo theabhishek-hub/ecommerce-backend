@@ -4,9 +4,11 @@ import com.abhishek.ecommerce.common.entity.BaseEntity;
 import com.abhishek.ecommerce.common.entity.Money;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "products")
@@ -14,6 +16,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"category", "brand"})
+@EqualsAndHashCode(exclude = {"category", "brand"}, callSuper = false)
 public class Product extends BaseEntity {
 
     @Column(nullable = false, length = 200)

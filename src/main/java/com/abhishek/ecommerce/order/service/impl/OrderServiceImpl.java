@@ -16,13 +16,16 @@ import com.abhishek.ecommerce.order.service.OrderService;
 import com.abhishek.ecommerce.payment.entity.PaymentMethod;
 import com.abhishek.ecommerce.payment.service.PaymentService;
 import com.abhishek.ecommerce.user.entity.User;
+import com.abhishek.ecommerce.user.entity.Role;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.common.entity.Money;
+import com.abhishek.ecommerce.security.SecurityUtils;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -41,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
     private final InventoryService inventoryService;
     private final PaymentService paymentService;
     private final OrderMapper orderMapper;
+    private final SecurityUtils securityUtils;
 
 
     @Override
@@ -191,9 +195,51 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderResponseDto placeOrderForCurrentUser() {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return placeOrder(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getOrdersForCurrentUser() {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return getOrdersByUser(userId);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public OrderResponseDto getOrderById(Long orderId) {
         Order order = getOrderOrThrow(orderId);
+        
+        // Check ownership: Admin can see all orders, users can only see their own
+        String currentUsername = securityUtils.getCurrentUsername();
+        if (currentUsername == null) {
+            throw new AccessDeniedException("User not authenticated");
+        }
+        
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new IllegalStateException("Current user not found"));
+        
+        // Admin can access any order
+        if (currentUser.getRole() == Role.ROLE_ADMIN) {
+            return orderMapper.toDto(order);
+        }
+        
+        // Regular users can only access their own orders
+        Long currentUserId = securityUtils.getCurrentUserId();
+        if (order.getUser() == null || !order.getUser().getId().equals(currentUserId)) {
+            log.warn("Access denied: User {} attempted to access order {} owned by user {}", 
+                    currentUserId, orderId, order.getUser() != null ? order.getUser().getId() : "null");
+            throw new AccessDeniedException("You do not have permission to access this order");
+        }
+        
         return orderMapper.toDto(order);
     }
 

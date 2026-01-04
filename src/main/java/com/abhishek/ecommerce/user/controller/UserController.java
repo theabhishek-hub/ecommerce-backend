@@ -9,6 +9,7 @@ import com.abhishek.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class UserController {
     // ========================= CREATE =========================
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponseDto> createUser(
             @Valid @RequestBody UserCreateRequestDto requestDto
     ) {
@@ -33,6 +35,7 @@ public class UserController {
     // ========================= UPDATE =========================
     @PutMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated() and (@securityUtils.isUserId(#userId) or hasRole('ADMIN'))")
     public ApiResponse<UserResponseDto> updateUser(
             @PathVariable Long userId,
             @Valid @RequestBody UserUpdateRequestDto requestDto
@@ -44,6 +47,7 @@ public class UserController {
     // ========================= GET BY ID =========================
     @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated() and (@securityUtils.isUserId(#userId) or hasRole('ADMIN'))")
     public ApiResponse<UserResponseDto> getUserById(@PathVariable Long userId) {
         UserResponseDto response = userService.getUserById(userId);
         return ApiResponseBuilder.success("User fetched successfully", response);
@@ -52,6 +56,7 @@ public class UserController {
     // ========================= GET ALL =========================
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserResponseDto>> getAllUsers() {
         List<UserResponseDto> users = userService.getAllUsers();
         return ApiResponseBuilder.success("Users fetched successfully", users);
@@ -60,6 +65,7 @@ public class UserController {
     // ========================= GET ALL ACTIVE =========================
     @GetMapping("/active")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserResponseDto>> getAllActiveUsers() {
         List<UserResponseDto> users = userService.getAllActiveUsers();
         return ApiResponseBuilder.success("Active users fetched successfully", users);
@@ -68,6 +74,7 @@ public class UserController {
     // ========================= ACTIVATE =========================
     @PutMapping("/{userId}/activate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> activateUser(@PathVariable Long userId) {
         userService.activateUser(userId);
         return ApiResponseBuilder.success("User activated successfully", null);
@@ -76,6 +83,7 @@ public class UserController {
     // ========================= DEACTIVATE =========================
     @PutMapping("/{userId}/deactivate")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated() and (@securityUtils.isUserId(#userId) or hasRole('ADMIN'))")
     public ApiResponse<Void> deactivateUser(@PathVariable Long userId) {
         userService.deactivateUser(userId);
         return ApiResponseBuilder.success("User deactivated successfully", null);
@@ -84,6 +92,7 @@ public class UserController {
     // ========================= DELETE (SOFT DELETE) =========================
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated() and (@securityUtils.isUserId(#userId) or hasRole('ADMIN'))")
     public ApiResponse<Void> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         return ApiResponseBuilder.success("User deleted successfully", null);

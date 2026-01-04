@@ -18,7 +18,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getRole()));
+        // Role enum already uses values like ROLE_USER / ROLE_ADMIN — use them directly
+        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override
@@ -38,7 +39,11 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        if (user.getLockedUntil() == null) {
+            return true;
+        }
+        // Check if lock has expired
+        return user.getLockedUntil().isBefore(java.time.LocalDateTime.now());
     }
 
     @Override
@@ -55,4 +60,3 @@ public class CustomUserDetails implements UserDetails {
         return user;
     }
 }
-

@@ -2,6 +2,7 @@ package com.abhishek.ecommerce.cart.entity;
 
 import com.abhishek.ecommerce.common.entity.BaseEntity;
 import com.abhishek.ecommerce.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +13,8 @@ import java.util.List;
 @Table(name = "carts")
 @Getter
 @Setter
+@ToString(exclude = {"user", "items"})
+@EqualsAndHashCode(exclude = {"user", "items"}, callSuper = false)
 public class Cart extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -23,6 +26,7 @@ public class Cart extends BaseEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<CartItem> items = new ArrayList<>();
 }
 

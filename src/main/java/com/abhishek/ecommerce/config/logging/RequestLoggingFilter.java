@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,6 +19,8 @@ import java.util.UUID;
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
     private static final String TRACE_ID = "traceId";
+    private static final String USER = "user";
+    private static final String USER_ID = "userId";
 
     @SuppressWarnings("null")
     @Override
@@ -26,6 +30,13 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
         String traceId = UUID.randomUUID().toString();
         MDC.put(TRACE_ID, traceId);
+
+        // If authenticated user exists, put it into MDC so logback patterns can include it
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            MDC.put(USER, auth.getName());
+            MDC.put(USER_ID, auth.getName());
+        }
 
         long start = System.currentTimeMillis();
         try {

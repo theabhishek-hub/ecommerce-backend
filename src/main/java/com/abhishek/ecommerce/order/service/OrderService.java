@@ -11,7 +11,17 @@ public interface OrderService {
 
     OrderResponseDto placeOrder(Long userId);
 
+    /**
+     * Place order for the current authenticated user
+     */
+    OrderResponseDto placeOrderForCurrentUser();
+
     List<OrderResponseDto> getOrdersByUser(Long userId);
+
+    /**
+     * Get orders for the current authenticated user
+     */
+    List<OrderResponseDto> getOrdersForCurrentUser();
 
     OrderResponseDto getOrderById(Long orderId);
 
