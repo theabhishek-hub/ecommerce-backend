@@ -1,9 +1,11 @@
 package com.abhishek.ecommerce.order.exception;
 
-public class OrderNotFoundException extends RuntimeException {
+import com.abhishek.ecommerce.common.exception.BusinessException;
 
-    public OrderNotFoundException(String message) {
-        super(message);
+public class OrderNotFoundException extends BusinessException {
+
+    public OrderNotFoundException(Long id) {
+        super("Order not found with id: " + id, "ORDER_NOT_FOUND");
     }
 }
 

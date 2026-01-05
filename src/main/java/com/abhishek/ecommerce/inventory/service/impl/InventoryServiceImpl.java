@@ -38,7 +38,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElseGet(() -> {
                     log.info("increaseStock creating new inventory for productId={}", productId);
                     Product product = productRepository.findById(productId)
-                            .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+                            .orElseThrow(() -> new ProductNotFoundException(productId));
 
                     Inventory inv = new Inventory();
                     inv.setProduct(product);
@@ -58,14 +58,12 @@ public class InventoryServiceImpl implements InventoryService {
         log.info("reduceStock started for productId={} qty={}", productId, requestDto.getQuantity());
 
         Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseThrow(() -> new InventoryNotFoundException("Inventory not found for product id: " + productId));
+                .orElseThrow(() -> new InventoryNotFoundException(productId));
 
         if (inventory.getQuantity() < requestDto.getQuantity()) {
             log.warn("reduceStock insufficient stock productId={} available={} requested={}",
                     productId, inventory.getQuantity(), requestDto.getQuantity());
-            throw new InsufficientStockException(
-                    "Insufficient stock. Available: " + inventory.getQuantity() + ", Requested: " + requestDto.getQuantity()
-            );
+            throw new InsufficientStockException(productId, requestDto.getQuantity(), inventory.getQuantity());
         }
 
         inventory.setQuantity(inventory.getQuantity() - requestDto.getQuantity());
@@ -85,7 +83,7 @@ public class InventoryServiceImpl implements InventoryService {
                     log.debug("getAvailableStock no inventory found for productId={}", productId);
                     Inventory inv = new Inventory();
                     Product product = productRepository.findById(productId)
-                            .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+                            .orElseThrow(() -> new ProductNotFoundException(productId));
                     inv.setProduct(product);
                     inv.setQuantity(0);
                     return inv;

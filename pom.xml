@@ -113,12 +113,6 @@
 			<artifactId>mapstruct</artifactId>
 			<version>1.5.5.Final</version>
 		</dependency>
-		<!-- BCryptPasswordEncoder -->
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-crypto</artifactId>
-		</dependency>
-
 		<!-- Lombok ↔ MapStruct binding -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -133,15 +127,37 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Explicit Jackson databind to ensure ObjectMapper is available in all environments -->
+		<!-- OpenAPI/Swagger -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.7.0</version>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+
+			<!-- Build Helper Plugin to include generated sources -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.4.0</version>
+				<executions>
+					<execution>
+						<id>add-generated-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.build.directory}/generated-sources/annotations</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -150,7 +166,6 @@
 				<configuration>
 					<source>21</source>
 					<target>21</target>
-
 					<annotationProcessorPaths>
 
 						<!-- Lombok -->

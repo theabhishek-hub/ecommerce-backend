@@ -13,7 +13,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
+@Tag(name = "Products", description = "Product APIs (ADMIN manage, USER read)")
 @RestController
 @RequestMapping("/api/v1/brands")
 @RequiredArgsConstructor
@@ -22,6 +25,10 @@ public class BrandController {
     private final BrandService brandService;
 
     // ========================= CREATE =========================
+    @Operation(
+        summary = "Create brand",
+        description = "Requires ADMIN role"
+    )
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -33,6 +40,10 @@ public class BrandController {
     }
 
     // ========================= UPDATE =========================
+    @Operation(
+        summary = "Update brand",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{brandId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,6 +80,10 @@ public class BrandController {
     }
 
     // ========================= ACTIVATE =========================
+    @Operation(
+        summary = "Activate brand",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{brandId}/activate")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,6 +93,10 @@ public class BrandController {
     }
 
     // ========================= DEACTIVATE =========================
+    @Operation(
+        summary = "Deactivate brand",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{brandId}/deactivate")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -87,6 +106,10 @@ public class BrandController {
     }
 
     // ========================= DELETE (SOFT DELETE) =========================
+    @Operation(
+        summary = "Delete brand",
+        description = "Requires ADMIN role"
+    )
     @DeleteMapping("/{brandId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")

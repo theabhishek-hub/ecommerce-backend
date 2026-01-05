@@ -1,9 +1,11 @@
 package com.abhishek.ecommerce.product.exception;
 
-public class CategoryAlreadyExistsException extends RuntimeException {
+import com.abhishek.ecommerce.common.exception.BusinessException;
 
-    public CategoryAlreadyExistsException(String message) {
-        super(message);
+public class CategoryAlreadyExistsException extends BusinessException {
+
+    public CategoryAlreadyExistsException(String identifier) {
+        super("Category already exists with identifier: " + identifier, "CATEGORY_ALREADY_EXISTS");
     }
 }
 

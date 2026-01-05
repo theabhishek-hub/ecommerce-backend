@@ -1,9 +1,11 @@
 package com.abhishek.ecommerce.inventory.exception;
 
-public class InventoryNotFoundException extends RuntimeException {
+import com.abhishek.ecommerce.common.exception.BusinessException;
 
-    public InventoryNotFoundException(String message) {
-        super(message);
+public class InventoryNotFoundException extends BusinessException {
+
+    public InventoryNotFoundException(Long id) {
+        super("Inventory not found with id: " + id, "INVENTORY_NOT_FOUND");
     }
 }
 

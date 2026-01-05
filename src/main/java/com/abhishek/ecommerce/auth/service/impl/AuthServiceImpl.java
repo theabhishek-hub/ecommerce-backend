@@ -23,6 +23,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -50,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
     private int lockoutDurationMinutes;
 
     @Override
+    @Transactional
     public SignupResponseDto signup(SignupRequestDto request) {
 
         log.info("Signup attempt for email={}", request.getEmail());
@@ -77,6 +79,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponseDto login(LoginRequestDto request) {
         String ipAddress = getClientIpAddress();
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);

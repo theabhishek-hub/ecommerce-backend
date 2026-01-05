@@ -1,5 +1,6 @@
 # IntelliJ IDEA
 .idea/
+.vscode/
 *.iml
 
 # Maven
@@ -15,3 +16,8 @@ Thumbs.db
 
 # Environment variables
 .env
+*.env
+
+application-dev.yml
+application-test.yml
+application-prod.yml

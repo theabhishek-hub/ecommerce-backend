@@ -41,9 +41,7 @@ public class ProductServiceImpl implements ProductService {
         // Check duplicate SKU
         if (productRepository.existsBySku(requestDto.getSku())) {
             log.warn("createProduct duplicate sku={}", requestDto.getSku());
-            throw new ProductAlreadyExistsException(
-                    "Product already exists with SKU: " + requestDto.getSku()
-            );
+            throw new ProductAlreadyExistsException(requestDto.getSku());
         }
 
         Product product = productMapper.toEntity(requestDto);
@@ -72,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("updateProduct started for productId={}", productId);
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
 
         // Update only provided fields
         if (requestDto.getName() != null) {
@@ -89,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
             productRepository.findBySku(requestDto.getSku())
                     .ifPresent(existingProduct -> {
                         if (!existingProduct.getId().equals(productId)) {
-                            throw new ProductAlreadyExistsException("Product already exists with SKU: " + requestDto.getSku());
+                            throw new ProductAlreadyExistsException(requestDto.getSku());
                         }
                     });
             product.setSku(requestDto.getSku());
@@ -120,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto getProductById(Long productId) {
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
 
         return productMapper.toDto(product);
     }
@@ -150,7 +148,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("activateProduct started for productId={}", productId);
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
 
         product.setStatus(ProductStatus.ACTIVE);
         productRepository.save(product);
@@ -163,7 +161,7 @@ public class ProductServiceImpl implements ProductService {
     public void deactivateProduct(Long productId) {
         log.info("deactivateProduct started for productId={}", productId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
 
         product.setStatus(ProductStatus.INACTIVE);
         productRepository.save(product);
@@ -177,7 +175,7 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long productId) {
         log.info("deleteProduct started for productId={}", productId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
 
         product.setStatus(ProductStatus.INACTIVE);
         productRepository.save(product);

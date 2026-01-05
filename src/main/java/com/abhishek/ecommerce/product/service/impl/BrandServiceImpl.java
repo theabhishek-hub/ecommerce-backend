@@ -35,9 +35,7 @@ public class BrandServiceImpl implements BrandService {
         // Check duplicate name
         if (brandRepository.existsByName(requestDto.getName())) {
             log.warn("createBrand duplicate name={}", requestDto.getName());
-            throw new BrandAlreadyExistsException(
-                    "Brand already exists with name: " + requestDto.getName()
-            );
+            throw new BrandAlreadyExistsException(requestDto.getName());
         }
 
         Brand brand = brandMapper.toEntity(requestDto);
@@ -54,7 +52,7 @@ public class BrandServiceImpl implements BrandService {
         log.info("updateBrand started for brandId={}", brandId);
 
         Brand brand = brandRepository.findById(brandId)
-                .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
 
         // Update only provided fields
         if (requestDto.getName() != null) {
@@ -63,7 +61,7 @@ public class BrandServiceImpl implements BrandService {
                     .ifPresent(existingBrand -> {
                         if (!existingBrand.getId().equals(brandId)) {
                             log.warn("updateBrand duplicate name={} brandId={}", requestDto.getName(), brandId);
-                            throw new BrandAlreadyExistsException("Brand already exists with name: " + requestDto.getName());
+                            throw new BrandAlreadyExistsException(requestDto.getName());
                         }
                     });
             brand.setName(requestDto.getName());
@@ -86,7 +84,7 @@ public class BrandServiceImpl implements BrandService {
     public BrandResponseDto getBrandById(Long brandId) {
 
         Brand brand = brandRepository.findById(brandId)
-                .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
 
         return brandMapper.toDto(brand);
     }
@@ -116,7 +114,7 @@ public class BrandServiceImpl implements BrandService {
         log.info("activateBrand started for brandId={}", brandId);
 
         Brand brand = brandRepository.findById(brandId)
-                .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
 
         brand.setStatus(BrandStatus.ACTIVE);
         brandRepository.save(brand);
@@ -128,7 +126,7 @@ public class BrandServiceImpl implements BrandService {
     public void deactivateBrand(Long brandId) {
         log.info("deactivateBrand started for brandId={}", brandId);
         Brand brand = brandRepository.findById(brandId)
-                .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
 
         brand.setStatus(BrandStatus.INACTIVE);
         brandRepository.save(brand);
@@ -141,7 +139,7 @@ public class BrandServiceImpl implements BrandService {
     public void deleteBrand(Long brandId) {
         log.info("deleteBrand started for brandId={}", brandId);
         Brand brand = brandRepository.findById(brandId)
-                .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
 
         brand.setStatus(BrandStatus.INACTIVE);
         brandRepository.save(brand);

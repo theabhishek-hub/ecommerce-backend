@@ -11,12 +11,14 @@ import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Authentication", description = "JWT login, refresh token, OAuth2 login")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor

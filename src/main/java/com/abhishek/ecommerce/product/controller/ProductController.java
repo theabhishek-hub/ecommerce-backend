@@ -8,12 +8,15 @@ import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
 import com.abhishek.ecommerce.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Products", description = "Product APIs (ADMIN manage, USER read)")
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -22,6 +25,10 @@ public class ProductController {
     private final ProductService productService;
 
     // ========================= CREATE =========================
+    @Operation(
+        summary = "Create product",
+        description = "Requires ADMIN role"
+    )
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -33,6 +40,10 @@ public class ProductController {
     }
 
     // ========================= UPDATE =========================
+    @Operation(
+        summary = "Update product",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{productId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,6 +80,10 @@ public class ProductController {
     }
 
     // ========================= ACTIVATE =========================
+    @Operation(
+        summary = "Activate product",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{productId}/activate")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,6 +93,10 @@ public class ProductController {
     }
 
     // ========================= DEACTIVATE =========================
+    @Operation(
+        summary = "Deactivate product",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{productId}/deactivate")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -87,6 +106,10 @@ public class ProductController {
     }
 
     // ========================= DELETE (SOFT DELETE) =========================
+    @Operation(
+        summary = "Delete product",
+        description = "Requires ADMIN role"
+    )
     @DeleteMapping("/{productId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")

@@ -1,9 +1,11 @@
 package com.abhishek.ecommerce.user.exception;
 
-public class UserNotFoundException extends RuntimeException {
+import com.abhishek.ecommerce.common.exception.BusinessException;
 
-    public UserNotFoundException(String message) {
-        super(message);
+public class UserNotFoundException extends BusinessException {
+
+    public UserNotFoundException(Long id) {
+        super("User not found with id: " + id, "USER_NOT_FOUND");
     }
 }
 

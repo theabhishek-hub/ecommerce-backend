@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Inventory APIs
  */
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+@Tag(name = "Inventory", description = "Inventory management APIs")
 @RestController
 @RequestMapping("/api/v1/inventory")
 @RequiredArgsConstructor
@@ -22,6 +25,10 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     // ========================= INCREASE STOCK =========================
+    @Operation(
+        summary = "Increase product stock",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/products/{productId}/stock/increase")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -34,6 +41,10 @@ public class InventoryController {
     }
 
     // ========================= REDUCE STOCK =========================
+    @Operation(
+        summary = "Reduce product stock",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/products/{productId}/stock/reduce")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -46,6 +57,10 @@ public class InventoryController {
     }
 
     // ========================= GET STOCK =========================
+    @Operation(
+        summary = "Get product stock",
+        description = "Requires ADMIN role"
+    )
     @GetMapping("/products/{productId}/stock")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")

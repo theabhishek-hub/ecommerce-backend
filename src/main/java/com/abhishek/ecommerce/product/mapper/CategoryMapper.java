@@ -12,6 +12,10 @@ public interface CategoryMapper {
     // ================= CREATE =================
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     Category toEntity(CategoryCreateRequestDto dto);
 
     // ================= RESPONSE =================
@@ -21,6 +25,10 @@ public interface CategoryMapper {
     // ================= UPDATE =================
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     void updateEntityFromDto(CategoryUpdateRequestDto dto, @MappingTarget Category category);
 }
 

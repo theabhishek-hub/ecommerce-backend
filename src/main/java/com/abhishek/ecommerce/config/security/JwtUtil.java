@@ -1,11 +1,11 @@
 package com.abhishek.ecommerce.config.security;
 
-import io.jsonwebtoken.Claims;
+import com.abhishek.ecommerce.config.appProperties.AppProperties;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -15,52 +15,64 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    @Value("${app.jwt.secret:ZmFrZS1zZWNyZXQta2V5LWZvci1kZXYtcHVycG9zZXM=}")
-    private String jwtSecret;
+    private final AppProperties appProperties;
 
-    @Value("${app.jwt.expiration-ms:3600000}")
-    private long jwtExpirationMs;
+    public JwtUtil(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
 
-    @Value("${app.jwt.refresh-expiration-ms:604800000}") // 7 days by default
-    private long refreshExpirationMs;
-
+    // =========================
+    // Signing Key
+    // =========================
     private Key getSigningKey() {
-        byte[] keyBytes;
-        try {
-            keyBytes = Decoders.BASE64.decode(jwtSecret);
-        } catch (Exception ex) {
-            keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        }
+        // NO @Value
+        // NO default secret
+        // NO base64 try/catch guessing
+        byte[] keyBytes = appProperties.getJwtSecret()
+                .getBytes(StandardCharsets.UTF_8);
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username) {
-        return generateToken(username, null);
-    }
+    // =========================
+    // Access Token
 
     public String generateToken(String username, String role) {
+
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + jwtExpirationMs);
-        var builder = Jwts.builder()
+        Date expiry = new Date(
+                now.getTime() + appProperties.getExpirationMs()
+        );
+
+        JwtBuilder builder = Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expiry);
-        
-        if (role != null) {
+
+        // keep role claim exactly as before
+        if (role != null && !role.isBlank()) {
             builder.claim("role", role);
         }
-        
-        return builder.signWith(getSigningKey(), SignatureAlgorithm.HS256)
+
+        return builder
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    // =========================
+    // Refresh Token
     public String generateRefreshToken(String username) {
+
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + refreshExpirationMs);
+        Date expiry = new Date(
+                now.getTime() + appProperties.getRefreshExpirationMs()
+        );
+
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
+                // keep your existing refresh marker
                 .claim("type", "refresh")
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
@@ -68,19 +80,27 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token);
             return true;
-        } catch (Exception ex) {
+        } catch (JwtException | IllegalArgumentException ex) {
             return false;
         }
     }
 
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
-        return claims.getSubject();
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 
+
     public long getRefreshExpirationSeconds() {
-        return refreshExpirationMs / 1000;
+        return appProperties.getRefreshExpirationMs() / 1000;
     }
 }

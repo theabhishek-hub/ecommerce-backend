@@ -13,7 +13,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
+@Tag(name = "Products", description = "Product APIs (ADMIN manage, USER read)")
 @RestController
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
@@ -22,6 +25,10 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     // ========================= CREATE =========================
+    @Operation(
+        summary = "Create category",
+        description = "Requires ADMIN role"
+    )
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -33,6 +40,10 @@ public class CategoryController {
     }
 
     // ========================= UPDATE =========================
+    @Operation(
+        summary = "Update category",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,6 +80,10 @@ public class CategoryController {
     }
 
     // ========================= ACTIVATE =========================
+    @Operation(
+        summary = "Activate category",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{categoryId}/activate")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,6 +93,10 @@ public class CategoryController {
     }
 
     // ========================= DEACTIVATE =========================
+    @Operation(
+        summary = "Deactivate category",
+        description = "Requires ADMIN role"
+    )
     @PutMapping("/{categoryId}/deactivate")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -87,6 +106,10 @@ public class CategoryController {
     }
 
     // ========================= DELETE (SOFT DELETE) =========================
+    @Operation(
+        summary = "Delete category",
+        description = "Requires ADMIN role"
+    )
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")

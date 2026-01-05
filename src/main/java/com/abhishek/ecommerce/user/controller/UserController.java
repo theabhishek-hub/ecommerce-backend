@@ -8,12 +8,14 @@ import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
 import com.abhishek.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Users", description = "User profile and account operations")
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor

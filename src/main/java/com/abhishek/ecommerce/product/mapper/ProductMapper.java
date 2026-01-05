@@ -18,6 +18,10 @@ public interface ProductMapper {
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "brand", ignore = true)
     @Mapping(target = "price", expression = "java(mapToMoney(dto.getPriceAmount(), dto.getCurrency()))")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     Product toEntity(ProductCreateRequestDto dto);
 
     // ================= RESPONSE =================
@@ -36,6 +40,10 @@ public interface ProductMapper {
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "brand", ignore = true)
     @Mapping(target = "price", expression = "java(mapToMoney(dto.getPriceAmount(), dto.getCurrency()))")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     void updateEntityFromDto(ProductUpdateRequestDto dto, @MappingTarget Product product);
 
     default Money mapToMoney(BigDecimal amount, String currency) {

@@ -1,33 +1,17 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./ecommerce_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    url: jdbc:h2:file:./data/ecommerce-db
+    driver-class-name: org.h2.Driver
     username: sa
     password:
-    driver-class-name: org.h2.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
-    database-platform: org.hibernate.dialect.H2Dialect
-    properties:
-      hibernate:
-        format_sql: true
-
-  sql:
-    init:
-      mode: always
 
   h2:
     console:
       enabled: true
       path: /h2-console
 
-app:
-  jwt:
-    secret: ZmFrZS1zZWNyZXQta2V5LWZvci1kZXYtcHVycG9zZXM=
-    expiration-ms: 3600000  # 1 hour for testing
-
-logging:
-  level:
-    org.hibernate.SQL: DEBUG

@@ -53,7 +53,7 @@ public class CartServiceImpl implements CartService {
         Cart cart = getCartEntityByUserId(userId);
 
         Product product = productRepository.findById(requestDto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + requestDto.getProductId()));
+                .orElseThrow(() -> new ProductNotFoundException(requestDto.getProductId()));
 
         CartItem item = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), requestDto.getProductId())
@@ -86,7 +86,7 @@ public class CartServiceImpl implements CartService {
 
         CartItem item = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), productId)
-                .orElseThrow(() -> new CartItemNotFoundException("Cart item not found for product id: " + productId));
+                .orElseThrow(() -> new CartItemNotFoundException(productId));
 
         item.setQuantity(requestDto.getQuantity());
         cartRepository.save(cart);
@@ -104,7 +104,7 @@ public class CartServiceImpl implements CartService {
 
         CartItem item = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), productId)
-                .orElseThrow(() -> new CartItemNotFoundException("Cart item not found for product id: " + productId));
+                .orElseThrow(() -> new CartItemNotFoundException(productId));
 
         cart.getItems().remove(item);
         cartRepository.save(cart);
@@ -178,7 +178,7 @@ public class CartServiceImpl implements CartService {
     private Cart createCart(Long userId) {
         log.info("createCart for userId={}", userId);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         Cart cart = new Cart();
         cart.setUser(user);

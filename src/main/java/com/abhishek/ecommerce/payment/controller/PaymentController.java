@@ -7,10 +7,12 @@ import com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto;
 import com.abhishek.ecommerce.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Payments", description = "Payment processing APIs")
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor

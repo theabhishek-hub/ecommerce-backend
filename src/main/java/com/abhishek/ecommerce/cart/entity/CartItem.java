@@ -4,7 +4,6 @@ import com.abhishek.ecommerce.common.entity.BaseEntity;
 import com.abhishek.ecommerce.common.entity.Money;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 

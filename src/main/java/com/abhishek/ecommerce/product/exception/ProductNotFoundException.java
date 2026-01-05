@@ -1,9 +1,11 @@
 package com.abhishek.ecommerce.product.exception;
 
-public class ProductNotFoundException extends RuntimeException {
+import com.abhishek.ecommerce.common.exception.BusinessException;
 
-    public ProductNotFoundException(String message) {
-        super(message);
+public class ProductNotFoundException extends BusinessException {
+
+    public ProductNotFoundException(Long id) {
+        super("Product not found with id: " + id, "PRODUCT_NOT_FOUND");
     }
 }
 

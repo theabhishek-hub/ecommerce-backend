@@ -1,9 +1,11 @@
 package com.abhishek.ecommerce.inventory.exception;
 
-public class InsufficientStockException extends RuntimeException {
+import com.abhishek.ecommerce.common.exception.BusinessException;
 
-    public InsufficientStockException(String message) {
-        super(message);
+public class InsufficientStockException extends BusinessException {
+
+    public InsufficientStockException(Long productId, int requested, int available) {
+        super("Insufficient stock for product " + productId + ": requested " + requested + ", available " + available, "INSUFFICIENT_STOCK");
     }
 }
 

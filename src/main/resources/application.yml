@@ -1,38 +1,38 @@
-spring:
-  profiles:
-    active: MySQL
+server:
+  port: ${SERVER_PORT:8080}
 
+spring:
   application:
     name: ecommerce-backend
 
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
-  app:
-    jwt:
-      secret: ecommerce-secret-key-very-long-and-random-123456789
-      expiration-ms: 86400000   # 24 hours
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
-# OAuth2 (Google) placeholders - replace with real client-id and client-secret
+  jpa:
+    open-in-view: false
+
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id:  ${GOOGLE_CLIENT_ID}
+            client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
-              - openid
-              - profile
               - email
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://www.googleapis.com/oauth2/v4/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-            user-name-attribute: email
+              - profile
 
-  logging:
-    level:
-      com.abhishek.ecommerce: INFO
-  # Dev: do not enable show-sql in production
-  # spring.jpa.show-sql=true
-  # logging.level.org.hibernate.SQL=DEBUG
+app:
+  jwt:
+    jwtSecret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
+
+logging:
+  level:
+    com.abhishek.ecommerce: INFO

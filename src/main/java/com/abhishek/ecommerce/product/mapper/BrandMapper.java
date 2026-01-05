@@ -12,6 +12,10 @@ public interface BrandMapper {
     // ================= CREATE =================
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     Brand toEntity(BrandCreateRequestDto dto);
 
     // ================= RESPONSE =================
@@ -21,6 +25,10 @@ public interface BrandMapper {
     // ================= UPDATE =================
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     void updateEntityFromDto(BrandUpdateRequestDto dto, @MappingTarget Brand brand);
 }
 

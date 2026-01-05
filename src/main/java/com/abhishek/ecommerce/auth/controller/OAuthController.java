@@ -3,10 +3,12 @@ package com.abhishek.ecommerce.auth.controller;
 import com.abhishek.ecommerce.auth.dto.OAuthResponseDto;
 import com.abhishek.ecommerce.auth.service.OAuthService;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "OAuth2", description = "OAuth2 authentication (Google)")
 @RestController
 @RequestMapping("/api/v1/oauth")
 @RequiredArgsConstructor

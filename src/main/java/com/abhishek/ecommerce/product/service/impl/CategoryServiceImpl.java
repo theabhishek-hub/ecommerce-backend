@@ -35,9 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
         // Check duplicate name
         if (categoryRepository.existsByName(requestDto.getName())) {
             log.warn("createCategory duplicate name={}", requestDto.getName());
-            throw new CategoryAlreadyExistsException(
-                    "Category already exists with name: " + requestDto.getName()
-            );
+            throw new CategoryAlreadyExistsException(requestDto.getName());
         }
 
         Category category = categoryMapper.toEntity(requestDto);
@@ -54,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("updateCategory started for categoryId={}", categoryId);
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
         // Update only provided fields
         if (requestDto.getName() != null) {
@@ -63,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
                     .ifPresent(existingCategory -> {
                         if (!existingCategory.getId().equals(categoryId)) {
                             log.warn("updateCategory duplicate name={} categoryId={}", requestDto.getName(), categoryId);
-                            throw new CategoryAlreadyExistsException("Category already exists with name: " + requestDto.getName());
+                            throw new CategoryAlreadyExistsException(requestDto.getName());
                         }
                     });
             category.setName(requestDto.getName());
@@ -83,7 +81,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponseDto getCategoryById(Long categoryId) {
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
         return categoryMapper.toDto(category);
     }
@@ -113,7 +111,7 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("activateCategory started for categoryId={}", categoryId);
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
         category.setStatus(CategoryStatus.ACTIVE);
         categoryRepository.save(category);
@@ -125,7 +123,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deactivateCategory(Long categoryId) {
         log.info("deactivateCategory started for categoryId={}", categoryId);
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
         category.setStatus(CategoryStatus.INACTIVE);
         categoryRepository.save(category);
@@ -138,7 +136,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long categoryId) {
         log.info("deleteCategory started for categoryId={}", categoryId);
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
         category.setStatus(CategoryStatus.INACTIVE);
         categoryRepository.save(category);

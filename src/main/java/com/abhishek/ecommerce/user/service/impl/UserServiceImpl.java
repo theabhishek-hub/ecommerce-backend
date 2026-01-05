@@ -37,9 +37,7 @@ public class UserServiceImpl implements UserService {
         // check duplicate email
         if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
             log.warn("createUser duplicate email={}", requestDto.getEmail());
-            throw new UserAlreadyExistsException(
-                    "User already exists with email: " + requestDto.getEmail()
-            );
+            throw new UserAlreadyExistsException(requestDto.getEmail());
         }
 
         User user = userMapper.toEntity(requestDto);
@@ -58,7 +56,7 @@ public class UserServiceImpl implements UserService {
         log.info("updateUser started for userId={}", userId);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         // Update only allowed fields
         if (dto.getFullName() != null) {
@@ -82,7 +80,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto getUserById(Long userId) {
 
         User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         return userMapper.toDto(user);
     }
@@ -114,11 +112,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository
                 .findByIdAndStatus(userId, UserStatus.INACTIVE)
-                .orElseThrow(() ->
-                        new UserNotFoundException(
-                                "Inactive user not found with id: " + userId
-                        )
-                );
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
@@ -141,7 +135,7 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long userId) {
         log.info("deleteUser started for userId={}", userId);
         User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         user.setStatus(UserStatus.INACTIVE);
         userRepository.save(user);
@@ -155,7 +149,7 @@ public class UserServiceImpl implements UserService {
         log.info("updateUserStatus started for userId={}, status={}", userId, status);
         
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         
         user.setStatus(status);
         userRepository.save(user);
@@ -169,7 +163,7 @@ public class UserServiceImpl implements UserService {
         log.info("unlockUser started for userId={}", userId);
         
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         
         user.setLockedUntil(null);
         user.setFailedLoginAttempts(0);
@@ -181,7 +175,7 @@ public class UserServiceImpl implements UserService {
     // ========================= PRIVATE HELPER =========================
     private User getUserOrThrow(Long userId) {
         return userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 }
 

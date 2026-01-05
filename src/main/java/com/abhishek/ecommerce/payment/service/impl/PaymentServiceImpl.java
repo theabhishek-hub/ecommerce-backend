@@ -39,7 +39,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("createPayment started for orderId={} method={}", requestDto.getOrderId(), requestDto.getPaymentMethod());
 
         Order order = orderRepository.findById(requestDto.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + requestDto.getOrderId()));
+                .orElseThrow(() -> new OrderNotFoundException(requestDto.getOrderId()));
 
         // Check ownership: User can only create payment for their own order, or admin
         String currentUsername = securityUtils.getCurrentUsername();
@@ -91,7 +91,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(readOnly = true)
     public PaymentResponseDto getPaymentById(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + paymentId));
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
 
         // Ownership check is handled by @PreAuthorize in controller, but add service-level check as defense
         validatePaymentAccess(payment);
@@ -103,7 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(readOnly = true)
     public PaymentResponseDto getPaymentByOrderId(Long orderId) {
         Payment payment = paymentRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order id: " + orderId));
+                .orElseThrow(() -> new PaymentNotFoundException(orderId));
 
         // Ownership check is handled by @PreAuthorize in controller, but add service-level check as defense
         validatePaymentAccess(payment);
@@ -145,7 +145,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("markPaymentSuccess started for paymentId={}", paymentId);
 
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + paymentId));
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
 
         // Prevent duplicate success
         if (payment.getStatus() == PaymentStatus.SUCCESS) {
@@ -187,7 +187,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("refundPayment started for paymentId={}", paymentId);
 
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + paymentId));
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
             log.warn("refundPayment invalid status paymentId={} status={}", paymentId, payment.getStatus());

@@ -53,11 +53,11 @@ public class OrderServiceImpl implements OrderService {
 
         // 1️⃣ Fetch user
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         // 2️⃣ Fetch cart
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new CartNotFoundException("Cart not found for user id: " + userId));
+                .orElseThrow(() -> new CartNotFoundException(userId));
 
         if (cart.getItems().isEmpty()) {
             log.warn("placeOrder empty cart for userId={}", userId);
@@ -162,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("cancelOrder started for orderId={}", orderId);
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         switch (order.getStatus()) {
 
@@ -245,7 +245,7 @@ public class OrderServiceImpl implements OrderService {
 
     private Order getOrderOrThrow(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
 }

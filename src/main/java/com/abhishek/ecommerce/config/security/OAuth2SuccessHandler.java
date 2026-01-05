@@ -16,7 +16,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -28,6 +28,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(
@@ -89,25 +90,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
-        ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter()
                 .write(objectMapper.writeValueAsString(apiResponse));
-    }
-
-    // ✅ HELPER METHOD — INSIDE THE SAME CLASS
-    private User createOAuth2User(String email, String name) {
-        User user = new User();
-
-        user.setEmail(email);
-        user.setFullName(name);
-
-        // 🔥 THESE LINES GO HERE (and ONLY here)
-        user.setPasswordHash(null);
-        user.setProvider(AuthProvider.GOOGLE);
-
-        user.setRole(Role.ROLE_USER);
-
-        return userRepository.save(user);
     }
 }
 
