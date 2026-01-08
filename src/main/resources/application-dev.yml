@@ -1,0 +1,35 @@
+server:
+  port: ${DEV_SERVER_PORT}
+
+app:
+  jwt:
+    access-secret: ${DEV_JWT_ACCESS_SECRET}
+    refresh-secret: ${DEV_JWT_REFRESH_SECRET}
+    access-token-expiration-ms: ${DEV_JWT_ACCESS_TOKEN_EXPIRATION}
+    refresh-token-expiration-ms: ${DEV_JWT_REFRESH_TOKEN_EXPIRATION}
+
+spring:
+  datasource:
+    url: ${DEV_DB_URL}
+    username: ${DEV_DB_USERNAME}
+    password: ${DEV_DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DEV_DDL_AUTO}
+    show-sql: ${DEV_SHOW_SQL}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${DEV_GOOGLE_CLIENT_ID}
+            client-secret: ${DEV_GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+
+logging:
+  level:
+    com.abhishek.ecommerce: ${DEV_LOGGING_LEVEL}

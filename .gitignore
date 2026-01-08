@@ -3,6 +3,19 @@
 .vscode/
 *.iml
 
+data/
+ecommerce_db.mv.db
+ecommerce_db.trace.db
+application.*.local.yml
+
+.db
+.mv.db
+.trace.db
+
+.mvn/timing.properties
+
+surefire-reports/
+
 # Maven
 target/
 
@@ -18,6 +31,5 @@ Thumbs.db
 .env
 *.env
 
-application-dev.yml
-application-test.yml
-application-prod.yml
+.tmp
+.bak
