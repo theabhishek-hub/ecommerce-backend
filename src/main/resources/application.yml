@@ -1,38 +1,7 @@
-server:
-  port: ${SERVER_PORT:8080}
-
 spring:
   application:
-    name: ecommerce-backend
+    name: ${SPRING_APPLICATION_NAME}
 
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE}
 
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-  jpa:
-    open-in-view: false
-
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
-
-app:
-  jwt:
-    jwtSecret: ${JWT_SECRET}
-    expiration-ms: ${JWT_EXPIRATION_MS}
-    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
-
-logging:
-  level:
-    com.abhishek.ecommerce: INFO

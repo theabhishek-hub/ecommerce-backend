@@ -2,6 +2,7 @@ package com.abhishek.ecommerce.auth.service.impl;
 
 import com.abhishek.ecommerce.auth.service.PasswordService;
 import com.abhishek.ecommerce.auth.service.RefreshTokenService;
+import com.abhishek.ecommerce.config.appProperties.SecurityProperties;
 import com.abhishek.ecommerce.config.security.SecurityEventLogger;
 import com.abhishek.ecommerce.security.SecurityUtils;
 import com.abhishek.ecommerce.user.entity.User;
@@ -9,7 +10,6 @@ import com.abhishek.ecommerce.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +29,7 @@ public class PasswordServiceImpl implements PasswordService {
     private final SecurityUtils securityUtils;
     private final RefreshTokenService refreshTokenService;
     private final SecurityEventLogger securityEventLogger;
-
-    @Value("${app.security.password-reset-token-expiry-hours:1}")
-    private int resetTokenExpiryHours;
+    private final SecurityProperties securityProperties;
 
     // In-memory store for reset tokens (in production, use Redis or database)
     // For now, we'll use a simple approach - in production, create a PasswordResetToken entity
@@ -70,6 +68,9 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public void requestPasswordReset(String email) {
+        // Load fresh config as a local variable to avoid storing as a field
+        int resetTokenExpiryHours = securityProperties.getPasswordResetTokenExpiryHours();
+
         User user = userRepository.findByEmail(email).orElse(null);
         
         // Don't reveal if user exists (security best practice)
@@ -160,13 +161,4 @@ public class PasswordServiceImpl implements PasswordService {
         }
     }
 }
-
-
-
-
-
-
-
-
-
 

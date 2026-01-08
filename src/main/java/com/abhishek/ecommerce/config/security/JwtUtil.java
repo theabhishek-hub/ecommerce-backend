@@ -1,6 +1,6 @@
 package com.abhishek.ecommerce.config.security;
 
-import com.abhishek.ecommerce.config.appProperties.AppProperties;
+import com.abhishek.ecommerce.config.appProperties.JwtProperties;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -15,21 +15,18 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final AppProperties appProperties;
+    private final JwtProperties jwtProperties;
 
-    public JwtUtil(AppProperties appProperties) {
-        this.appProperties = appProperties;
+    public JwtUtil(JwtProperties jwtProperties) {
+        this.jwtProperties = jwtProperties;
     }
 
     // =========================
-    // Signing Key
+    // Signing Key (use accessSecret)
     // =========================
     private Key getSigningKey() {
-        // NO @Value
-        // NO default secret
-        // NO base64 try/catch guessing
-        byte[] keyBytes = appProperties.getJwtSecret()
-                .getBytes(StandardCharsets.UTF_8);
+        String secret = jwtProperties.getAccessSecret();
+        byte[] keyBytes = (secret != null ? secret : "").getBytes(StandardCharsets.UTF_8);
 
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -40,9 +37,8 @@ public class JwtUtil {
     public String generateToken(String username, String role) {
 
         Date now = new Date();
-        Date expiry = new Date(
-                now.getTime() + appProperties.getExpirationMs()
-        );
+        long expiryMs = jwtProperties.getAccessTokenExpirationMs();
+        Date expiry = new Date(now.getTime() + expiryMs);
 
         JwtBuilder builder = Jwts.builder()
                 .setSubject(username)
@@ -64,9 +60,8 @@ public class JwtUtil {
     public String generateRefreshToken(String username) {
 
         Date now = new Date();
-        Date expiry = new Date(
-                now.getTime() + appProperties.getRefreshExpirationMs()
-        );
+        long expiryMs = jwtProperties.getRefreshTokenExpirationMs();
+        Date expiry = new Date(now.getTime() + expiryMs);
 
         return Jwts.builder()
                 .setSubject(username)
@@ -101,6 +96,6 @@ public class JwtUtil {
 
 
     public long getRefreshExpirationSeconds() {
-        return appProperties.getRefreshExpirationMs() / 1000;
+        return jwtProperties.getRefreshTokenExpirationMs() / 1000;
     }
 }

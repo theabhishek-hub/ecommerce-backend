@@ -6,6 +6,7 @@ import com.abhishek.ecommerce.auth.dto.SignupRequestDto;
 import com.abhishek.ecommerce.auth.dto.SignupResponseDto;
 import com.abhishek.ecommerce.auth.service.AuthService;
 import com.abhishek.ecommerce.auth.service.RefreshTokenService;
+import com.abhishek.ecommerce.config.appProperties.SecurityProperties;
 import com.abhishek.ecommerce.config.security.JwtUtil;
 import com.abhishek.ecommerce.config.security.SecurityEventLogger;
 import com.abhishek.ecommerce.user.entity.AuthProvider;
@@ -16,7 +17,6 @@ import com.abhishek.ecommerce.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,14 +40,9 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final SecurityEventLogger securityEventLogger;
+    private final SecurityProperties securityProperties;
 
-    @Value("${app.jwt.refresh-expiration-ms:604800000}")
-    private long refreshExpiryMs;
-
-    @Value("${app.security.max-failed-attempts:5}")
     private int maxFailedAttempts;
-
-    @Value("${app.security.lockout-duration-minutes:30}")
     private int lockoutDurationMinutes;
 
     @Override
@@ -81,6 +76,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponseDto login(LoginRequestDto request) {
+        // Load config values from SecurityProperties at method entry so changes to env will be picked up each call
+        this.maxFailedAttempts = securityProperties.getMaxFailedAttempts();
+        this.lockoutDurationMinutes = securityProperties.getLockoutDurationMinutes();
+
         String ipAddress = getClientIpAddress();
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
