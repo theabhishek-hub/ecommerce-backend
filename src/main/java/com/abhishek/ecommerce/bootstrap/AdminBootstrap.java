@@ -12,11 +12,13 @@ import com.abhishek.ecommerce.user.entity.UserStatus;
 import com.abhishek.ecommerce.user.entity.AuthProvider;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 
+import org.springframework.context.annotation.Profile;
 import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("!test")
 public class AdminBootstrap {
 
     private final UserRepository userRepository;

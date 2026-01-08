@@ -1,9 +1,12 @@
 package com.abhishek.ecommerce.product.service;
 
+import com.abhishek.ecommerce.common.api.PageResponseDto;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
+import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductService {
@@ -14,7 +17,17 @@ public interface ProductService {
     // READ
     ProductResponseDto getProductById(Long productId);
     List<ProductResponseDto> getAllProducts();
+    PageResponseDto<ProductResponseDto> getAllProducts(Pageable pageable);
     List<ProductResponseDto> getAllActiveProducts();
+    PageResponseDto<ProductResponseDto> getAllActiveProducts(Pageable pageable);
+    
+    // Filtering methods
+    PageResponseDto<ProductResponseDto> getProductsByCategory(Long categoryId, Pageable pageable);
+    PageResponseDto<ProductResponseDto> getProductsByBrand(Long brandId, Pageable pageable);
+    PageResponseDto<ProductResponseDto> getProductsByCategoryAndBrand(Long categoryId, Long brandId, Pageable pageable);
+    PageResponseDto<ProductResponseDto> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
+    PageResponseDto<ProductResponseDto> searchProductsByName(String name, Pageable pageable);
+    PageResponseDto<ProductResponseDto> searchActiveProductsByName(String name, Pageable pageable);
     
     // UPDATE
     ProductResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto);

@@ -11,7 +11,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = {
+        @Index(name = "idx_product_sku", columnList = "sku", unique = true),
+        @Index(name = "idx_product_status", columnList = "status"),
+        @Index(name = "idx_product_category", columnList = "category_id"),
+        @Index(name = "idx_product_brand", columnList = "brand_id"),
+        @Index(name = "idx_product_created_at", columnList = "created_at")
+})
 @Getter
 @Setter
 @NoArgsConstructor

@@ -4,6 +4,7 @@ import com.abhishek.ecommerce.cart.entity.Cart;
 import com.abhishek.ecommerce.cart.entity.CartItem;
 import com.abhishek.ecommerce.cart.exception.CartNotFoundException;
 import com.abhishek.ecommerce.cart.repository.CartRepository;
+import com.abhishek.ecommerce.common.api.PageResponseDto;
 import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.entity.Order;
@@ -22,6 +23,8 @@ import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.common.entity.Money;
 import com.abhishek.ecommerce.security.SecurityUtils;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -125,6 +128,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<OrderResponseDto> getOrdersByUser(Long userId, Pageable pageable) {
+        Page<Order> orderPage = orderRepository.findByUserId(userId, pageable);
+        List<OrderResponseDto> content = orderPage.getContent()
+                .stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<OrderResponseDto>builder()
+                .content(content)
+                .pageNumber(orderPage.getNumber())
+                .pageSize(orderPage.getSize())
+                .totalElements(orderPage.getTotalElements())
+                .totalPages(orderPage.getTotalPages())
+                .first(orderPage.isFirst())
+                .last(orderPage.isLast())
+                .empty(orderPage.isEmpty())
+                .build();
+    }
+
+    @Override
     public OrderResponseDto shipOrder(Long orderId) {
         log.info("shipOrder started for orderId={}", orderId);
         Order order = getOrderOrThrow(orderId);
@@ -211,6 +235,16 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("User not authenticated");
         }
         return getOrdersByUser(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<OrderResponseDto> getOrdersForCurrentUser(Pageable pageable) {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return getOrdersByUser(userId, pageable);
     }
 
     @Override

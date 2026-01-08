@@ -2,6 +2,7 @@ package com.abhishek.ecommerce.product.controller;
 
 import com.abhishek.ecommerce.common.api.ApiResponse;
 import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.api.PageResponseDto;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
@@ -10,9 +11,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -77,6 +83,72 @@ public class ProductController {
     public ApiResponse<List<ProductResponseDto>> getAllActiveProducts() {
         List<ProductResponseDto> products = productService.getAllActiveProducts();
         return ApiResponseBuilder.success("Active products fetched successfully", products);
+    }
+
+    // ========================= GET ALL PAGINATED =========================
+    @GetMapping("/paged")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PageResponseDto<ProductResponseDto>> getAllProductsPaged(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageResponseDto<ProductResponseDto> products = productService.getAllProducts(pageable);
+        return ApiResponseBuilder.success("All products fetched", products);
+    }
+
+    // ========================= GET ALL ACTIVE PAGINATED =========================
+    @GetMapping("/active/paged")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PageResponseDto<ProductResponseDto>> getAllActiveProductsPaged(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageResponseDto<ProductResponseDto> products = productService.getAllActiveProducts(pageable);
+        return ApiResponseBuilder.success("Active products fetched successfully", products);
+    }
+
+    // ========================= FILTERING ENDPOINTS =========================
+    @GetMapping("/category/{categoryId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PageResponseDto<ProductResponseDto>> getProductsByCategory(
+            @PathVariable Long categoryId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageResponseDto<ProductResponseDto> products = productService.getProductsByCategory(categoryId, pageable);
+        return ApiResponseBuilder.success("Products by category fetched successfully", products);
+    }
+
+    @GetMapping("/brand/{brandId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PageResponseDto<ProductResponseDto>> getProductsByBrand(
+            @PathVariable Long brandId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageResponseDto<ProductResponseDto> products = productService.getProductsByBrand(brandId, pageable);
+        return ApiResponseBuilder.success("Products by brand fetched successfully", products);
+    }
+
+    @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PageResponseDto<ProductResponseDto>> getProductsFiltered(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long brandId,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String name,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        PageResponseDto<ProductResponseDto> products;
+
+        if (categoryId != null && brandId != null) {
+            products = productService.getProductsByCategoryAndBrand(categoryId, brandId, pageable);
+        } else if (categoryId != null) {
+            products = productService.getProductsByCategory(categoryId, pageable);
+        } else if (brandId != null) {
+            products = productService.getProductsByBrand(brandId, pageable);
+        } else if (minPrice != null && maxPrice != null) {
+            products = productService.getProductsByPriceRange(minPrice, maxPrice, pageable);
+        } else if (name != null && !name.trim().isEmpty()) {
+            products = productService.searchActiveProductsByName(name.trim(), pageable);
+        } else {
+            products = productService.getAllActiveProducts(pageable);
+        }
+
+        return ApiResponseBuilder.success("Filtered products fetched successfully", products);
     }
 
     // ========================= ACTIVATE =========================

@@ -18,7 +18,11 @@ import java.util.List;
  * Order aggregate root
  */
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+        @Index(name = "idx_order_user", columnList = "user_id"),
+        @Index(name = "idx_order_status", columnList = "status"),
+        @Index(name = "idx_order_created_at", columnList = "created_at")
+})
 @Getter
 @Setter
 @NoArgsConstructor

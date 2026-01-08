@@ -1,5 +1,6 @@
 package com.abhishek.ecommerce.product.service.impl;
 
+import com.abhishek.ecommerce.common.api.PageResponseDto;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
@@ -16,9 +17,14 @@ import com.abhishek.ecommerce.product.repository.ProductRepository;
 import com.abhishek.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +41,7 @@ public class ProductServiceImpl implements ProductService {
 
     // ========================= CREATE =========================
     @Override
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto) {
         log.info("createProduct started for sku={}", requestDto.getSku());
 
@@ -66,6 +73,7 @@ public class ProductServiceImpl implements ProductService {
 
     // ========================= UPDATE =========================
     @Override
+    @CacheEvict(value = "products", key = "#productId")
     public ProductResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
         log.info("updateProduct started for productId={}", productId);
 
@@ -115,6 +123,7 @@ public class ProductServiceImpl implements ProductService {
     // ========================= READ =========================
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#productId")
     public ProductResponseDto getProductById(Long productId) {
 
         Product product = productRepository.findById(productId)
@@ -141,9 +150,179 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> getAllProducts(Pageable pageable) {
+        Page<Product> productPage = productRepository.findAll(pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> getAllActiveProducts(Pageable pageable) {
+        Page<Product> productPage = productRepository.findAllByStatus(ProductStatus.ACTIVE, pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
+    // ========================= FILTERING METHODS =========================
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> getProductsByCategory(Long categoryId, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByCategoryId(categoryId, pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> getProductsByBrand(Long brandId, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByBrandId(brandId, pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> getProductsByCategoryAndBrand(Long categoryId, Long brandId, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByCategoryIdAndBrandId(categoryId, brandId, pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByPriceRange(minPrice, maxPrice, pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> searchProductsByName(String name, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<ProductResponseDto> searchActiveProductsByName(String name, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByStatusAndNameContainingIgnoreCase(ProductStatus.ACTIVE, name, pageable);
+        List<ProductResponseDto> content = productPage.getContent()
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(content)
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .empty(productPage.isEmpty())
+                .build();
+    }
+
     // ========================= STATUS =========================
     @Override
     @Transactional
+    @CacheEvict(value = "products", key = "#productId")
     public void activateProduct(Long productId) {
         log.info("activateProduct started for productId={}", productId);
 
@@ -158,6 +337,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "products", key = "#productId")
     public void deactivateProduct(Long productId) {
         log.info("deactivateProduct started for productId={}", productId);
         Product product = productRepository.findById(productId)
@@ -172,6 +352,7 @@ public class ProductServiceImpl implements ProductService {
     // ========================= DELETE (SOFT) =========================
     @Override
     @Transactional
+    @CacheEvict(value = "products", key = "#productId")
     public void deleteProduct(Long productId) {
         log.info("deleteProduct started for productId={}", productId);
         Product product = productRepository.findById(productId)

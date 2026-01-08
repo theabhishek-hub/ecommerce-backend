@@ -2,10 +2,14 @@ package com.abhishek.ecommerce.order.controller;
 
 import com.abhishek.ecommerce.common.api.ApiResponse;
 import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.api.PageResponseDto;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +42,16 @@ public class OrderController {
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<OrderResponseDto>> getUserOrders() {
         List<OrderResponseDto> orders = orderService.getOrdersForCurrentUser();
+        return ApiResponseBuilder.success("User orders fetched successfully", orders);
+    }
+
+    // ========================= GET USER ORDERS PAGINATED =========================
+    @GetMapping("/paged")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<PageResponseDto<OrderResponseDto>> getUserOrdersPaged(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageResponseDto<OrderResponseDto> orders = orderService.getOrdersForCurrentUser(pageable);
         return ApiResponseBuilder.success("User orders fetched successfully", orders);
     }
 
