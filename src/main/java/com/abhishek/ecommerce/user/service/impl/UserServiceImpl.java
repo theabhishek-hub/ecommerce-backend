@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.abhishek.ecommerce.notification.NotificationService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final NotificationService notificationService;
 
     // ========================= CREATE =========================
     @Override
@@ -47,6 +49,10 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         log.info("createUser completed for email={}", requestDto.getEmail());
+
+        // Send welcome email (async side effect)
+        notificationService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFullName());
+
         return userMapper.toDto(savedUser);
     }
 

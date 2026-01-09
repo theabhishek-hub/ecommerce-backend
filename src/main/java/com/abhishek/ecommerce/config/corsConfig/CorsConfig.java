@@ -1,4 +1,4 @@
-package com.abhishek.ecommerce.config;
+package com.abhishek.ecommerce.config.corsConfig;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

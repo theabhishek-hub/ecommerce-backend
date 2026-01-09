@@ -22,6 +22,7 @@ import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.common.entity.Money;
 import com.abhishek.ecommerce.security.SecurityUtils;
+import com.abhishek.ecommerce.notification.NotificationService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,9 +49,11 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentService paymentService;
     private final OrderMapper orderMapper;
     private final SecurityUtils securityUtils;
+    private final NotificationService notificationService;
 
 
     @Override
+    @Transactional
     public OrderResponseDto placeOrder(Long userId) {
         log.info("placeOrder started for userId={}", userId);
 
@@ -115,6 +118,9 @@ public class OrderServiceImpl implements OrderService {
         cart.getItems().clear();
         cartRepository.save(cart);
 
+        // 8️⃣ Send order confirmation notification (async side effect)
+        notificationService.sendOrderConfirmation(savedOrder.getId(), user.getEmail(), user.getFullName());
+
         return orderMapper.toDto(savedOrder);
     }
 
@@ -161,10 +167,16 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.SHIPPED);
         Order savedOrder = orderRepository.save(order);
         log.info("shipOrder completed orderId={}", orderId);
+
+        // Send order shipped notification (async side effect)
+        notificationService.sendOrderShippedNotification(savedOrder.getId(), order.getUser().getEmail(),
+                order.getUser().getFullName(), "TRACKING123"); // TODO: Generate actual tracking number
+
         return orderMapper.toDto(savedOrder);
     }
 
     @Override
+    @Transactional
     public OrderResponseDto deliverOrder(Long orderId) {
         log.info("deliverOrder started for orderId={}", orderId);
         Order order = getOrderOrThrow(orderId);
@@ -177,6 +189,11 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.DELIVERED);
         Order savedOrder = orderRepository.save(order);
         log.info("deliverOrder completed orderId={}", orderId);
+
+        // Send order delivered notification (async side effect)
+        notificationService.sendOrderDeliveredNotification(savedOrder.getId(), order.getUser().getEmail(),
+                order.getUser().getFullName());
+
         return orderMapper.toDto(savedOrder);
     }
 

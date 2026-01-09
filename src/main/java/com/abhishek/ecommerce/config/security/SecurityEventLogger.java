@@ -2,6 +2,7 @@ package com.abhishek.ecommerce.config.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ public class SecurityEventLogger {
     /**
      * Log authentication success
      */
+    @Async("taskExecutor")
     public void logLoginSuccess(String username, String ipAddress) {
         log.warn("{} {} LOGIN_SUCCESS | User: {} | IP: {}", 
                 SECURITY_LOG_PREFIX, getTimestamp(), username, ipAddress);
@@ -30,6 +32,7 @@ public class SecurityEventLogger {
     /**
      * Log authentication failure
      */
+    @Async("taskExecutor")
     public void logLoginFailure(String username, String ipAddress, String reason) {
         log.warn("{} {} LOGIN_FAILURE | User: {} | IP: {} | Reason: {}", 
                 SECURITY_LOG_PREFIX, getTimestamp(), username, ipAddress, reason);
@@ -38,6 +41,7 @@ public class SecurityEventLogger {
     /**
      * Log unauthorized access attempt (401)
      */
+    @Async("taskExecutor")
     public void logUnauthorizedAccess(HttpServletRequest request, String reason) {
         String ipAddress = getClientIpAddress(request);
         String path = request.getRequestURI();
@@ -50,6 +54,7 @@ public class SecurityEventLogger {
     /**
      * Log forbidden access attempt (403)
      */
+    @Async("taskExecutor")
     public void logForbiddenAccess(HttpServletRequest request, String reason) {
         String ipAddress = getClientIpAddress(request);
         String path = request.getRequestURI();
@@ -64,6 +69,7 @@ public class SecurityEventLogger {
     /**
      * Log token validation failure
      */
+    @Async("taskExecutor")
     public void logTokenValidationFailure(String token, String reason, HttpServletRequest request) {
         String ipAddress = getClientIpAddress(request);
         log.warn("{} {} TOKEN_VALIDATION_FAILURE | IP: {} | Reason: {} | Path: {}", 
@@ -73,6 +79,7 @@ public class SecurityEventLogger {
     /**
      * Log token misuse attempt
      */
+    @Async("taskExecutor")
     public void logTokenMisuse(String username, String ipAddress, String reason) {
         log.warn("{} {} TOKEN_MISUSE | User: {} | IP: {} | Reason: {}", 
                 SECURITY_LOG_PREFIX, getTimestamp(), username, ipAddress, reason);
@@ -81,6 +88,7 @@ public class SecurityEventLogger {
     /**
      * Log account lockout
      */
+    @Async("taskExecutor")
     public void logAccountLockout(String username, String ipAddress, int failedAttempts) {
         log.error("{} {} ACCOUNT_LOCKOUT | User: {} | IP: {} | Failed Attempts: {}", 
                 SECURITY_LOG_PREFIX, getTimestamp(), username, ipAddress, failedAttempts);
@@ -89,6 +97,7 @@ public class SecurityEventLogger {
     /**
      * Log password change
      */
+    @Async("taskExecutor")
     public void logPasswordChange(String username, String ipAddress) {
         log.info("{} {} PASSWORD_CHANGE | User: {} | IP: {}", 
                 SECURITY_LOG_PREFIX, getTimestamp(), username, ipAddress);
@@ -97,6 +106,7 @@ public class SecurityEventLogger {
     /**
      * Log password reset request
      */
+    @Async("taskExecutor")
     public void logPasswordResetRequest(String username, String ipAddress) {
         log.info("{} {} PASSWORD_RESET_REQUEST | User: {} | IP: {}", 
                 SECURITY_LOG_PREFIX, getTimestamp(), username, ipAddress);
@@ -105,6 +115,7 @@ public class SecurityEventLogger {
     /**
      * Log password reset success
      */
+    @Async("taskExecutor")
     public void logPasswordResetSuccess(String username, String ipAddress) {
         log.info("{} {} PASSWORD_RESET_SUCCESS | User: {} | IP: {}", 
                 SECURITY_LOG_PREFIX, getTimestamp(), username, ipAddress);

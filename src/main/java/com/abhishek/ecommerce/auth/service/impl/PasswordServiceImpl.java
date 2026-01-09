@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import com.abhishek.ecommerce.notification.NotificationService;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class PasswordServiceImpl implements PasswordService {
     private final RefreshTokenService refreshTokenService;
     private final SecurityEventLogger securityEventLogger;
     private final SecurityProperties securityProperties;
+    private final NotificationService notificationService;
 
     // In-memory store for reset tokens (in production, use Redis or database)
     // For now, we'll use a simple approach - in production, create a PasswordResetToken entity
@@ -87,6 +89,9 @@ public class PasswordServiceImpl implements PasswordService {
 
         String ipAddress = getClientIpAddress();
         securityEventLogger.logPasswordResetRequest(email, ipAddress);
+
+        // Send password reset email (async side effect)
+        notificationService.sendPasswordResetEmail(email, resetToken);
 
         // In production, send email with reset link
         // For now, just log it
