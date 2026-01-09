@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,10 @@ public class AuthController {
     // ============================
     // SIGNUP (REGISTER)
     // ============================
+    @Operation(
+        summary = "Register new user",
+        description = "Creates a new user account with email and password"
+    )
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(
             @Valid @RequestBody SignupRequestDto request
@@ -54,6 +59,10 @@ public class AuthController {
     // ============================
     // LOGIN
     // ============================
+    @Operation(
+        summary = "User login",
+        description = "Authenticates user and returns JWT access token with refresh token"
+    )
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponseDto>> login(
             @Valid @RequestBody LoginRequestDto request
@@ -73,6 +82,10 @@ public class AuthController {
     // ============================
     // LOGOUT (revoke refresh token)
     // ============================
+    @Operation(
+        summary = "User logout",
+        description = "Revokes the refresh token for the current user session"
+    )
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
         String username = securityUtils.getCurrentUsername();

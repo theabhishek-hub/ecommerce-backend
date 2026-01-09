@@ -70,6 +70,10 @@ public class ProductController {
     }
 
     // ========================= GET ALL =========================
+    @Operation(
+        summary = "Get all products",
+        description = "Retrieves all products (including inactive ones)"
+    )
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<ProductResponseDto>> getAllProducts() {
@@ -78,6 +82,10 @@ public class ProductController {
     }
 
     // ========================= GET ALL ACTIVE =========================
+    @Operation(
+        summary = "Get all active products",
+        description = "Retrieves all active products available for purchase"
+    )
     @GetMapping("/active")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<ProductResponseDto>> getAllActiveProducts() {
@@ -86,6 +94,10 @@ public class ProductController {
     }
 
     // ========================= GET ALL PAGINATED =========================
+    @Operation(
+        summary = "Get all products (paginated)",
+        description = "Retrieves all products with pagination support"
+    )
     @GetMapping("/paged")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PageResponseDto<ProductResponseDto>> getAllProductsPaged(
@@ -95,6 +107,10 @@ public class ProductController {
     }
 
     // ========================= GET ALL ACTIVE PAGINATED =========================
+    @Operation(
+        summary = "Get all active products (paginated)",
+        description = "Retrieves all active products with pagination support"
+    )
     @GetMapping("/active/paged")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PageResponseDto<ProductResponseDto>> getAllActiveProductsPaged(
@@ -104,6 +120,10 @@ public class ProductController {
     }
 
     // ========================= FILTERING ENDPOINTS =========================
+    @Operation(
+        summary = "Get products by category",
+        description = "Retrieves active products filtered by category with pagination"
+    )
     @GetMapping("/category/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PageResponseDto<ProductResponseDto>> getProductsByCategory(
@@ -113,6 +133,10 @@ public class ProductController {
         return ApiResponseBuilder.success("Products by category fetched successfully", products);
     }
 
+    @Operation(
+        summary = "Get products by brand",
+        description = "Retrieves active products filtered by brand with pagination"
+    )
     @GetMapping("/brand/{brandId}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PageResponseDto<ProductResponseDto>> getProductsByBrand(
@@ -122,6 +146,10 @@ public class ProductController {
         return ApiResponseBuilder.success("Products by brand fetched successfully", products);
     }
 
+    @Operation(
+        summary = "Filter products",
+        description = "Advanced product filtering by category, brand, price range, and name with pagination"
+    )
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PageResponseDto<ProductResponseDto>> getProductsFiltered(

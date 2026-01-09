@@ -9,6 +9,7 @@ import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,10 @@ public class CartController {
     private final CartService cartService;
 
     // ========================= GET CART =========================
+    @Operation(
+        summary = "Get user cart",
+        description = "Retrieves the current user's shopping cart"
+    )
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("isAuthenticated()")
@@ -31,6 +36,10 @@ public class CartController {
     }
 
     // ========================= ADD PRODUCT =========================
+    @Operation(
+        summary = "Add product to cart",
+        description = "Adds a product with specified quantity to the user's cart"
+    )
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("isAuthenticated()")
@@ -41,6 +50,10 @@ public class CartController {
     }
 
     // ========================= UPDATE QUANTITY =========================
+    @Operation(
+        summary = "Update cart item quantity",
+        description = "Updates the quantity of a specific product in the user's cart"
+    )
     @PutMapping("/products/{productId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("isAuthenticated()")
@@ -52,6 +65,10 @@ public class CartController {
     }
 
     // ========================= REMOVE PRODUCT =========================
+    @Operation(
+        summary = "Remove product from cart",
+        description = "Removes a specific product from the user's cart"
+    )
     @DeleteMapping("/products/{productId}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("isAuthenticated()")
@@ -61,6 +78,10 @@ public class CartController {
     }
 
     // ========================= CLEAR CART =========================
+    @Operation(
+        summary = "Clear cart",
+        description = "Removes all items from the user's cart"
+    )
     @DeleteMapping("/clear")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("isAuthenticated()")

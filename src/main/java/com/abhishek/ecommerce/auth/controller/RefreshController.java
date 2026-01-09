@@ -12,6 +12,7 @@ import com.abhishek.ecommerce.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +30,10 @@ public class RefreshController {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
+    @Operation(
+        summary = "Refresh access token",
+        description = "Generates new access token using valid refresh token"
+    )
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponseDto>> refresh(@RequestBody RefreshRequestDto request) {
         String provided = request.getRefreshToken();

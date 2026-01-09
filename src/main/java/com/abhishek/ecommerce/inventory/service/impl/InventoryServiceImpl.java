@@ -11,6 +11,7 @@ import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.abhishek.ecommerce.product.exception.ProductNotFoundException;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,22 +35,36 @@ public class InventoryServiceImpl implements InventoryService {
     public InventoryResponseDto increaseStock(Long productId, UpdateStockRequestDto requestDto) {
         log.info("increaseStock started for productId={} qty={}", productId, requestDto.getQuantity());
 
-        Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseGet(() -> {
-                    log.info("increaseStock creating new inventory for productId={}", productId);
-                    Product product = productRepository.findById(productId)
-                            .orElseThrow(() -> new ProductNotFoundException(productId));
+        int maxRetries = 3;
+        int attempt = 0;
+        while (attempt < maxRetries) {
+            try {
+                Inventory inventory = inventoryRepository.findByProductId(productId)
+                        .orElseGet(() -> {
+                            log.info("increaseStock creating new inventory for productId={}", productId);
+                            Product product = productRepository.findById(productId)
+                                    .orElseThrow(() -> new ProductNotFoundException(productId));
 
-                    Inventory inv = new Inventory();
-                    inv.setProduct(product);
-                    inv.setQuantity(0);
-                    return inv;
-                });
+                            Inventory inv = new Inventory();
+                            inv.setProduct(product);
+                            inv.setQuantity(0);
+                            return inv;
+                        });
 
-        inventory.setQuantity(inventory.getQuantity() + requestDto.getQuantity());
-        Inventory savedInventory = inventoryRepository.save(inventory);
-        log.info("increaseStock completed productId={} newQty={}", productId, savedInventory.getQuantity());
-        return inventoryMapper.toDto(savedInventory);
+                inventory.setQuantity(inventory.getQuantity() + requestDto.getQuantity());
+                Inventory savedInventory = inventoryRepository.save(inventory);
+                log.info("increaseStock completed productId={} newQty={}", productId, savedInventory.getQuantity());
+                return inventoryMapper.toDto(savedInventory);
+            } catch (ObjectOptimisticLockingFailureException e) {
+                attempt++;
+                log.warn("Optimistic locking failure in increaseStock for productId={}, attempt {}/{}", productId, attempt, maxRetries);
+                if (attempt >= maxRetries) {
+                    log.error("Failed to increase stock after {} attempts for productId={}", maxRetries, productId);
+                    throw e;
+                }
+            }
+        }
+        throw new RuntimeException("Unexpected error in increaseStock");
     }
 
     // ========================= REDUCE STOCK =========================
@@ -57,19 +72,33 @@ public class InventoryServiceImpl implements InventoryService {
     public InventoryResponseDto reduceStock(Long productId, UpdateStockRequestDto requestDto) {
         log.info("reduceStock started for productId={} qty={}", productId, requestDto.getQuantity());
 
-        Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseThrow(() -> new InventoryNotFoundException(productId));
+        int maxRetries = 3;
+        int attempt = 0;
+        while (attempt < maxRetries) {
+            try {
+                Inventory inventory = inventoryRepository.findByProductId(productId)
+                        .orElseThrow(() -> new InventoryNotFoundException(productId));
 
-        if (inventory.getQuantity() < requestDto.getQuantity()) {
-            log.warn("reduceStock insufficient stock productId={} available={} requested={}",
-                    productId, inventory.getQuantity(), requestDto.getQuantity());
-            throw new InsufficientStockException(productId, requestDto.getQuantity(), inventory.getQuantity());
+                if (inventory.getQuantity() < requestDto.getQuantity()) {
+                    log.warn("reduceStock insufficient stock productId={} available={} requested={}",
+                            productId, inventory.getQuantity(), requestDto.getQuantity());
+                    throw new InsufficientStockException(productId, requestDto.getQuantity(), inventory.getQuantity());
+                }
+
+                inventory.setQuantity(inventory.getQuantity() - requestDto.getQuantity());
+                Inventory savedInventory = inventoryRepository.save(inventory);
+                log.info("reduceStock completed productId={} newQty={}", productId, savedInventory.getQuantity());
+                return inventoryMapper.toDto(savedInventory);
+            } catch (ObjectOptimisticLockingFailureException e) {
+                attempt++;
+                log.warn("Optimistic locking failure in reduceStock for productId={}, attempt {}/{}", productId, attempt, maxRetries);
+                if (attempt >= maxRetries) {
+                    log.error("Failed to reduce stock after {} attempts for productId={}", maxRetries, productId);
+                    throw e;
+                }
+            }
         }
-
-        inventory.setQuantity(inventory.getQuantity() - requestDto.getQuantity());
-        Inventory savedInventory = inventoryRepository.save(inventory);
-        log.info("reduceStock completed productId={} newQty={}", productId, savedInventory.getQuantity());
-        return inventoryMapper.toDto(savedInventory);
+        throw new RuntimeException("Unexpected error in reduceStock");
     }
 
     // ========================= GET STOCK =========================
