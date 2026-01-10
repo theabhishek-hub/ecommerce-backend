@@ -1,50 +1,58 @@
 server:
-  port: ${DEV_SERVER_PORT}
+  port: 8081
 
 app:
   jwt:
-    access-secret: ${DEV_JWT_ACCESS_SECRET}
-    refresh-secret: ${DEV_JWT_REFRESH_SECRET}
-    access-token-expiration-ms: ${DEV_JWT_ACCESS_TOKEN_EXPIRATION}
-    refresh-token-expiration-ms: ${DEV_JWT_REFRESH_TOKEN_EXPIRATION}
+    access-secret: CUFcUOzLyKUNyDow6hIaxv8P0IF+mJm5n0PctLzc90c4/lMkkVCKvHvT8qgbUlNeRxfYKP5pffq2+IKzvKT8BQ==
+    refresh-secret: 0b0HX4W6fy9P3pH329/bcQPtZRkvyhxSPEtQJGMeBHGetVuGpf70awJsKJf+iqg4Vj4PRiYnT/xxPQqaaiaCzQ==
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000
 
 spring:
   datasource:
-    url: ${DEV_DB_URL}
-    username: ${DEV_DB_USERNAME}
-    password: ${DEV_DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/ecommerce_application_db
+    username: ecom-app
+    password: Ecom-app@123
 
   jpa:
     hibernate:
-      ddl-auto: ${DEV_DDL_AUTO}
-    show-sql: ${DEV_SHOW_SQL}
+      ddl-auto: none
+    show-sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: ${DEV_GOOGLE_CLIENT_ID}
-            client-secret: ${DEV_GOOGLE_CLIENT_SECRET}
+            client-id: 73535182868-kdran97r5vkhdk9b4ov9rq11askflj09.apps.googleusercontent.com
+            client-secret: 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
             scope:
               - email
               - profile
 
-  logging:
-    level:
-      com.abhishek.ecommerce: ${DEV_LOGGING_LEVEL}
-
 
 
   mail:
-    host: ${DEV_MAIL_HOST}
-    port: ${DEV_MAIL_PORT}
-    protocol: ${DEV_MAIL_PROTOCOL}
-    username: ${DEV_MAIL_USERNAME}
-    password: ${DEV_MAIL_PASSWORD}
-    debug: ${DEV_MAIL_DEBUG}
+    host: smtp.gmail.com
+    port: 587
+    protocol: smtp
+    username: ecommerce.application.mail@gmail.com
+    password: hrjpsjdvsxogcbdi
+    debug: true
     properties:
-      mail.smtp.auth: ${DEV_MAIL_AUTH}
-      mail.smtp.starttls.enable: ${DEV_MAIL_STARTTLS_ENABLE}
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+logging:
+  level:
+    root: info
+    com.abhishek.ecommerce: debug
+    org..hibernate.sql: debug
+    org.springframework: info
+
 
 

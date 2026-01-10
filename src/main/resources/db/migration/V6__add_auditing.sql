@@ -1,0 +1,3 @@
+-- V6__add_auditing.sql
+-- Auditing columns (created_at, updated_at, created_by, updated_by) are already included in all tables from previous migrations.
+-- Auditing is enabled via JPA configuration in JpaAuditConfig.java

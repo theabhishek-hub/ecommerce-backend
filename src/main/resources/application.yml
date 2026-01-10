@@ -1,8 +1,10 @@
 spring:
   application:
-    name: ${SPRING_APPLICATION_NAME}
+    name: ecommerce-application
+
 
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:h2}
+    active: dev
+
 
 

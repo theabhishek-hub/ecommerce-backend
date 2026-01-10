@@ -1,10 +1,13 @@
 package com.abhishek.ecommerce.config.audit;
 
-// @Configuration
-// @EnableJpaAuditing(auditorAwareRef = "springSecurityAuditorAware")
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+@Configuration
+@EnableJpaAuditing(auditorAwareRef = "springSecurityAuditorAware")
 public class JpaAuditConfig {
     // SpringSecurityAuditorAware is now a @Component, so Spring will auto-detect it
-    // JPA Auditing is currently disabled - uncomment above annotations to enable
+    // JPA Auditing is enabled
 }
 
 

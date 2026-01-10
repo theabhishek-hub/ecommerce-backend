@@ -1,35 +1,38 @@
 server:
-  port: ${PROD_SERVER_PORT}
+  port: ${SERVER_PORT}
 
 app:
   jwt:
-    access-secret: ${PROD_JWT_ACCESS_SECRET}
-    refresh-secret: ${PROD_JWT_REFRESH_SECRET}
-    access-token-expiration-ms: ${PROD_JWT_ACCESS_TOKEN_EXPIRATION}
-    refresh-token-expiration-ms: ${PROD_JWT_REFRESH_TOKEN_EXPIRATION}
+    access-secret: ${JWT_ACCESS_SECRET}
+    refresh-secret: ${JWT_REFRESH_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
 
 spring:
   datasource:
-    url: ${PROD_DB_URL}
-    username: ${PROD_DB_USERNAME}
-    password: ${PROD_DB_PASSWORD}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: ${PROD_DDL_AUTO}
-    show-sql: ${PROD_SHOW_SQL}
+      ddl-auto: none
+    show-sql: ${SHOW_SQL}
+
+  flyway:
+    enabled: true
 
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: ${PROD_GOOGLE_CLIENT_ID}
-            client-secret: ${PROD_GOOGLE_CLIENT_SECRET}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - email
               - profile
 
 logging:
   level:
-    com.abhishek.ecommerce: ${PROD_LOGGING_LEVEL}
+    com.abhishek.ecommerce: ${LOGGING_LEVEL}

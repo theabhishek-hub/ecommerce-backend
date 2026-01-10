@@ -1,35 +1,19 @@
-server:
-  port: ${TEST_SERVER_PORT}
-
-app:
-  jwt:
-    access-secret: ${TEST_JWT_ACCESS_SECRET}
-    refresh-secret: ${TEST_JWT_REFRESH_SECRET}
-    access-token-expiration-ms: ${TEST_JWT_ACCESS_TOKEN_EXPIRATION}
-    refresh-token-expiration-ms: ${TEST_JWT_REFRESH_TOKEN_EXPIRATION}
-
 spring:
   datasource:
-    url: ${TEST_DB_URL}
-    username: ${TEST_DB_USERNAME}
-    password: ${TEST_DB_PASSWORD}
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
 
   jpa:
     hibernate:
-      ddl-auto: ${TEST_DDL_AUTO}
-    show-sql: ${TEST_SHOW_SQL}
+      ddl-auto: none
+    show-sql: false
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${TEST_GOOGLE_CLIENT_ID}
-            client-secret: ${TEST_GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
+  flyway:
+    enabled: true
 
-logging:
-  level:
-    com.abhishek.ecommerce: ${TEST_LOGGING_LEVEL}
+  mail:
+    host: localhost
+    port: 1025
+

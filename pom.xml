@@ -101,6 +101,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Flyway for database migrations -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+
 		<!-- Validation (for DTOs) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

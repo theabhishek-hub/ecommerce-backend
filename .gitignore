@@ -36,3 +36,7 @@ Thumbs.db
 
 PERFORMANCE.md
 PROJECT_ANALYSIS.md
+
+application.yml
+application-dev.yml
+application-prod.yml

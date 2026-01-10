@@ -37,7 +37,7 @@ public class JwtUtil {
     public String generateToken(String username, String role) {
 
         Date now = new Date();
-        long expiryMs = jwtProperties.getAccessTokenExpirationMs();
+        long expiryMs = jwtProperties.getAccessTokenExpiration();
         Date expiry = new Date(now.getTime() + expiryMs);
 
         JwtBuilder builder = Jwts.builder()
@@ -60,7 +60,7 @@ public class JwtUtil {
     public String generateRefreshToken(String username) {
 
         Date now = new Date();
-        long expiryMs = jwtProperties.getRefreshTokenExpirationMs();
+        long expiryMs = jwtProperties.getRefreshTokenExpiration();
         Date expiry = new Date(now.getTime() + expiryMs);
 
         return Jwts.builder()
@@ -96,6 +96,6 @@ public class JwtUtil {
 
 
     public long getRefreshExpirationSeconds() {
-        return jwtProperties.getRefreshTokenExpirationMs() / 1000;
+        return jwtProperties.getRefreshTokenExpiration() / 1000;
     }
 }

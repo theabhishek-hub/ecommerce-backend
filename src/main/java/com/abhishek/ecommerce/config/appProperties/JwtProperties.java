@@ -23,9 +23,9 @@ public class JwtProperties {
     private String refreshSecret;
 
     @Positive
-    private long accessTokenExpirationMs; // in ms
+    private long accessTokenExpiration; // in ms
 
     @Positive
-    private long refreshTokenExpirationMs; // in ms
+    private long refreshTokenExpiration; // in ms
 
 }
