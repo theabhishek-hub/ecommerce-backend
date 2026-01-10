@@ -3,6 +3,6 @@ spring:
     name: ${SPRING_APPLICATION_NAME}
 
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE}
+    active: ${SPRING_PROFILES_ACTIVE:h2}
 
 

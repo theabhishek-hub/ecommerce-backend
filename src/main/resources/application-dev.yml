@@ -30,6 +30,21 @@ spring:
               - email
               - profile
 
-logging:
-  level:
-    com.abhishek.ecommerce: ${DEV_LOGGING_LEVEL}
+  logging:
+    level:
+      com.abhishek.ecommerce: ${DEV_LOGGING_LEVEL}
+
+
+
+  mail:
+    host: ${DEV_MAIL_HOST}
+    port: ${DEV_MAIL_PORT}
+    protocol: ${DEV_MAIL_PROTOCOL}
+    username: ${DEV_MAIL_USERNAME}
+    password: ${DEV_MAIL_PASSWORD}
+    debug: ${DEV_MAIL_DEBUG}
+    properties:
+      mail.smtp.auth: ${DEV_MAIL_AUTH}
+      mail.smtp.starttls.enable: ${DEV_MAIL_STARTTLS_ENABLE}
+
+

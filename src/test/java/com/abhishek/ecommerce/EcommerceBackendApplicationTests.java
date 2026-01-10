@@ -18,7 +18,12 @@ import org.springframework.test.context.TestPropertySource;
     "spring.datasource.password=",
     "spring.jpa.hibernate.ddl-auto=create-drop",
     "spring.jpa.show-sql=false",
-    "logging.level.com.abhishek.ecommerce=INFO"
+    "logging.level.com.abhishek.ecommerce=INFO",
+    "spring.mail.host=localhost",
+    "spring.mail.port=1025",
+    "spring.mail.username=test",
+    "spring.mail.password=test",
+    "spring.mail.debug=false"
 })
 class EcommerceBackendApplicationTests {
 
