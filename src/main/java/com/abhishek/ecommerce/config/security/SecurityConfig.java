@@ -55,6 +55,8 @@ public class SecurityConfig {
                             "/swagger-ui.html",
                             "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers("/actuator/health").permitAll()  // Health check publicly accessible
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")  // Other actuator endpoints require ADMIN
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
