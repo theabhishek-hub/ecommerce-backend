@@ -4,27 +4,55 @@ import com.abhishek.ecommerce.order.dto.response.OrderItemResponseDto;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.entity.Order;
 import com.abhishek.ecommerce.order.entity.OrderItem;
-import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
-public interface OrderMapper {
+@Component
+public class OrderMapper {
 
     // ================= RESPONSE =================
-    @Mapping(target = "userId", expression = "java(order.getUser() != null ? order.getUser().getId() : null)")
-    @Mapping(target = "status", expression = "java(order.getStatus() != null ? order.getStatus().name() : null)")
-    @Mapping(target = "totalAmount", expression = "java(order.getTotalAmount() != null ? order.getTotalAmount().getAmount() : null)")
-    @Mapping(target = "currency", expression = "java(order.getTotalAmount() != null ? order.getTotalAmount().getCurrency() : null)")
-    @Mapping(target = "items", source = "items")
-    OrderResponseDto toDto(Order order);
+    public OrderResponseDto toDto(Order order) {
+        if (order == null) {
+            return null;
+        }
 
-    @Mapping(target = "productId", expression = "java(orderItem.getProduct() != null ? orderItem.getProduct().getId() : null)")
-    @Mapping(target = "productName", expression = "java(orderItem.getProduct() != null ? orderItem.getProduct().getName() : null)")
-    @Mapping(target = "priceAmount", expression = "java(orderItem.getPrice() != null ? orderItem.getPrice().getAmount() : null)")
-    @Mapping(target = "currency", expression = "java(orderItem.getPrice() != null ? orderItem.getPrice().getCurrency() : null)")
-    OrderItemResponseDto itemToDto(OrderItem orderItem);
+        OrderResponseDto dto = new OrderResponseDto();
+        dto.setId(order.getId());
+        dto.setUserId(order.getUser() != null ? order.getUser().getId() : null);
+        dto.setStatus(order.getStatus() != null ? order.getStatus().name() : null);
+        dto.setTotalAmount(order.getTotalAmount() != null ? order.getTotalAmount().getAmount() : null);
+        dto.setCurrency(order.getTotalAmount() != null ? order.getTotalAmount().getCurrency() : null);
+        dto.setItems(itemsToDto(order.getItems()));
 
-    List<OrderItemResponseDto> itemsToDto(List<OrderItem> items);
+        return dto;
+    }
+
+    public OrderItemResponseDto itemToDto(OrderItem orderItem) {
+        if (orderItem == null) {
+            return null;
+        }
+
+        OrderItemResponseDto dto = new OrderItemResponseDto();
+        dto.setId(orderItem.getId());
+        dto.setProductId(orderItem.getProduct() != null ? orderItem.getProduct().getId() : null);
+        dto.setProductName(orderItem.getProduct() != null ? orderItem.getProduct().getName() : null);
+        dto.setQuantity(orderItem.getQuantity());
+        dto.setPriceAmount(orderItem.getPrice() != null ? orderItem.getPrice().getAmount() : null);
+        dto.setCurrency(orderItem.getPrice() != null ? orderItem.getPrice().getCurrency() : null);
+
+        return dto;
+    }
+
+    public List<OrderItemResponseDto> itemsToDto(List<OrderItem> items) {
+        if (items == null) {
+            return null;
+        }
+
+        return items.stream()
+                .map(this::itemToDto)
+                .collect(Collectors.toList());
+    }
 }
 

@@ -27,6 +27,7 @@ public class Brand extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private BrandStatus status;
+
 }
 
 

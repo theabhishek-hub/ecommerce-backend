@@ -42,7 +42,7 @@ public class Product extends BaseEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String sku;
 
-    @Column(length = 500)
+    @Column(name = "image_url", length = 500)
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
@@ -56,6 +56,7 @@ public class Product extends BaseEntity {
     @ManyToOne(optional = false)
     @JoinColumn(name = "brand_id")
     private Brand brand;
+
 }
 
 

@@ -25,6 +25,6 @@ public class RefreshToken extends BaseEntity {
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
-
+    
 }
 

@@ -18,5 +18,13 @@ public class BrandCreateRequestDto {
 
     @Size(max = 100, message = "Country must not exceed 100 characters")
     private String country;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
 

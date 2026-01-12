@@ -32,10 +32,15 @@ public class CartItem extends BaseEntity {
     private Product product;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "price_amount")),
+            @AttributeOverride(name = "currency", column = @Column(name = "price_currency", length = 3))
+    })
     private Money price;   // snapshot from Product.price
 
     @Column(nullable = false)
     private Integer quantity;
+
 }
 
 

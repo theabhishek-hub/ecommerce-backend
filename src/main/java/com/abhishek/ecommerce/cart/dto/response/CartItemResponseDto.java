@@ -28,5 +28,6 @@ public class CartItemResponseDto {
 
     @Schema(description = "Quantity in cart", example = "2")
     private Integer quantity;
+    
 }
 

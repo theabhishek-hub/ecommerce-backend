@@ -11,5 +11,6 @@ public class UserUpdateRequestDto {
     private String password;
     @NotBlank(message = "Full name is required")
     private String fullName;
+
 }
 

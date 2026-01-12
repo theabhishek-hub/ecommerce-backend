@@ -101,10 +101,10 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Flyway for database migrations -->
+		<!-- Redis for caching -->
 		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 
 		<!-- Validation (for DTOs) -->
@@ -144,13 +144,6 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.7.0</version>
-		</dependency>
-
-		<!-- Dotenv for loading .env files -->
-		<dependency>
-			<groupId>io.github.cdimascio</groupId>
-			<artifactId>dotenv-java</artifactId>
-			<version>3.0.0</version>
 		</dependency>
 
 	</dependencies>

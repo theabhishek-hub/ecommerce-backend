@@ -4,31 +4,56 @@ import com.abhishek.ecommerce.product.dto.request.BrandCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.BrandUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.BrandResponseDto;
 import com.abhishek.ecommerce.product.entity.Brand;
-import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface BrandMapper {
+@Component
+public class BrandMapper {
 
     // ================= CREATE =================
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    Brand toEntity(BrandCreateRequestDto dto);
+    public Brand toEntity(BrandCreateRequestDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        Brand brand = new Brand();
+        brand.setName(dto.getName());
+        brand.setDescription(dto.getDescription());
+        brand.setCountry(dto.getCountry());
+
+        return brand;
+    }
 
     // ================= RESPONSE =================
-    @Mapping(target = "status", expression = "java(brand.getStatus() != null ? brand.getStatus().name() : null)")
-    BrandResponseDto toDto(Brand brand);
+    public BrandResponseDto toDto(Brand brand) {
+        if (brand == null) {
+            return null;
+        }
+
+        BrandResponseDto dto = new BrandResponseDto();
+        dto.setId(brand.getId());
+        dto.setName(brand.getName());
+        dto.setDescription(brand.getDescription());
+        dto.setCountry(brand.getCountry());
+        dto.setStatus(brand.getStatus() != null ? brand.getStatus().name() : null);
+
+        return dto;
+    }
 
     // ================= UPDATE =================
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    void updateEntityFromDto(BrandUpdateRequestDto dto, @MappingTarget Brand brand);
+    public void updateEntityFromDto(BrandUpdateRequestDto dto, Brand brand) {
+        if (dto == null || brand == null) {
+            return;
+        }
+
+        if (dto.getName() != null) {
+            brand.setName(dto.getName());
+        }
+        if (dto.getDescription() != null) {
+            brand.setDescription(dto.getDescription());
+        }
+        if (dto.getCountry() != null) {
+            brand.setCountry(dto.getCountry());
+        }
+    }
 }
 

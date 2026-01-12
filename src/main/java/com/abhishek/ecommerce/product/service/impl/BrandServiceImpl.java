@@ -12,6 +12,8 @@ import com.abhishek.ecommerce.product.repository.BrandRepository;
 import com.abhishek.ecommerce.product.service.BrandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class BrandServiceImpl implements BrandService {
 
     // ========================= CREATE =========================
     @Override
+    @CacheEvict(value = "brands", allEntries = true)
     public BrandResponseDto createBrand(BrandCreateRequestDto requestDto) {
         log.info("createBrand started for name={}", requestDto.getName());
 
@@ -48,6 +51,7 @@ public class BrandServiceImpl implements BrandService {
 
     // ========================= UPDATE =========================
     @Override
+    @CacheEvict(value = "brands", allEntries = true)
     public BrandResponseDto updateBrand(Long brandId, BrandUpdateRequestDto requestDto) {
         log.info("updateBrand started for brandId={}", brandId);
 
@@ -81,6 +85,7 @@ public class BrandServiceImpl implements BrandService {
     // ========================= READ =========================
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "brands", key = "#brandId")
     public BrandResponseDto getBrandById(Long brandId) {
 
         Brand brand = brandRepository.findById(brandId)
@@ -100,6 +105,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "brands", key = "'active'")
     public List<BrandResponseDto> getAllActiveBrands() {
         return brandRepository.findAllByStatus(BrandStatus.ACTIVE)
                 .stream()
@@ -110,6 +116,7 @@ public class BrandServiceImpl implements BrandService {
     // ========================= STATUS =========================
     @Override
     @Transactional
+    @CacheEvict(value = "brands", allEntries = true)
     public void activateBrand(Long brandId) {
         log.info("activateBrand started for brandId={}", brandId);
 
@@ -123,6 +130,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "brands", allEntries = true)
     public void deactivateBrand(Long brandId) {
         log.info("deactivateBrand started for brandId={}", brandId);
         Brand brand = brandRepository.findById(brandId)
@@ -136,6 +144,7 @@ public class BrandServiceImpl implements BrandService {
     // ========================= DELETE (SOFT) =========================
     @Override
     @Transactional
+    @CacheEvict(value = "brands", allEntries = true)
     public void deleteBrand(Long brandId) {
         log.info("deleteBrand started for brandId={}", brandId);
         Brand brand = brandRepository.findById(brandId)

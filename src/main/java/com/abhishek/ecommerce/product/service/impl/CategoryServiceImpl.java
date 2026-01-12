@@ -12,6 +12,8 @@ import com.abhishek.ecommerce.product.repository.CategoryRepository;
 import com.abhishek.ecommerce.product.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     // ========================= CREATE =========================
     @Override
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponseDto createCategory(CategoryCreateRequestDto requestDto) {
         log.info("createCategory started for name={}", requestDto.getName());
 
@@ -48,6 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     // ========================= UPDATE =========================
     @Override
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponseDto updateCategory(Long categoryId, CategoryUpdateRequestDto requestDto) {
         log.info("updateCategory started for categoryId={}", categoryId);
 
@@ -78,6 +82,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ========================= READ =========================
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "#categoryId")
     public CategoryResponseDto getCategoryById(Long categoryId) {
 
         Category category = categoryRepository.findById(categoryId)
@@ -97,6 +102,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'active'")
     public List<CategoryResponseDto> getAllActiveCategories() {
         return categoryRepository.findAllByStatus(CategoryStatus.ACTIVE)
                 .stream()
@@ -107,6 +113,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ========================= STATUS =========================
     @Override
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void activateCategory(Long categoryId) {
         log.info("activateCategory started for categoryId={}", categoryId);
 
@@ -120,6 +127,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void deactivateCategory(Long categoryId) {
         log.info("deactivateCategory started for categoryId={}", categoryId);
         Category category = categoryRepository.findById(categoryId)
@@ -133,6 +141,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ========================= DELETE (SOFT) =========================
     @Override
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void deleteCategory(Long categoryId) {
         log.info("deleteCategory started for categoryId={}", categoryId);
         Category category = categoryRepository.findById(categoryId)

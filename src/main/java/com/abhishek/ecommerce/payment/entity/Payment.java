@@ -28,11 +28,17 @@ public class Payment extends BaseEntity {
     private PaymentStatus status;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "amount_amount")),
+            @AttributeOverride(name = "currency", column = @Column(name = "amount_currency", length = 3))
+    })
     private Money amount;
 
     // Only for ONLINE payments (null for COD)
     @Column(name = "transaction_id")
     private String transactionId;
+
+    
 }
 
 

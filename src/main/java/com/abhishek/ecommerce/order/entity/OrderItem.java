@@ -22,16 +22,24 @@ import lombok.Setter;
 public class OrderItem extends BaseEntity {
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
     @JsonIgnore
     private Order order;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @Column(nullable = false)
     private int quantity;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "price_amount")),
+            @AttributeOverride(name = "currency", column = @Column(name = "price_currency", length = 3))
+    })
     private Money price;
+    
 }
 
 

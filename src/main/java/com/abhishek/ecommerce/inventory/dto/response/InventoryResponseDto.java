@@ -20,5 +20,21 @@ public class InventoryResponseDto {
 
     @Schema(description = "Available quantity in stock", example = "50")
     private Integer quantity;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
 }
 

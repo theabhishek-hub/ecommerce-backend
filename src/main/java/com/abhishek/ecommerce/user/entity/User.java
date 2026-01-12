@@ -18,8 +18,8 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString(exclude = "addresses")
 @EqualsAndHashCode(exclude = "addresses", callSuper = false)
 public class User extends BaseEntity {
@@ -33,6 +33,7 @@ public class User extends BaseEntity {
     @Column(name = "password_hash")
     private String passwordHash;
 
+    @Column(name = "full_name")
     private String fullName;
 
     @Enumerated(EnumType.STRING)
@@ -61,4 +62,5 @@ public class User extends BaseEntity {
 
     @Column(name = "locked_until")
     private java.time.LocalDateTime lockedUntil;
+
 }

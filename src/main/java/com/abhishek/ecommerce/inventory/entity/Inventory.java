@@ -17,9 +17,10 @@ public class Inventory extends BaseEntity {
     @JoinColumn(name = "product_id", unique = true)
     private Product product;
 
-    private Integer Quantity;
+    private Integer quantity;
 
     @Version
     private Long version;
+    
 }
 

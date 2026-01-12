@@ -15,5 +15,29 @@ public class OrderItemResponseDto {
     private Integer quantity;
     private BigDecimal priceAmount;
     private String currency;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setPriceAmount(BigDecimal priceAmount) {
+        this.priceAmount = priceAmount;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
 }
 

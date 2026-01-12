@@ -16,5 +16,29 @@ public class OrderResponseDto {
     private BigDecimal totalAmount;
     private String currency;
     private List<OrderItemResponseDto> items;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public void setItems(List<OrderItemResponseDto> items) {
+        this.items = items;
+    }
 }
 

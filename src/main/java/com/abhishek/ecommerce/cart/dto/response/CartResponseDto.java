@@ -19,5 +19,6 @@ public class CartResponseDto {
 
     @Schema(description = "List of cart items")
     private List<CartItemResponseDto> items;
+    
 }
 

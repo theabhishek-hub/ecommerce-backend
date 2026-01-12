@@ -12,5 +12,25 @@ public class BrandResponseDto {
     private String description;
     private String country;
     private String status;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
 

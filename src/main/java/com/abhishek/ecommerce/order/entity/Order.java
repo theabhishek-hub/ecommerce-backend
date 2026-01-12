@@ -30,6 +30,7 @@ import java.util.List;
 public class Order extends BaseEntity {
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @OneToMany(
@@ -41,9 +42,14 @@ public class Order extends BaseEntity {
     private List<OrderItem> items = new ArrayList<>();
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "total_amount_amount")),
+            @AttributeOverride(name = "currency", column = @Column(name = "total_amount_currency", length = 3))
+    })
     private Money totalAmount;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+    
 }
 
