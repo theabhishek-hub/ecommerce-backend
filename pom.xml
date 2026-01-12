@@ -28,6 +28,9 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
 
@@ -185,6 +188,10 @@
 				<configuration>
 					<source>21</source>
 					<target>21</target>
+					<compilerArgs>
+						<arg>-Xlint:all</arg>
+						<arg>-Xlint:-deprecation</arg>
+					</compilerArgs>
 					<annotationProcessorPaths>
 
 						<!-- Lombok -->
@@ -258,6 +265,26 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<!-- Surefire plugin to suppress warnings -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.4</version>
+				<configuration>
+					<argLine>
+						--add-opens java.base/java.lang=ALL-UNNAMED
+						--add-opens java.base/java.util=ALL-UNNAMED
+						--add-opens jdk.attach/sun.tools.attach=ALL-UNNAMED
+						-Djdk.instrument.traceUsage=false
+						-Dmockito.inline.enable=false
+						-Dmockito.experimental.disableMockitoSelfAttachCheck=true
+					</argLine>
+					<systemPropertyVariables>
+						<jdk.attach.allowAttachSelf>true</jdk.attach.allowAttachSelf>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 
 		</plugins>

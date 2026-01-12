@@ -9,7 +9,6 @@ import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.notification.NotificationService;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.entity.Order;
-import com.abhishek.ecommerce.order.entity.OrderItem;
 import com.abhishek.ecommerce.order.entity.OrderStatus;
 import com.abhishek.ecommerce.order.exception.OrderNotFoundException;
 import com.abhishek.ecommerce.order.mapper.OrderMapper;
@@ -70,23 +69,24 @@ class OrderServiceTest {
 
     private User user;
     private Cart cart;
-    private CartItem cartItem;
-    private Product product;
     private Order order;
     private OrderResponseDto orderResponseDto;
+    private com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto paymentResponseDto;
 
     @BeforeEach
     void setUp() {
         user = new User();
         user.setId(1L);
         user.setEmail("john.doe@example.com");
+        user.setFullName("John Doe");
+        user.setRole(com.abhishek.ecommerce.user.entity.Role.ROLE_ADMIN);
 
-        product = new Product();
+        Product product = new Product();
         product.setId(1L);
         product.setName("Test Product");
         product.setPrice(new Money(BigDecimal.valueOf(99.99), "USD"));
 
-        cartItem = new CartItem();
+        CartItem cartItem = new CartItem();
         cartItem.setId(1L);
         cartItem.setProduct(product);
         cartItem.setQuantity(2);
@@ -107,6 +107,10 @@ class OrderServiceTest {
         orderResponseDto.setId(1L);
         orderResponseDto.setUserId(1L);
         orderResponseDto.setStatus("CREATED");
+
+        paymentResponseDto = new com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto();
+        paymentResponseDto.setId(1L);
+        paymentResponseDto.setStatus(com.abhishek.ecommerce.payment.entity.PaymentStatus.SUCCESS);
     }
 
     @Test
@@ -116,6 +120,8 @@ class OrderServiceTest {
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(cart));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
+        when(paymentService.createPayment(any())).thenReturn(paymentResponseDto);
+        doNothing().when(notificationService).sendOrderConfirmation(anyLong(), anyString(), anyString());
 
         // When
         OrderResponseDto result = orderService.placeOrder(1L);
@@ -152,7 +158,8 @@ class OrderServiceTest {
     @Test
     void getOrderById_ShouldReturnOrder() {
         // Given
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        when(securityUtils.getCurrentUsername()).thenReturn("john.doe@example.com");
+        when(userRepository.findByEmail("john.doe@example.com")).thenReturn(Optional.of(user));
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
 
@@ -163,7 +170,8 @@ class OrderServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
 
-        verify(securityUtils).getCurrentUserId();
+        verify(securityUtils).getCurrentUsername();
+        verify(userRepository).findByEmail("john.doe@example.com");
         verify(orderRepository).findById(1L);
         verify(orderMapper).toDto(order);
     }
@@ -204,6 +212,7 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
+        doNothing().when(notificationService).sendOrderShippedNotification(anyLong(), anyString(), anyString(), anyString());
 
         // When
         OrderResponseDto result = orderService.shipOrder(1L);
@@ -224,6 +233,7 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
+        doNothing().when(notificationService).sendOrderDeliveredNotification(anyLong(), anyString(), anyString());
 
         // When
         OrderResponseDto result = orderService.deliverOrder(1L);

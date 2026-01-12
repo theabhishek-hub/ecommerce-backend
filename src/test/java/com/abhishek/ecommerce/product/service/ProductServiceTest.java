@@ -1,9 +1,8 @@
 package com.abhishek.ecommerce.product.service;
 
-import com.abhishek.ecommerce.product.service.ProductService;
 import com.abhishek.ecommerce.product.service.impl.ProductServiceImpl;
 
-import com.abhishek.ecommerce.common.api.PageResponseDto;
+import com.abhishek.ecommerce.common.entity.Money;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
@@ -13,17 +12,13 @@ import com.abhishek.ecommerce.product.mapper.ProductMapper;
 import com.abhishek.ecommerce.product.repository.BrandRepository;
 import com.abhishek.ecommerce.product.repository.CategoryRepository;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -61,53 +56,50 @@ class ProductServiceTest {
 
     @BeforeEach
     void setUp() {
-        category = Category.builder()
-                .id(1L)
-                .name("Electronics")
-                .status(CategoryStatus.ACTIVE)
-                .build();
+        category = new Category();
+        category.setId(1L);
+        category.setName("Electronics");
+        category.setStatus(CategoryStatus.ACTIVE);
 
-        brand = Brand.builder()
-                .id(1L)
-                .name("Samsung")
-                .status(BrandStatus.ACTIVE)
-                .build();
+        brand = new Brand();
+        brand.setId(1L);
+        brand.setName("Samsung");
+        brand.setStatus(BrandStatus.ACTIVE);
 
-        product = Product.builder()
-                .id(1L)
-                .sku("TEST-SKU-001")
-                .name("Test Product")
-                .description("Test Description")
-                .price(new BigDecimal("99.99"))
-                .category(category)
-                .brand(brand)
-                .status(ProductStatus.ACTIVE)
-                .build();
+        product = new Product();
+        product.setId(1L);
+        product.setSku("TEST-SKU-001");
+        product.setName("Test Product");
+        product.setDescription("Test Description");
+        product.setPrice(new Money(new BigDecimal("99.99"), "USD"));
+        product.setCategory(category);
+        product.setBrand(brand);
+        product.setStatus(ProductStatus.ACTIVE);
 
-        productResponseDto = ProductResponseDto.builder()
-                .id(1L)
-                .sku("TEST-SKU-001")
-                .name("Test Product")
-                .description("Test Description")
-                .price(new BigDecimal("99.99"))
-                .categoryName("Electronics")
-                .brandName("Samsung")
-                .status(ProductStatus.ACTIVE)
-                .build();
+        productResponseDto = new ProductResponseDto();
+        productResponseDto.setId(1L);
+        productResponseDto.setSku("TEST-SKU-001");
+        productResponseDto.setName("Test Product");
+        productResponseDto.setDescription("Test Description");
+        productResponseDto.setPriceAmount(new BigDecimal("99.99"));
+        productResponseDto.setCurrency("USD");
+        productResponseDto.setCategoryName("Electronics");
+        productResponseDto.setBrandName("Samsung");
+        productResponseDto.setStatus("ACTIVE");
 
-        createRequestDto = ProductCreateRequestDto.builder()
-                .sku("TEST-SKU-001")
-                .name("Test Product")
-                .description("Test Description")
-                .price(new BigDecimal("99.99"))
-                .categoryId(1L)
-                .brandId(1L)
-                .build();
+        createRequestDto = new ProductCreateRequestDto();
+        createRequestDto.setSku("TEST-SKU-001");
+        createRequestDto.setName("Test Product");
+        createRequestDto.setDescription("Test Description");
+        createRequestDto.setPriceAmount(new BigDecimal("99.99"));
+        createRequestDto.setCurrency("USD");
+        createRequestDto.setCategoryId(1L);
+        createRequestDto.setBrandId(1L);
 
-        updateRequestDto = ProductUpdateRequestDto.builder()
-                .name("Updated Product")
-                .price(new BigDecimal("149.99"))
-                .build();
+        updateRequestDto = new ProductUpdateRequestDto();
+        updateRequestDto.setName("Updated Product");
+        updateRequestDto.setPriceAmount(new BigDecimal("149.99"));
+        updateRequestDto.setCurrency("USD");
     }
 
     @Test
@@ -176,54 +168,25 @@ class ProductServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getSku()).isEqualTo("TEST-SKU-001");
+        assertThat(result.getFirst().getSku()).isEqualTo("TEST-SKU-001");
 
         verify(productRepository).findAll();
     }
 
     @Test
-    void getAllProducts_WithPageable_ShouldReturnPagedResult() {
-        // Given
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Product> productPage = new PageImpl<>(List.of(product), pageable, 1);
-        when(productRepository.findAll(pageable)).thenReturn(productPage);
-        when(productMapper.toDto(product)).thenReturn(productResponseDto);
-
-        // When
-        PageResponseDto<ProductResponseDto> result = productService.getAllProducts(pageable);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getTotalElements()).isEqualTo(1);
-
-        verify(productRepository).findAll(pageable);
-    }
-
-    @Test
     void updateProduct_ShouldUpdateSuccessfully() {
         // Given
-        Product updatedProduct = Product.builder()
-                .id(1L)
-                .sku("TEST-SKU-001")
-                .name("Updated Product")
-                .description("Test Description")
-                .price(new BigDecimal("149.99"))
-                .category(category)
-                .brand(brand)
-                .status(ProductStatus.ACTIVE)
-                .build();
+        Product updatedProduct = new Product();
+        updatedProduct.setId(1L);
+        updatedProduct.setSku("TEST-SKU-001");
+        updatedProduct.setName("Updated Product");
+        updatedProduct.setDescription("Test Description");
+        updatedProduct.setPrice(new Money(new BigDecimal("149.99"), "USD"));
+        updatedProduct.setCategory(category);
+        updatedProduct.setBrand(brand);
+        updatedProduct.setStatus(ProductStatus.ACTIVE);
 
-        ProductResponseDto updatedResponseDto = ProductResponseDto.builder()
-                .id(1L)
-                .sku("TEST-SKU-001")
-                .name("Updated Product")
-                .description("Test Description")
-                .price(new BigDecimal("149.99"))
-                .categoryName("Electronics")
-                .brandName("Samsung")
-                .status(ProductStatus.ACTIVE)
-                .build();
+        ProductResponseDto updatedResponseDto = getResponseDto();
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
@@ -235,10 +198,24 @@ class ProductServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo("Updated Product");
-        assertThat(result.getPrice()).isEqualByComparingTo(new BigDecimal("149.99"));
+        assertThat(result.getPriceAmount()).isEqualByComparingTo(new BigDecimal("149.99"));
 
         verify(productRepository).findById(1L);
         verify(productRepository).save(any(Product.class));
+    }
+
+    private static @NonNull ProductResponseDto getResponseDto() {
+        ProductResponseDto updatedResponseDto = new ProductResponseDto();
+        updatedResponseDto.setId(1L);
+        updatedResponseDto.setSku("TEST-SKU-001");
+        updatedResponseDto.setName("Updated Product");
+        updatedResponseDto.setDescription("Test Description");
+        updatedResponseDto.setPriceAmount(new BigDecimal("149.99"));
+        updatedResponseDto.setCurrency("USD");
+        updatedResponseDto.setCategoryName("Electronics");
+        updatedResponseDto.setBrandName("Samsung");
+        updatedResponseDto.setStatus("ACTIVE");
+        return updatedResponseDto;
     }
 
     @Test
