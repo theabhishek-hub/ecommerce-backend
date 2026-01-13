@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 @Component
-@ConfigurationProperties(prefix = "app.jwt")
+@ConfigurationProperties(prefix = "config.jwt")
 @Validated
 @Getter
 @Setter
