@@ -2,11 +2,11 @@ package com.abhishek.ecommerce.auth.service.impl;
 
 import com.abhishek.ecommerce.auth.dto.OAuthResponseDto;
 import com.abhishek.ecommerce.auth.service.OAuthService;
-import com.abhishek.ecommerce.config.security.JwtUtil;
-import com.abhishek.ecommerce.user.entity.AuthProvider;
-import com.abhishek.ecommerce.user.entity.Role;
+import com.abhishek.ecommerce.security.jwt.JwtUtil;
+import com.abhishek.ecommerce.shared.enums.AuthProvider;
+import com.abhishek.ecommerce.shared.enums.Role;
 import com.abhishek.ecommerce.user.entity.User;
-import com.abhishek.ecommerce.user.entity.UserStatus;
+import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

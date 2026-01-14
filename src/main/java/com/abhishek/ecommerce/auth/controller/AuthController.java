@@ -6,9 +6,9 @@ import com.abhishek.ecommerce.auth.dto.SignupRequestDto;
 import com.abhishek.ecommerce.auth.dto.SignupResponseDto;
 import com.abhishek.ecommerce.auth.service.AuthService;
 import com.abhishek.ecommerce.auth.service.RefreshTokenService;
-import com.abhishek.ecommerce.common.api.ApiResponse;
-import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
-import com.abhishek.ecommerce.security.SecurityUtils;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.utils.SecurityUtils;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

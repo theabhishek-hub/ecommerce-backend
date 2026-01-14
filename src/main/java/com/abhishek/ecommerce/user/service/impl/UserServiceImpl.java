@@ -1,13 +1,13 @@
 package com.abhishek.ecommerce.user.service.impl;
 
-import com.abhishek.ecommerce.security.SecurityUtils;
+import com.abhishek.ecommerce.common.utils.SecurityUtils;
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
-import com.abhishek.ecommerce.user.entity.Role;
+import com.abhishek.ecommerce.shared.enums.Role;
 import com.abhishek.ecommerce.user.entity.User;
-import com.abhishek.ecommerce.user.entity.UserStatus;
+import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.abhishek.ecommerce.user.exception.UserAlreadyExistsException;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.mapper.UserMapper;

@@ -4,7 +4,7 @@ import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
-import com.abhishek.ecommerce.user.entity.UserStatus;
+import com.abhishek.ecommerce.shared.enums.UserStatus;
 
 import java.util.List;
 

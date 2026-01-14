@@ -1,6 +1,6 @@
 package com.abhishek.ecommerce.inventory.entity;
 
-import com.abhishek.ecommerce.common.entity.BaseEntity;
+import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
 import com.abhishek.ecommerce.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;

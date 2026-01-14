@@ -1,6 +1,7 @@
 package com.abhishek.ecommerce.product.entity;
 
-import com.abhishek.ecommerce.common.entity.BaseEntity;
+import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
+import com.abhishek.ecommerce.shared.enums.CategoryStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

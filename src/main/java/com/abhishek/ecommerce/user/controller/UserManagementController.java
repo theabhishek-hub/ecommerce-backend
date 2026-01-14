@@ -1,8 +1,8 @@
 package com.abhishek.ecommerce.user.controller;
 
-import com.abhishek.ecommerce.common.api.ApiResponse;
-import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
-import com.abhishek.ecommerce.user.entity.UserStatus;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
+import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.abhishek.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

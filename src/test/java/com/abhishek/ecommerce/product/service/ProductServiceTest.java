@@ -1,8 +1,11 @@
 package com.abhishek.ecommerce.product.service;
 
+import com.abhishek.ecommerce.shared.enums.BrandStatus;
+import com.abhishek.ecommerce.shared.enums.CategoryStatus;
+import com.abhishek.ecommerce.shared.enums.ProductStatus;
 import com.abhishek.ecommerce.product.service.impl.ProductServiceImpl;
 
-import com.abhishek.ecommerce.common.entity.Money;
+import com.abhishek.ecommerce.common.baseEntity.Money;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
@@ -13,7 +16,6 @@ import com.abhishek.ecommerce.product.repository.BrandRepository;
 import com.abhishek.ecommerce.product.repository.CategoryRepository;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
 import io.micrometer.common.lang.NonNull;
-import io.micrometer.core.instrument.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

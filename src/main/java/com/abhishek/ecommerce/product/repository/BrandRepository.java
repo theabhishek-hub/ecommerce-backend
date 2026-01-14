@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.product.repository;
 
 import com.abhishek.ecommerce.product.entity.Brand;
-import com.abhishek.ecommerce.product.entity.BrandStatus;
+import com.abhishek.ecommerce.shared.enums.BrandStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

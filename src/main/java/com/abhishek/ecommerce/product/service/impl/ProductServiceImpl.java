@@ -1,13 +1,13 @@
 package com.abhishek.ecommerce.product.service.impl;
 
-import com.abhishek.ecommerce.common.api.PageResponseDto;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
 import com.abhishek.ecommerce.product.entity.Brand;
 import com.abhishek.ecommerce.product.entity.Category;
 import com.abhishek.ecommerce.product.entity.Product;
-import com.abhishek.ecommerce.product.entity.ProductStatus;
+import com.abhishek.ecommerce.shared.enums.ProductStatus;
 import com.abhishek.ecommerce.product.exception.ProductAlreadyExistsException;
 import com.abhishek.ecommerce.product.exception.ProductNotFoundException;
 import com.abhishek.ecommerce.product.mapper.ProductMapper;
@@ -88,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
             product.setDescription(requestDto.getDescription());
         }
         if (requestDto.getPriceAmount() != null && requestDto.getCurrency() != null) {
-            product.setPrice(new com.abhishek.ecommerce.common.entity.Money(requestDto.getPriceAmount(), requestDto.getCurrency()));
+            product.setPrice(new com.abhishek.ecommerce.common.baseEntity.Money(requestDto.getPriceAmount(), requestDto.getCurrency()));
         }
         if (requestDto.getSku() != null) {
             // Check if SKU is already taken by another product

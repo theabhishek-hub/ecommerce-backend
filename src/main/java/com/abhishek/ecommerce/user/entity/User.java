@@ -1,7 +1,10 @@
 package com.abhishek.ecommerce.user.entity;
 
-import com.abhishek.ecommerce.common.entity.Address;
-import com.abhishek.ecommerce.common.entity.BaseEntity;
+import com.abhishek.ecommerce.common.baseEntity.Address;
+import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
+import com.abhishek.ecommerce.shared.enums.AuthProvider;
+import com.abhishek.ecommerce.shared.enums.Role;
+import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,7 +17,6 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Set;
 
 @Entity

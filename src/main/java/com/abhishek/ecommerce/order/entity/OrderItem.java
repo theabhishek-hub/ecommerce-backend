@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.order.entity;
 
-import com.abhishek.ecommerce.common.entity.BaseEntity;
-import com.abhishek.ecommerce.common.entity.Money;
+import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
+import com.abhishek.ecommerce.common.baseEntity.Money;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

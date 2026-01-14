@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.user.controller;
 
-import com.abhishek.ecommerce.common.api.ApiResponse;
-import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;

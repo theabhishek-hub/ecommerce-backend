@@ -13,7 +13,7 @@ import com.abhishek.ecommerce.cart.service.CartService;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.abhishek.ecommerce.product.exception.ProductNotFoundException;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
-import com.abhishek.ecommerce.security.SecurityUtils;
+import com.abhishek.ecommerce.common.utils.SecurityUtils;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;

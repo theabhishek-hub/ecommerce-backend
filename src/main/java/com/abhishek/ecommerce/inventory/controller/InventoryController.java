@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.inventory.controller;
 
-import com.abhishek.ecommerce.common.api.ApiResponse;
-import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
 import com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto;
 import com.abhishek.ecommerce.inventory.dto.response.InventoryResponseDto;
 import com.abhishek.ecommerce.inventory.service.InventoryService;

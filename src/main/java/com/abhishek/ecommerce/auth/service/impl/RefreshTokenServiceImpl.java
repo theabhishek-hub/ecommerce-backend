@@ -3,7 +3,7 @@ package com.abhishek.ecommerce.auth.service.impl;
 import com.abhishek.ecommerce.auth.entity.RefreshToken;
 import com.abhishek.ecommerce.auth.repository.RefreshTokenRepository;
 import com.abhishek.ecommerce.auth.service.RefreshTokenService;
-import com.abhishek.ecommerce.config.security.JwtUtil;
+import com.abhishek.ecommerce.security.jwt.JwtUtil;
 import com.abhishek.ecommerce.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

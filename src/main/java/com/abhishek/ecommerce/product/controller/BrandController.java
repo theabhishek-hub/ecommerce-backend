@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.product.controller;
 
-import com.abhishek.ecommerce.common.api.ApiResponse;
-import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
 import com.abhishek.ecommerce.product.dto.request.BrandCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.BrandUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.BrandResponseDto;

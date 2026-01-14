@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.product.repository;
 
 import com.abhishek.ecommerce.product.entity.Product;
-import com.abhishek.ecommerce.product.entity.ProductStatus;
+import com.abhishek.ecommerce.shared.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

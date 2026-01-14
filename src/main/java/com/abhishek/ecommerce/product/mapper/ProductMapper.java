@@ -1,6 +1,6 @@
 package com.abhishek.ecommerce.product.mapper;
 
-import com.abhishek.ecommerce.common.entity.Money;
+import com.abhishek.ecommerce.common.baseEntity.Money;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;

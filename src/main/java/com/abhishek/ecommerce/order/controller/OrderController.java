@@ -1,8 +1,8 @@
 package com.abhishek.ecommerce.order.controller;
 
-import com.abhishek.ecommerce.common.api.ApiResponse;
-import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
-import com.abhishek.ecommerce.common.api.PageResponseDto;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;

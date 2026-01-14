@@ -4,7 +4,7 @@ package com.abhishek.ecommerce.user.mapper;
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
-import com.abhishek.ecommerce.user.entity.Role;
+import com.abhishek.ecommerce.shared.enums.Role;
 import com.abhishek.ecommerce.user.entity.User;
 import org.springframework.stereotype.Component;
 

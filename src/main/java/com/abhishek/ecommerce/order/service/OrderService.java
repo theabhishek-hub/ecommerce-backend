@@ -1,6 +1,6 @@
 package com.abhishek.ecommerce.order.service;
 
-import com.abhishek.ecommerce.common.api.PageResponseDto;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import org.springframework.data.domain.Pageable;
 

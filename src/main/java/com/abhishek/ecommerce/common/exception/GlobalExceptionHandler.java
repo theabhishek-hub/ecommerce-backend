@@ -3,6 +3,7 @@ package com.abhishek.ecommerce.common.exception;
 import com.abhishek.ecommerce.auth.exception.InvalidCredentialsException;
 import com.abhishek.ecommerce.cart.exception.CartItemNotFoundException;
 import com.abhishek.ecommerce.cart.exception.CartNotFoundException;
+import com.abhishek.ecommerce.common.apiResponse.ErrorResponse;
 import com.abhishek.ecommerce.inventory.exception.InsufficientStockException;
 import com.abhishek.ecommerce.inventory.exception.InventoryNotFoundException;
 import com.abhishek.ecommerce.order.exception.OrderNotFoundException;

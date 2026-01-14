@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.payment.dto.response;
 
 import com.abhishek.ecommerce.payment.entity.PaymentMethod;
-import com.abhishek.ecommerce.payment.entity.PaymentStatus;
+import com.abhishek.ecommerce.shared.enums.PaymentStatus;
 import lombok.Getter;
 import lombok.Setter;
 

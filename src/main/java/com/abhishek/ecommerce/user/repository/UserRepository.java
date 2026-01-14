@@ -1,8 +1,7 @@
 package com.abhishek.ecommerce.user.repository;
 
-import com.abhishek.ecommerce.user.entity.Role;
 import com.abhishek.ecommerce.user.entity.User;
-import com.abhishek.ecommerce.user.entity.UserStatus;
+import com.abhishek.ecommerce.shared.enums.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

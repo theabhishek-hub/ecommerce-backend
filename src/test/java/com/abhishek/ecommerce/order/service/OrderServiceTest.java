@@ -3,21 +3,22 @@ package com.abhishek.ecommerce.order.service;
 import com.abhishek.ecommerce.cart.entity.Cart;
 import com.abhishek.ecommerce.cart.entity.CartItem;
 import com.abhishek.ecommerce.cart.repository.CartRepository;
-import com.abhishek.ecommerce.common.entity.Money;
+import com.abhishek.ecommerce.common.baseEntity.Money;
+import com.abhishek.ecommerce.shared.enums.PaymentStatus;
 import com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto;
 import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.notification.NotificationService;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.entity.Order;
-import com.abhishek.ecommerce.order.entity.OrderStatus;
+import com.abhishek.ecommerce.shared.enums.OrderStatus;
 import com.abhishek.ecommerce.order.exception.OrderNotFoundException;
 import com.abhishek.ecommerce.order.mapper.OrderMapper;
 import com.abhishek.ecommerce.order.repository.OrderRepository;
 import com.abhishek.ecommerce.order.service.impl.OrderServiceImpl;
 import com.abhishek.ecommerce.payment.service.PaymentService;
 import com.abhishek.ecommerce.product.entity.Product;
-import com.abhishek.ecommerce.security.SecurityUtils;
-import com.abhishek.ecommerce.user.entity.Role;
+import com.abhishek.ecommerce.common.utils.SecurityUtils;
+import com.abhishek.ecommerce.shared.enums.Role;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,7 +113,7 @@ class OrderServiceTest {
 
         paymentResponseDto = new com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto();
         paymentResponseDto.setId(1L);
-        paymentResponseDto.setStatus(com.abhishek.ecommerce.payment.entity.PaymentStatus.SUCCESS);
+        paymentResponseDto.setStatus(PaymentStatus.SUCCESS);
     }
 
     @Test

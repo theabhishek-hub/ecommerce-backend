@@ -1,7 +1,8 @@
 package com.abhishek.ecommerce.payment.service.impl;
 
+import com.abhishek.ecommerce.shared.enums.PaymentStatus;
 import com.abhishek.ecommerce.order.entity.Order;
-import com.abhishek.ecommerce.order.entity.OrderStatus;
+import com.abhishek.ecommerce.shared.enums.OrderStatus;
 import com.abhishek.ecommerce.order.exception.OrderNotFoundException;
 import com.abhishek.ecommerce.order.repository.OrderRepository;
 import com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto;
@@ -11,8 +12,8 @@ import com.abhishek.ecommerce.payment.exception.PaymentNotFoundException;
 import com.abhishek.ecommerce.payment.mapper.PaymentMapper;
 import com.abhishek.ecommerce.payment.repository.PaymentRepository;
 import com.abhishek.ecommerce.payment.service.PaymentService;
-import com.abhishek.ecommerce.security.SecurityUtils;
-import com.abhishek.ecommerce.user.entity.Role;
+import com.abhishek.ecommerce.common.utils.SecurityUtils;
+import com.abhishek.ecommerce.shared.enums.Role;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;

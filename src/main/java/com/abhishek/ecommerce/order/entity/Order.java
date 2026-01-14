@@ -1,7 +1,8 @@
 package com.abhishek.ecommerce.order.entity;
 
-import com.abhishek.ecommerce.common.entity.BaseEntity;
-import com.abhishek.ecommerce.common.entity.Money;
+import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
+import com.abhishek.ecommerce.common.baseEntity.Money;
+import com.abhishek.ecommerce.shared.enums.OrderStatus;
 import com.abhishek.ecommerce.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

@@ -4,7 +4,7 @@ import com.abhishek.ecommerce.product.dto.request.CategoryCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.CategoryUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.CategoryResponseDto;
 import com.abhishek.ecommerce.product.entity.Category;
-import com.abhishek.ecommerce.product.entity.CategoryStatus;
+import com.abhishek.ecommerce.shared.enums.CategoryStatus;
 import com.abhishek.ecommerce.product.exception.CategoryAlreadyExistsException;
 import com.abhishek.ecommerce.product.exception.CategoryNotFoundException;
 import com.abhishek.ecommerce.product.mapper.CategoryMapper;

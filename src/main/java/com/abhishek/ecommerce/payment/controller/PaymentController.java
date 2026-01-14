@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.payment.controller;
 
-import com.abhishek.ecommerce.common.api.ApiResponse;
-import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
+import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
 import com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto;
 import com.abhishek.ecommerce.payment.dto.response.PaymentResponseDto;
 import com.abhishek.ecommerce.payment.service.PaymentService;

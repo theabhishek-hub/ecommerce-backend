@@ -1,7 +1,8 @@
 package com.abhishek.ecommerce.payment.entity;
 
-import com.abhishek.ecommerce.common.entity.BaseEntity;
-import com.abhishek.ecommerce.common.entity.Money;
+import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
+import com.abhishek.ecommerce.common.baseEntity.Money;
+import com.abhishek.ecommerce.shared.enums.PaymentStatus;
 import com.abhishek.ecommerce.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.*;

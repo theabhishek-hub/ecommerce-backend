@@ -4,7 +4,7 @@ import com.abhishek.ecommerce.product.dto.request.BrandCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.BrandUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.BrandResponseDto;
 import com.abhishek.ecommerce.product.entity.Brand;
-import com.abhishek.ecommerce.product.entity.BrandStatus;
+import com.abhishek.ecommerce.shared.enums.BrandStatus;
 import com.abhishek.ecommerce.product.exception.BrandAlreadyExistsException;
 import com.abhishek.ecommerce.product.exception.BrandNotFoundException;
 import com.abhishek.ecommerce.product.mapper.BrandMapper;

@@ -1,6 +1,6 @@
 package com.abhishek.ecommerce.cart.entity;
 
-import com.abhishek.ecommerce.common.entity.BaseEntity;
+import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
 import com.abhishek.ecommerce.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;

@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.product.repository;
 
 import com.abhishek.ecommerce.product.entity.Category;
-import com.abhishek.ecommerce.product.entity.CategoryStatus;
+import com.abhishek.ecommerce.shared.enums.CategoryStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
