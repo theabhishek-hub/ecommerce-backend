@@ -279,7 +279,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new IllegalStateException("Current user not found"));
         
         // Admin can access any order
-        if (currentUser.getRole() == Role.ROLE_ADMIN) {
+        if (currentUser.getRoles().contains(Role.ROLE_ADMIN)) {
             return orderMapper.toDto(order);
         }
         

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -55,14 +56,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                     User u = new User();
                     u.setEmail(email);
                     u.setFullName(name);
-                    u.setRole(Role.ROLE_USER);
+                    u.setRoles(Set.of(Role.ROLE_USER));
                     u.setProvider(AuthProvider.GOOGLE);
                     u.setStatus(UserStatus.ACTIVE);
                     return userRepository.save(u);
                 });
 
         // ✅ JWT
-        String accessToken = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String accessToken = jwtUtil.generateToken(user.getEmail(), user.getRoles().stream().map(Role::name).toList());
 
         // ✅ Refresh token
         com.abhishek.ecommerce.auth.entity.RefreshToken refreshTokenEntity = 
@@ -74,7 +75,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .refreshToken(refreshToken)
                 .userId(user.getId())
                 .email(user.getEmail())
-                .role(user.getRole().name().replace("ROLE_", "")) // Convert ROLE_USER to USER
+                .roles(user.getRoles().stream().map(r -> r.name().replace("ROLE_", "")).collect(java.util.stream.Collectors.toSet())) // Convert ROLE_USER to USER
                 .tokenType("Bearer")
                 .refreshTokenExpiryMs(refreshTokenEntity.getExpiresAt().toEpochMilli())
                 .build();

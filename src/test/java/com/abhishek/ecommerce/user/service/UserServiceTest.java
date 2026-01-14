@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,7 +62,7 @@ class UserServiceTest {
         user.setFullName("John Doe");
         user.setPasswordHash("hashedPassword");
         user.setStatus(UserStatus.ACTIVE);
-        user.setRole(Role.ROLE_USER);
+        user.setRoles(Collections.singleton(Role.ROLE_USER));
         user.setProvider(AuthProvider.LOCAL);
         user.setFailedLoginAttempts(0);
 

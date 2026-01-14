@@ -28,6 +28,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setFullName(request.getFullName());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.ROLE_USER);
+        user.setRoles(Set.of(Role.ROLE_USER));
         user.setStatus(UserStatus.ACTIVE);
         user.setProvider(AuthProvider.LOCAL);
 
@@ -69,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
         return SignupResponseDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .role(user.getRole().name().replace("ROLE_", "")) // Convert ROLE_USER to USER
+                .role("USER") // Signup always assigns ROLE_USER
                 .build();
     }
 
@@ -112,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
                 throw new IllegalStateException("User is not active");
             }
 
-            String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+            String token = jwtUtil.generateToken(user.getEmail(), user.getRoles().stream().map(Role::name).toList());
             com.abhishek.ecommerce.auth.entity.RefreshToken refreshTokenEntity = refreshTokenService.createOrReplaceRefreshToken(user);
             String refreshToken = refreshTokenEntity.getToken();
 
@@ -123,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
                     .token(token)
                     .userId(user.getId())
                     .email(user.getEmail())
-                    .role(user.getRole().name().replace("ROLE_", "")) // Convert ROLE_USER to USER
+                    .roles(user.getRoles().stream().map(r -> r.name().replace("ROLE_", "")).collect(java.util.stream.Collectors.toSet())) // Convert ROLE_USER to USER
                     .tokenType("Bearer")
                     .refreshToken(refreshToken)
                     .refreshTokenExpiryMs(refreshTokenEntity.getExpiresAt().toEpochMilli())

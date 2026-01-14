@@ -12,7 +12,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -48,9 +51,11 @@ public class User extends BaseEntity {
     private List<Address> addresses = new ArrayList<>();
 
     // Added for security
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", length = 20)
-    private Role role = Role.ROLE_USER;
+    @Column(name = "role")
+    private Set<Role> roles = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "auth_provider", nullable = false)

@@ -4,8 +4,12 @@ package com.abhishek.ecommerce.user.mapper;
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
+import com.abhishek.ecommerce.user.entity.Role;
 import com.abhishek.ecommerce.user.entity.User;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class UserMapper {
@@ -20,6 +24,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
         user.setFullName(dto.getFullName());
         user.setPasswordHash(dto.getPassword());
+        user.setRoles(Set.of(Role.ROLE_USER)); // Default role
 
         return user;
     }
@@ -35,6 +40,9 @@ public class UserMapper {
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
         dto.setStatus(user.getStatus() != null ? user.getStatus().name() : null);
+        dto.setRoles(user.getRoles() != null ? user.getRoles().stream()
+                .map(role -> role.name().replace("ROLE_", ""))
+                .collect(Collectors.toSet()) : null);
 
         return dto;
     }

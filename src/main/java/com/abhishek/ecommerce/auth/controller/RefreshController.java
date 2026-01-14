@@ -9,6 +9,7 @@ import com.abhishek.ecommerce.common.api.ApiResponse;
 import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.user.entity.User;
+import com.abhishek.ecommerce.user.entity.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +46,7 @@ public class RefreshController {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
 
-        String newAccess = jwtUtil.generateToken(username, user.getRole().name());
+        String newAccess = jwtUtil.generateToken(username, user.getRoles().stream().map(Role::name).toList());
 
         // replace persisted refresh token
         RefreshToken newRefreshTokenEntity = refreshTokenService.createOrReplaceRefreshToken(user);
@@ -55,7 +56,7 @@ public class RefreshController {
                 .token(newAccess)
                 .userId(user.getId())
                 .email(user.getEmail())
-                .role(user.getRole().name().replace("ROLE_", "")) // Convert ROLE_USER to USER
+                .roles(user.getRoles().stream().map(r -> r.name().replace("ROLE_", "")).collect(java.util.stream.Collectors.toSet())) // Convert ROLE_USER to USER
                 .refreshToken(newRefresh)
                 .refreshTokenExpiryMs(newRefreshTokenEntity.getExpiresAt().toEpochMilli())
                 .tokenType("Bearer")

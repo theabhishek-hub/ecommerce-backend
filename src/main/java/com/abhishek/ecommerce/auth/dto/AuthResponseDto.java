@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.Set;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,8 +22,8 @@ public class AuthResponseDto {
     @Schema(description = "User email", example = "user@example.com")
     private String email;
 
-    @Schema(description = "User role", example = "USER")
-    private String role;
+    @Schema(description = "User roles", example = "[\"USER\"]")
+    private Set<String> roles;
 
     @Schema(description = "Token type", example = "Bearer")
     private String tokenType;
@@ -32,11 +34,11 @@ public class AuthResponseDto {
     @Schema(description = "Refresh token expiry time in milliseconds", example = "1640995200000")
     private Long refreshTokenExpiryMs;
 
-    public AuthResponseDto(String token, Long userId, String email, String role, String tokenType, String refreshToken, Long refreshTokenExpiryMs) {
+    public AuthResponseDto(String token, Long userId, String email, Set<String> roles, String tokenType, String refreshToken, Long refreshTokenExpiryMs) {
         this.token = token;
         this.userId = userId;
         this.email = email;
-        this.role = role;
+        this.roles = roles;
         this.tokenType = tokenType;
         this.refreshToken = refreshToken;
         this.refreshTokenExpiryMs = refreshTokenExpiryMs;
@@ -50,7 +52,7 @@ public class AuthResponseDto {
         private String token;
         private Long userId;
         private String email;
-        private String role;
+        private Set<String> roles;
         private String tokenType;
         private String refreshToken;
         private Long refreshTokenExpiryMs;
@@ -71,7 +73,12 @@ public class AuthResponseDto {
         }
 
         public AuthResponseDtoBuilder role(String role) {
-            this.role = role;
+            this.roles = Set.of(role);
+            return this;
+        }
+
+        public AuthResponseDtoBuilder roles(Set<String> roles) {
+            this.roles = roles;
             return this;
         }
 
@@ -91,7 +98,7 @@ public class AuthResponseDto {
         }
 
         public AuthResponseDto build() {
-            AuthResponseDto dto = new AuthResponseDto(token, userId, email, role, tokenType, refreshToken, refreshTokenExpiryMs);
+            AuthResponseDto dto = new AuthResponseDto(token, userId, email, roles, tokenType, refreshToken, refreshTokenExpiryMs);
             return dto;
         }
     }

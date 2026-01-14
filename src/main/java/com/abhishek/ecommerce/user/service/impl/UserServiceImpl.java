@@ -1,8 +1,11 @@
 package com.abhishek.ecommerce.user.service.impl;
 
+import com.abhishek.ecommerce.security.SecurityUtils;
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
+import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
+import com.abhishek.ecommerce.user.entity.Role;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.entity.UserStatus;
 import com.abhishek.ecommerce.user.exception.UserAlreadyExistsException;
@@ -30,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
+    private final SecurityUtils securityUtils;
 
     // ========================= CREATE =========================
     @Override
@@ -176,6 +180,56 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         
         log.info("unlockUser completed for userId={}", userId);
+    }
+
+    // ========================= PROFILE OPERATIONS =========================
+    @Override
+    public UserResponseDto getCurrentUserProfile() {
+        Long currentUserId = securityUtils.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new IllegalStateException("No authenticated user found");
+        }
+        User user = getUserOrThrow(currentUserId);
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserResponseDto updateCurrentUserProfile(UserProfileUpdateRequestDto requestDto) {
+        Long currentUserId = securityUtils.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new IllegalStateException("No authenticated user found");
+        }
+        User user = getUserOrThrow(currentUserId);
+
+        // Update only allowed fields
+        user.setFullName(requestDto.getFullName());
+
+        User savedUser = userRepository.save(user);
+        log.info("updateCurrentUserProfile completed for userId={}", currentUserId);
+        return userMapper.toDto(savedUser);
+    }
+
+    // ========================= ROLE MANAGEMENT =========================
+    @Override
+    public void assignSellerRole(Long userId) {
+        User user = getUserOrThrow(userId);
+        if (user.getRoles().contains(Role.ROLE_SELLER)) {
+            throw new IllegalStateException("User already has SELLER role");
+        }
+        user.getRoles().add(Role.ROLE_SELLER);
+        userRepository.save(user);
+        log.info("assignSellerRole completed for userId={}", userId);
+    }
+
+    @Override
+    public void removeSellerRole(Long userId) {
+        User user = getUserOrThrow(userId);
+        if (!user.getRoles().contains(Role.ROLE_SELLER)) {
+            throw new IllegalStateException("User does not have SELLER role");
+        }
+        user.getRoles().remove(Role.ROLE_SELLER);
+        userRepository.save(user);
+        log.info("removeSellerRole completed for userId={}", userId);
     }
 
     // ========================= PRIVATE HELPER =========================

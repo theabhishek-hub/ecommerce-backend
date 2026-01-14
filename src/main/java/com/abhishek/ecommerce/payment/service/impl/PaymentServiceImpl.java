@@ -51,7 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new IllegalStateException("Current user not found"));
 
         // Admin can create payment for any order, regular users only for their own
-        if (currentUser.getRole() != Role.ROLE_ADMIN) {
+        if (!currentUser.getRoles().contains(Role.ROLE_ADMIN)) {
             Long currentUserId = securityUtils.getCurrentUserId();
             if (order.getUser() == null || !order.getUser().getId().equals(currentUserId)) {
                 log.warn("Access denied: User {} attempted to create payment for order {} owned by user {}",
@@ -121,7 +121,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new IllegalStateException("Current user not found"));
 
         // Admin can access any payment
-        if (currentUser.getRole() == Role.ROLE_ADMIN) {
+        if (currentUser.getRoles().contains(Role.ROLE_ADMIN)) {
             return;
         }
 

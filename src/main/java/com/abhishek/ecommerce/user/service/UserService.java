@@ -1,6 +1,7 @@
 package com.abhishek.ecommerce.user.service;
 
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
+import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
 import com.abhishek.ecommerce.user.entity.UserStatus;
@@ -29,6 +30,16 @@ public interface UserService {
 
     // DELETE (soft delete)
     void deleteUser(Long userId);
+
+    // PROFILE OPERATIONS
+    UserResponseDto getCurrentUserProfile();
+
+    UserResponseDto updateCurrentUserProfile(UserProfileUpdateRequestDto requestDto);
+
+    // ROLE MANAGEMENT
+    void assignSellerRole(Long userId);
+
+    void removeSellerRole(Long userId);
 
     // ADMIN OPERATIONS
     void updateUserStatus(Long userId, UserStatus status);

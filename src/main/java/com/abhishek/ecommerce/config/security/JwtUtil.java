@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Collection;
 import java.util.Date;
 
 @Component
@@ -34,7 +35,7 @@ public class JwtUtil {
     // =========================
     // Access Token
 
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, Collection<String> roles) {
 
         Date now = new Date();
         long expiryMs = jwtProperties.getAccessTokenExpiration();
@@ -45,9 +46,10 @@ public class JwtUtil {
                 .setIssuedAt(now)
                 .setExpiration(expiry);
 
-        // keep role claim exactly as before
-        if (role != null && !role.isBlank()) {
-            builder.claim("role", role);
+        // store roles as list and single role for backward compatibility
+        if (roles != null && !roles.isEmpty()) {
+            builder.claim("roles", roles.stream().toList());
+            builder.claim("role", roles.iterator().next()); // First role for backward compatibility
         }
 
         return builder

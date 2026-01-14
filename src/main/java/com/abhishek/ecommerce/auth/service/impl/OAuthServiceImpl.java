@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,13 +34,13 @@ public class OAuthServiceImpl implements OAuthService {
                     User newUser = new User();
                     newUser.setEmail(email);
                     newUser.setFullName(name);
-                    newUser.setRole(Role.ROLE_USER);
+                    newUser.setRoles(Set.of(Role.ROLE_USER));
                     newUser.setStatus(UserStatus.ACTIVE);
                     newUser.setProvider(AuthProvider.valueOf(provider.toUpperCase()));
                     return userRepository.save(newUser);
                 });
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRoles().stream().map(Role::name).toList());
 
         return OAuthResponseDto.builder()
                 .email(user.getEmail())

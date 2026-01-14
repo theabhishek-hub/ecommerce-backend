@@ -17,6 +17,7 @@ import com.abhishek.ecommerce.order.service.impl.OrderServiceImpl;
 import com.abhishek.ecommerce.payment.service.PaymentService;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.abhishek.ecommerce.security.SecurityUtils;
+import com.abhishek.ecommerce.user.entity.Role;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,7 +81,7 @@ class OrderServiceTest {
         user.setId(1L);
         user.setEmail("john.doe@example.com");
         user.setFullName("John Doe");
-        user.setRole(com.abhishek.ecommerce.user.entity.Role.ROLE_ADMIN);
+        user.setRoles(Collections.singleton(Role.ROLE_ADMIN));
 
         Product product = new Product();
         product.setId(1L);

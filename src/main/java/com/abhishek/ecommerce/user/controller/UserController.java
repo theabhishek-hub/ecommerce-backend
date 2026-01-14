@@ -3,6 +3,7 @@ package com.abhishek.ecommerce.user.controller;
 import com.abhishek.ecommerce.common.api.ApiResponse;
 import com.abhishek.ecommerce.common.api.ApiResponseBuilder;
 import com.abhishek.ecommerce.user.dto.request.UserCreateRequestDto;
+import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
 import com.abhishek.ecommerce.user.service.UserService;
@@ -98,5 +99,24 @@ public class UserController {
     public ApiResponse<Void> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         return ApiResponseBuilder.success("User deleted successfully", null);
+    }
+
+    // ========================= PROFILE OPERATIONS =========================
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<UserResponseDto> getCurrentUserProfile() {
+        UserResponseDto response = userService.getCurrentUserProfile();
+        return ApiResponseBuilder.success("Profile fetched successfully", response);
+    }
+
+    @PutMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<UserResponseDto> updateCurrentUserProfile(
+            @Valid @RequestBody UserProfileUpdateRequestDto requestDto
+    ) {
+        UserResponseDto response = userService.updateCurrentUserProfile(requestDto);
+        return ApiResponseBuilder.success("Profile updated successfully", response);
     }
 }

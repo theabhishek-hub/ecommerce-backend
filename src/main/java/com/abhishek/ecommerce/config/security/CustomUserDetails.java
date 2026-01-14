@@ -19,7 +19,9 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Role enum already uses values like ROLE_USER / ROLE_ADMIN — use them directly
-        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .toList();
     }
 
     @Override
