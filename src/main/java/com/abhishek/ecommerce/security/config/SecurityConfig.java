@@ -63,11 +63,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/products",
+                                "/products-page/**",
                                 "/login",
                                 "/register",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
+                                "/favicon.ico",
                                 "/error/**"
                         ).permitAll()
                         .requestMatchers("/actuator/health").permitAll()  // Health check publicly accessible
