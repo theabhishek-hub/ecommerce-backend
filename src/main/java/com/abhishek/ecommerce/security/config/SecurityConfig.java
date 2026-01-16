@@ -109,7 +109,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
                         // Protected endpoints - require session authentication
-                        .requestMatchers("/cart", "/checkout/**").authenticated()
+                        .requestMatchers("/cart", "/checkout/**", "/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
