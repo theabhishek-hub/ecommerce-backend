@@ -21,6 +21,9 @@ import org.springframework.security.config.annotation.authentication.configurati
 
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration(proxyBeanMethods = false)
@@ -39,44 +42,92 @@ public class SecurityConfig {
     @Value("${config.security.oauth2.enabled:true}")
     private boolean oauth2Enabled;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    /**
+     * SecurityFilterChain for REST APIs (JWT-based, stateless)
+     * Matches: /api/** requests
+     * Authentication: JWT tokens in Authorization header
+     */
+    @Bean("apiSecurityFilterChain")
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .securityMatcher(new AntPathRequestMatcher("/api/**"))
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers(oauth2Enabled ? "/oauth2/**" : "/oauth2-disabled/**").permitAll()
-                        .requestMatchers(oauth2Enabled ? "/login/oauth2/**" : "/login-oauth2-disabled/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/products/**",
                                 "/api/v1/categories/**",
                                 "/api/v1/brands/**"
                         ).permitAll()
-                        .requestMatchers(
-                            "/swagger-ui/**",
-                            "/swagger-ui.html",
-                            "/v3/api-docs/**"
-                        ).permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler)
+                );
+
+        return http.build();
+    }
+
+    /**
+     * SecurityFilterChain for UI Pages (Session-based, form login)
+     * Matches: All non-API requests (/, /products, /cart, /checkout, etc.)
+     * Authentication: Session cookies + form login
+     * CSRF: Enabled with CookieCsrfTokenRepository
+     */
+    @Bean("uiSecurityFilterChain")
+    public SecurityFilterChain uiSecurityFilterChain(HttpSecurity http) throws Exception {
+
+        http
+                .securityMatcher("/**")
+                .csrf(csrf -> csrf.csrfTokenRepository(
+                    CookieCsrfTokenRepository.withHttpOnlyFalse()
+                ))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints - Note: /logout is handled by Spring Security, NOT as permitAll
+                        .requestMatchers("/login", "/register").permitAll()
                         .requestMatchers(
                                 "/",
                                 "/products",
                                 "/products-page/**",
-                                "/cart",
-                                "/login",
-                                "/register",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
                                 "/favicon.ico",
                                 "/error/**"
                         ).permitAll()
-                        .requestMatchers("/actuator/health").permitAll()  // Health check publicly accessible
-                        .requestMatchers("/actuator/**").hasRole("ADMIN")  // Other actuator endpoints require ADMIN
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(oauth2Enabled ? "/oauth2/**" : "/oauth2-disabled/**").permitAll()
+                        .requestMatchers(oauth2Enabled ? "/login/oauth2/**" : "/login-oauth2-disabled/**").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        // Protected endpoints - require session authentication
+                        .requestMatchers("/cart", "/checkout/**").authenticated()
                         .anyRequest().authenticated()
+                )
+                .formLogin(login -> login
+                        .loginPage("/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/checkout", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 );
 
         if (oauth2Enabled) {
@@ -84,12 +135,6 @@ public class SecurityConfig {
                     .successHandler(oAuth2SuccessHandler)
             );
         }
-
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(restAuthenticationEntryPoint)
-                        .accessDeniedHandler(restAccessDeniedHandler)
-                );
 
         return http.build();
     }
