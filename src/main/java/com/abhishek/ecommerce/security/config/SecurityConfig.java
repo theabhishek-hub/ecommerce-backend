@@ -108,6 +108,10 @@ public class SecurityConfig {
                         .requestMatchers(oauth2Enabled ? "/login/oauth2/**" : "/login-oauth2-disabled/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        // Admin UI pages - require ROLE_ADMIN
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // Seller UI pages - require ROLE_SELLER
+                        .requestMatchers("/seller/**").hasRole("SELLER")
                         // Protected endpoints - require session authentication
                         .requestMatchers("/cart", "/checkout/**", "/orders/**").authenticated()
                         .anyRequest().authenticated()

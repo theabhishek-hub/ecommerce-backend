@@ -4,6 +4,7 @@ import com.abhishek.ecommerce.common.baseEntity.Address;
 import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
 import com.abhishek.ecommerce.shared.enums.AuthProvider;
 import com.abhishek.ecommerce.shared.enums.Role;
+import com.abhishek.ecommerce.shared.enums.SellerStatus;
 import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -69,5 +70,16 @@ public class User extends BaseEntity {
 
     @Column(name = "locked_until")
     private java.time.LocalDateTime lockedUntil;
+
+    // ======================== SELLER FIELDS ========================
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private SellerStatus sellerStatus = SellerStatus.NOT_A_SELLER;
+
+    @Column(name = "seller_requested_at")
+    private java.time.LocalDateTime sellerRequestedAt;
+
+    @Column(name = "seller_approved_at")
+    private java.time.LocalDateTime sellerApprovedAt;
 
 }

@@ -38,5 +38,22 @@ public interface ProductService {
     
     // DELETE (soft delete)
     void deleteProduct(Long productId);
-}
 
+    // COUNT OPERATIONS
+    long getTotalProductCount();
+
+    // SELLER OPERATIONS
+    /**
+     * Check if a seller owns a product
+     */
+    boolean isSellerOwner(Long productId, Long sellerId);
+
+    /**
+     * Get all products for a specific seller
+     */
+    List<ProductResponseDto> getProductsBySeller(Long sellerId);
+
+    /**
+     * Get all active products for a specific seller
+     */
+    List<ProductResponseDto> getActiveProductsBySeller(Long sellerId);}

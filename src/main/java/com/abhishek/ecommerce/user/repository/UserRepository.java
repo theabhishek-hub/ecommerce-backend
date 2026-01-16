@@ -2,6 +2,7 @@ package com.abhishek.ecommerce.user.repository;
 
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.shared.enums.UserStatus;
+import com.abhishek.ecommerce.shared.enums.SellerStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -21,4 +22,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByIdAndStatus(Long id, UserStatus status);
 
     List<User> findAllByStatus(UserStatus status);
+
+    // Seller-related queries
+    List<User> findBySellerStatus(SellerStatus status);
+    long countByStatus(UserStatus status);
+
+    long countBySellerStatus(SellerStatus status);
 }

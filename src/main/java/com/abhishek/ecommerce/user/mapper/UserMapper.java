@@ -43,6 +43,12 @@ public class UserMapper {
         dto.setRoles(user.getRoles() != null ? user.getRoles().stream()
                 .map(role -> role.name().replace("ROLE_", ""))
                 .collect(Collectors.toSet()) : null);
+        
+        // Seller fields
+        dto.setSellerStatus(user.getSellerStatus() != null ? user.getSellerStatus().name() : null);
+        dto.setSellerRequestedAt(user.getSellerRequestedAt());
+        dto.setSellerApprovedAt(user.getSellerApprovedAt());
+        dto.setCreatedAt(user.getCreatedAt());
 
         return dto;
     }

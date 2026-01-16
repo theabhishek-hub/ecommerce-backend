@@ -43,6 +43,13 @@ public class ProductMapper {
         dto.setCategoryName(product.getCategory() != null ? product.getCategory().getName() : null);
         dto.setBrandId(product.getBrand() != null ? product.getBrand().getId() : null);
         dto.setBrandName(product.getBrand() != null ? product.getBrand().getName() : null);
+        
+        // Map seller information
+        if (product.getSeller() != null && product.getSeller().getUser() != null) {
+            dto.setSellerId(product.getSeller().getId());
+            dto.setSellerEmail(product.getSeller().getUser().getEmail());
+            dto.setSellerFullName(product.getSeller().getUser().getFullName());
+        }
 
         return dto;
     }

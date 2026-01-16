@@ -6,6 +6,7 @@ import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
 import com.abhishek.ecommerce.shared.enums.Role;
+import com.abhishek.ecommerce.shared.enums.SellerStatus;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.abhishek.ecommerce.user.exception.UserAlreadyExistsException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.abhishek.ecommerce.notification.NotificationService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -230,6 +232,28 @@ public class UserServiceImpl implements UserService {
         user.getRoles().remove(Role.ROLE_SELLER);
         userRepository.save(user);
         log.info("removeSellerRole completed for userId={}", userId);
+    }
+
+    // ========================= COUNT OPERATIONS =========================
+    @Override
+    public long getTotalUserCount() {
+        return userRepository.countByStatus(UserStatus.ACTIVE);
+    }
+
+    @Override
+    public long getTotalSellerCount() {
+        // Count sellers approved in the seller domain
+        // This requires SellerService to be injected
+        // For now, return 0 - implement in SellerService instead
+        return 0;
+    }
+
+    @Override
+    public long getPendingSellerRequestCount() {
+        // Count pending sellers in the seller domain
+        // This requires SellerService to be injected
+        // For now, return 0 - implement in SellerService instead
+        return 0;
     }
 
     // ========================= PRIVATE HELPER =========================

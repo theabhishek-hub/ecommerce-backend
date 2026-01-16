@@ -5,6 +5,7 @@ import com.abhishek.ecommerce.user.dto.request.UserProfileUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.request.UserUpdateRequestDto;
 import com.abhishek.ecommerce.user.dto.response.UserResponseDto;
 import com.abhishek.ecommerce.shared.enums.UserStatus;
+import com.abhishek.ecommerce.shared.enums.SellerStatus;
 
 import java.util.List;
 
@@ -41,11 +42,15 @@ public interface UserService {
 
     void removeSellerRole(Long userId);
 
+    // COUNT OPERATIONS
+    long getTotalUserCount();
+
+    long getTotalSellerCount();
+
+    long getPendingSellerRequestCount();
+
     // ADMIN OPERATIONS
     void updateUserStatus(Long userId, UserStatus status);
 
     void unlockUser(Long userId);
 }
-
-
-

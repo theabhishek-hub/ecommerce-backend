@@ -53,4 +53,14 @@ public interface ProductRepository extends JpaRepository<Product, Long>
     @EntityGraph(attributePaths = {"category", "brand"})
     @Query("SELECT p FROM Product p WHERE p.status = :status AND LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     Page<Product> findByStatusAndNameContainingIgnoreCase(@Param("status") ProductStatus status, @Param("name") String name, Pageable pageable);
+
+    // Count operations
+    long countByStatus(ProductStatus status);
+
+    // Seller operations
+    List<Product> findBySellerId(Long sellerId);
+
+    List<Product> findBySellerIdAndStatus(Long sellerId, ProductStatus status);
+
+    boolean existsByIdAndSellerId(Long productId, Long sellerId);
 }

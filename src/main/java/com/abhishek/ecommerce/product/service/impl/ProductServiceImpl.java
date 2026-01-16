@@ -362,4 +362,34 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
         log.info("deleteProduct completed for productId={}", productId);
     }
-}
+
+    // ========================= COUNT OPERATIONS =========================
+    @Override
+    public long getTotalProductCount() {
+        return productRepository.countByStatus(ProductStatus.ACTIVE);
+    }
+
+    // ========================= SELLER OPERATIONS =========================
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isSellerOwner(Long productId, Long sellerId) {
+        return productRepository.existsByIdAndSellerId(productId, sellerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getProductsBySeller(Long sellerId) {
+        return productRepository.findBySellerId(sellerId)
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getActiveProductsBySeller(Long sellerId) {
+        return productRepository.findBySellerIdAndStatus(sellerId, ProductStatus.ACTIVE)
+                .stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+    }}

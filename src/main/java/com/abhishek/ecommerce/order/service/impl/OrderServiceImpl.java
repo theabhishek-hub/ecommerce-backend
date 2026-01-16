@@ -294,10 +294,63 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toDto(order);
     }
 
+    @Override
+    public List<OrderResponseDto> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    // ========================= PRIVATE HELPER =========================
     private Order getOrderOrThrow(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
-}
+    // ========================= COUNT OPERATIONS =========================
+    @Override
+    public long getTotalOrderCount() {
+        return orderRepository.count();
+    }
 
+    @Override
+    public long getPendingOrderCount() {
+        return orderRepository.countByStatus(OrderStatus.CREATED);
+    }
+
+    // ========================= SELLER OPERATIONS =========================
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getOrdersForSeller(Long sellerId) {
+        log.info("getOrdersForSeller started for sellerId={}", sellerId);
+        List<Order> orders = orderRepository.findOrdersContainingSeller(sellerId);
+        return orders.stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<OrderResponseDto> getOrdersForSeller(Long sellerId, Pageable pageable) {
+        log.info("getOrdersForSeller (paginated) started for sellerId={}", sellerId);
+        Page<Order> orderPage = orderRepository.findOrdersContainingSeller(sellerId, pageable);
+        return mapToPageResponseDto(orderPage);
+    }
+
+    /**
+     * Helper method to convert Page<Order> to PageResponseDto
+     */
+    private PageResponseDto<OrderResponseDto> mapToPageResponseDto(Page<Order> orderPage) {
+        PageResponseDto<OrderResponseDto> pageResponseDto = new PageResponseDto<>();
+        pageResponseDto.setContent(orderPage.getContent().stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList()));
+        pageResponseDto.setPageNumber(orderPage.getNumber());
+        pageResponseDto.setPageSize(orderPage.getSize());
+        pageResponseDto.setTotalElements(orderPage.getTotalElements());
+        pageResponseDto.setTotalPages(orderPage.getTotalPages());
+        pageResponseDto.setFirst(orderPage.isFirst());
+        pageResponseDto.setLast(orderPage.isLast());
+        pageResponseDto.setEmpty(orderPage.isEmpty());
+        return pageResponseDto;
+    }}

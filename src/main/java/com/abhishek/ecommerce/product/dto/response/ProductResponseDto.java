@@ -21,6 +21,11 @@ public class ProductResponseDto {
     private String categoryName;
     private Long brandId;
     private String brandName;
+    
+    // Seller information
+    private Long sellerId;
+    private String sellerEmail;
+    private String sellerFullName;
 
     public void setId(Long id) {
         this.id = id;
@@ -69,5 +74,15 @@ public class ProductResponseDto {
     public void setBrandName(String brandName) {
         this.brandName = brandName;
     }
-}
 
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public void setSellerEmail(String sellerEmail) {
+        this.sellerEmail = sellerEmail;
+    }
+
+    public void setSellerFullName(String sellerFullName) {
+        this.sellerFullName = sellerFullName;    }
+}
