@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * Visiting POST /logout automatically invalidates session and redirects to /login
  */
 @Controller
-@RequestMapping("/login")
+@RequestMapping("/")
 public class LoginController {
 
     /**
@@ -24,12 +24,23 @@ public class LoginController {
      * @param error error parameter if login failed
      * @return login template
      */
-    @GetMapping
+    @GetMapping("login")
     public String loginPage(Model model, @RequestParam(value = "error", required = false) String error) {
         model.addAttribute("title", "Login");
         if (error != null) {
             model.addAttribute("errorMessage", "Invalid email or password. Please try again.");
         }
         return "auth/login";
+    }
+
+    /**
+     * Display registration form
+     * @param model Thymeleaf model
+     * @return register template
+     */
+    @GetMapping("register")
+    public String registerPage(Model model) {
+        model.addAttribute("title", "Sign Up");
+        return "auth/register";
     }
 }

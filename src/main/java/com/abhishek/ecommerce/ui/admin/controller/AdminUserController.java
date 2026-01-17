@@ -41,7 +41,10 @@ public class AdminUserController {
             return "admin/users/list";
         } catch (Exception e) {
             log.error("Error loading users list", e);
+            model.addAttribute("title", "User Management");
             model.addAttribute("errorMessage", "Unable to load users. Please try again.");
+            model.addAttribute("hasUsers", false);
+            model.addAttribute("users", new java.util.ArrayList<>());
             return "admin/users/list";
         }
     }

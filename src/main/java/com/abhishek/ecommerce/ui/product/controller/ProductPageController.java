@@ -14,14 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * All product data is fetched client-side from /api/v1/products endpoints.
  */
 @Controller
-@RequestMapping("/products-page")
 public class ProductPageController {
 
     /**
      * Display product catalog listing page.
      * Loads the list view; products are fetched via JavaScript from REST API.
      */
-    @GetMapping
+    @GetMapping({"/products", "/products-page"})
     public String listProducts(Model model) {
         model.addAttribute("title", "Products Catalog");
         return "product/list";
@@ -35,7 +34,7 @@ public class ProductPageController {
      * @param model the model to pass attributes to the view
      * @return the product details template
      */
-    @GetMapping("/{id}")
+    @GetMapping({"/products/{id}", "/products-page/{id}"})
     public String productDetails(@PathVariable Long id, Model model) {
         model.addAttribute("title", "Product Details");
         model.addAttribute("productId", id);

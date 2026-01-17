@@ -1,5 +1,6 @@
 package com.abhishek.ecommerce.seller.service;
 
+import com.abhishek.ecommerce.seller.dto.request.SellerApplicationRequestDto;
 import com.abhishek.ecommerce.seller.dto.response.SellerResponseDto;
 import com.abhishek.ecommerce.shared.enums.SellerStatus;
 
@@ -8,11 +9,18 @@ import java.util.List;
 public interface SellerService {
 
     /**
-     * User applies to become a seller
-     * Creates a new Seller entity with status = PENDING
+     * User applies to become a seller without details
+     * Creates a new Seller entity with status = REQUESTED
      * Prevents duplicate applications
      */
     SellerResponseDto applyForSeller(Long userId);
+
+    /**
+     * User applies to become a seller with business details
+     * Creates a new Seller entity or updates existing with status = REQUESTED
+     * Stores business information: address, PAN, GST, bank details, etc.
+     */
+    SellerResponseDto applyForSellerWithDetails(Long userId, SellerApplicationRequestDto applicationForm);
 
     /**
      * Admin approves a seller application

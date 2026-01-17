@@ -47,4 +47,23 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "JOIN oi.product p " +
             "WHERE p.seller.id = :sellerId")
     Page<Order> findOrdersContainingSeller(@Param("sellerId") Long sellerId, Pageable pageable);
+
+    /**
+     * Count total orders for a seller (contains their products)
+     */
+    @Query("SELECT COUNT(DISTINCT o) FROM Order o " +
+            "JOIN o.items oi " +
+            "JOIN oi.product p " +
+            "WHERE p.seller.id = :sellerId")
+    long countBySellerIdWithProducts(@Param("sellerId") Long sellerId);
+
+    /**
+     * Count pending orders for a seller (contains their products with status NOT_YET_PACKED/PACKED)
+     */
+    @Query("SELECT COUNT(DISTINCT o) FROM Order o " +
+            "JOIN o.items oi " +
+            "JOIN oi.product p " +
+            "WHERE p.seller.id = :sellerId " +
+            "AND o.status IN ('NOT_YET_PACKED', 'PACKED')")
+    long countPendingOrdersBySellerID(@Param("sellerId") Long sellerId);
 }

@@ -33,11 +33,16 @@ public class AdminSellerController {
     public String listSellerRequests(Model model) {
         try {
             var sellerRequests = sellerService.getAllPendingSellers();
+            model.addAttribute("title", "Seller Management");
             model.addAttribute("sellerRequests", sellerRequests);
             model.addAttribute("requestCount", sellerRequests.size());
+            model.addAttribute("hasPendingRequests", !sellerRequests.isEmpty());
+            log.info("Admin loaded seller requests - Total: {}", sellerRequests.size());
         } catch (Exception e) {
             log.error("Error loading seller requests", e);
+            model.addAttribute("title", "Seller Management");
             model.addAttribute("error", "Unable to load seller requests");
+            model.addAttribute("hasPendingRequests", false);
         }
         return "admin/sellers/list";
     }

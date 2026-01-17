@@ -2,8 +2,10 @@ package com.abhishek.ecommerce.security.config;
 
 import com.abhishek.ecommerce.security.jwt.JwtAuthenticationFilter;
 import com.abhishek.ecommerce.security.oauth2.OAuth2SuccessHandler;
+import com.abhishek.ecommerce.security.authentication.FormLoginSuccessHandler;
 import com.abhishek.ecommerce.security.exception.RestAccessDeniedHandler;
 import com.abhishek.ecommerce.security.exception.RestAuthenticationEntryPoint;
+import com.abhishek.ecommerce.security.logout.CustomLogoutSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,9 +37,11 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final FormLoginSuccessHandler formLoginSuccessHandler;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     @Value("${config.security.oauth2.enabled:true}")
     private boolean oauth2Enabled;
@@ -110,24 +114,29 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
                         // Admin UI pages - require ROLE_ADMIN
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // Seller UI pages - require ROLE_SELLER
+                        // Seller application page - accessible to authenticated users (ROLE_USER)
+                        .requestMatchers("/seller/apply").authenticated()
+                        // Other seller UI pages - require ROLE_SELLER
                         .requestMatchers("/seller/**").hasRole("SELLER")
+                        // Cart page - allow anonymous (uses localStorage), but checkout requires auth
+                        .requestMatchers("/cart").permitAll()
                         // Protected endpoints - require session authentication
-                        .requestMatchers("/cart", "/checkout/**", "/orders/**").authenticated()
+                        .requestMatchers("/checkout/**", "/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
                         .loginPage("/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/checkout", true)
+                        .successHandler(formLoginSuccessHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
+                        .logoutSuccessHandler(customLogoutSuccessHandler)
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID", "access_token", "refresh_token")
                         .permitAll()
                 )
                 .exceptionHandling(ex -> ex

@@ -1,12 +1,19 @@
 package com.abhishek.ecommerce.ui.admin.controller;
 
 import com.abhishek.ecommerce.product.service.ProductService;
+import com.abhishek.ecommerce.product.service.CategoryService;
+import com.abhishek.ecommerce.product.service.BrandService;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
+import com.abhishek.ecommerce.product.dto.response.CategoryResponseDto;
+import com.abhishek.ecommerce.product.dto.response.BrandResponseDto;
+import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -22,6 +29,8 @@ import java.util.List;
 public class AdminProductController {
 
     private final ProductService productService;
+    private final CategoryService categoryService;
+    private final BrandService brandService;
 
     /**
      * List all products with inventory info
@@ -59,8 +68,9 @@ public class AdminProductController {
             return "admin/products/details";
         } catch (Exception e) {
             log.error("Error loading product details: {}", productId, e);
+            model.addAttribute("title", "Product Details");
             model.addAttribute("errorMessage", "Product not found.");
-            return "redirect:/admin/products?error=not_found";
+            return "admin/products/details";
         }
     }
 
@@ -85,6 +95,52 @@ public class AdminProductController {
         } catch (Exception e) {
             log.error("Error toggling product status: {}", productId, e);
             return "redirect:/admin/products?error=toggle_failed";
+        }
+    }
+
+    /**
+     * GET /admin/products/add
+     * Show add product form
+     */
+    @GetMapping("/add")
+    public String showAddProductForm(Model model) {
+        try {
+            List<CategoryResponseDto> categories = categoryService.getAllCategories();
+            List<BrandResponseDto> brands = brandService.getAllBrands();
+            
+            model.addAttribute("title", "Add New Product");
+            model.addAttribute("categories", categories);
+            model.addAttribute("brands", brands);
+            model.addAttribute("product", new ProductCreateRequestDto());
+            
+            log.info("Admin add product form displayed");
+            return "admin/products/add";
+        } catch (Exception e) {
+            log.error("Error loading add product form", e);
+            model.addAttribute("error", "Unable to load product form");
+            return "admin/products/add";
+        }
+    }
+
+    /**
+     * POST /admin/products
+     * Create a new product
+     */
+    @PostMapping
+    public String createProduct(@Valid @ModelAttribute ProductCreateRequestDto productDto, 
+                               Model model, RedirectAttributes redirectAttributes) {
+        try {
+            ProductResponseDto createdProduct = productService.createProduct(productDto);
+            
+            log.info("Product created successfully by admin. ProductId={}", createdProduct.getId());
+            redirectAttributes.addFlashAttribute("success", "Product created successfully!");
+            return "redirect:/admin/products";
+        } catch (Exception e) {
+            log.error("Error creating product", e);
+            model.addAttribute("error", "Unable to create product: " + e.getMessage());
+            model.addAttribute("title", "Add New Product");
+            model.addAttribute("product", productDto);
+            return "admin/products/add";
         }
     }
 }

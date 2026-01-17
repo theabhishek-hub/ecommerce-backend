@@ -1,5 +1,6 @@
 package com.abhishek.ecommerce.seller.service.impl;
 
+import com.abhishek.ecommerce.seller.dto.request.SellerApplicationRequestDto;
 import com.abhishek.ecommerce.seller.dto.response.SellerResponseDto;
 import com.abhishek.ecommerce.seller.entity.Seller;
 import com.abhishek.ecommerce.seller.exception.SellerNotFoundException;
@@ -63,6 +64,56 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
+    public SellerResponseDto applyForSellerWithDetails(Long userId, SellerApplicationRequestDto applicationForm) {
+        log.info("User {} applying to become seller with details", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        Seller seller;
+        
+        // Check if user already has a seller profile
+        if (sellerRepository.existsByUserId(userId)) {
+            seller = sellerRepository.findByUserId(userId)
+                    .orElseThrow(() -> new SellerNotFoundException("Seller profile not found for user: " + userId));
+
+            if (seller.getStatus() == SellerStatus.REQUESTED) {
+                log.warn("User {} already has a REQUESTED seller application", userId);
+                throw new IllegalStateException("Seller application already pending for this user");
+            }
+            if (seller.getStatus() == SellerStatus.APPROVED) {
+                log.warn("User {} is already an approved seller", userId);
+                throw new IllegalStateException("User is already an approved seller");
+            }
+        } else {
+            // Create new seller profile
+            seller = new Seller();
+            seller.setUser(user);
+        }
+
+        // Set business details from form
+        seller.setBusinessName(applicationForm.getBusinessName());
+        seller.setBusinessDescription(applicationForm.getBusinessDescription());
+        seller.setPanNumber(applicationForm.getPanNumber());
+        seller.setGstNumber(applicationForm.getGstNumber());
+        seller.setStreetAddress(applicationForm.getStreetAddress());
+        seller.setCity(applicationForm.getCity());
+        seller.setState(applicationForm.getState());
+        seller.setPostalCode(applicationForm.getPostalCode());
+        seller.setCountry(applicationForm.getCountry() != null ? applicationForm.getCountry() : "India");
+        seller.setPhoneNumber(applicationForm.getPhoneNumber());
+        seller.setBankAccountNumber(applicationForm.getBankAccountNumber());
+        seller.setBankIfscCode(applicationForm.getBankIfscCode());
+        seller.setStatus(SellerStatus.REQUESTED);
+        seller.setSubmittedAt(LocalDateTime.now());
+        
+        seller = sellerRepository.save(seller);
+
+        log.info("Seller application with details created for user {} with ID {}", userId, seller.getId());
+        return sellerMapper.toDto(seller);
+    }
+
+    @Override
     public SellerResponseDto approveSeller(Long sellerId, Long adminUserId) {
         log.info("Admin {} approving seller {}", adminUserId, sellerId);
 
@@ -82,16 +133,20 @@ public class SellerServiceImpl implements SellerService {
         seller.setApprovedAt(LocalDateTime.now());
         seller.setApprovedByAdmin(admin);
 
-        // Assign ROLE_SELLER to the user if not already present
+        // Update User's seller status
         User sellerUser = seller.getUser();
+        sellerUser.setSellerStatus(SellerStatus.APPROVED);
+        sellerUser.setSellerApprovedAt(LocalDateTime.now());
+
+        // Assign ROLE_SELLER to the user if not already present
         if (!sellerUser.getRoles().contains(Role.ROLE_SELLER)) {
             sellerUser.getRoles().add(Role.ROLE_SELLER);
-            userRepository.save(sellerUser);
             log.info("Assigned ROLE_SELLER to user {}", sellerUser.getId());
         }
 
+        userRepository.save(sellerUser);
         seller = sellerRepository.save(seller);
-        log.info("Seller {} approved by admin {}", sellerId, adminUserId);
+        log.info("Seller {} approved by admin {}. User sellerStatus updated to APPROVED", sellerId, adminUserId);
         return sellerMapper.toDto(seller);
     }
 
@@ -116,13 +171,17 @@ public class SellerServiceImpl implements SellerService {
         seller.setApprovedByAdmin(admin);
         seller.setRejectionReason(rejectionReason);
 
-        // Remove ROLE_SELLER from the user if present
+        // Update User's seller status to REJECTED
         User sellerUser = seller.getUser();
+        sellerUser.setSellerStatus(SellerStatus.REJECTED);
+
+        // Remove ROLE_SELLER from the user if present
         if (sellerUser.getRoles().contains(Role.ROLE_SELLER)) {
             sellerUser.getRoles().remove(Role.ROLE_SELLER);
-            userRepository.save(sellerUser);
             log.info("Removed ROLE_SELLER from user {}", sellerUser.getId());
         }
+
+        userRepository.save(sellerUser);
 
         seller = sellerRepository.save(seller);
         log.info("Seller {} rejected by admin {}", sellerId, adminUserId);
@@ -148,14 +207,17 @@ public class SellerServiceImpl implements SellerService {
         seller.setStatus(SellerStatus.SUSPENDED);
         seller.setRejectionReason(suspensionReason); // Reuse field for suspension reason
 
-        // Remove ROLE_SELLER from the user
+        // Update User's seller status to SUSPENDED
         User sellerUser = seller.getUser();
+        sellerUser.setSellerStatus(SellerStatus.SUSPENDED);
+
+        // Remove ROLE_SELLER from the user
         if (sellerUser.getRoles().contains(Role.ROLE_SELLER)) {
             sellerUser.getRoles().remove(Role.ROLE_SELLER);
-            userRepository.save(sellerUser);
             log.info("Removed ROLE_SELLER from user {}", sellerUser.getId());
         }
 
+        userRepository.save(sellerUser);
         seller = sellerRepository.save(seller);
         log.info("Seller {} suspended by admin {}", sellerId, adminUserId);
         return sellerMapper.toDto(seller);

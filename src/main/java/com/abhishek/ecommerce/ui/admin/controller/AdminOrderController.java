@@ -59,8 +59,9 @@ public class AdminOrderController {
             return "admin/orders/details";
         } catch (Exception e) {
             log.error("Error loading order details: {}", orderId, e);
+            model.addAttribute("title", "Order Details");
             model.addAttribute("errorMessage", "Order not found.");
-            return "redirect:/admin/orders?error=not_found";
+            return "admin/orders/details";
         }
     }
 

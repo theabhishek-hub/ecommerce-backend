@@ -14,6 +14,7 @@ import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.mapper.UserMapper;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.user.service.UserService;
+import com.abhishek.ecommerce.seller.service.SellerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
     private final SecurityUtils securityUtils;
+    private final SellerService sellerService;
 
     // ========================= CREATE =========================
     @Override
@@ -90,8 +92,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getUserById(Long userId) {
-
-        User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+        // CRITICAL FIX: Use fresh query that bypasses Hibernate cache
+        // Ensures latest SellerStatus is fetched from database after admin approval
+        User user = userRepository.findFreshByIdAndStatus(userId, UserStatus.ACTIVE)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         return userMapper.toDto(user);
@@ -242,18 +245,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public long getTotalSellerCount() {
-        // Count sellers approved in the seller domain
-        // This requires SellerService to be injected
-        // For now, return 0 - implement in SellerService instead
-        return 0;
+        // Count sellers with APPROVED status
+        return sellerService.countByStatus(SellerStatus.APPROVED);
     }
 
     @Override
     public long getPendingSellerRequestCount() {
-        // Count pending sellers in the seller domain
-        // This requires SellerService to be injected
-        // For now, return 0 - implement in SellerService instead
-        return 0;
+        // Count sellers with REQUESTED status using SellerService
+        return sellerService.countByStatus(SellerStatus.REQUESTED);
     }
 
     // ========================= PRIVATE HELPER =========================
