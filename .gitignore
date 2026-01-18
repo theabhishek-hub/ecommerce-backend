@@ -37,6 +37,8 @@ Thumbs.db
 PERFORMANCE.md
 PROJECT_ANALYSIS.md
 
+debug.log
+
 src/main/resources
 application.yml
 application-dev.yml
