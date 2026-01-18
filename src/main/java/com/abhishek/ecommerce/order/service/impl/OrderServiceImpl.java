@@ -301,6 +301,27 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<OrderResponseDto> getAllOrders(Pageable pageable) {
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+        List<OrderResponseDto> content = orderPage.getContent()
+                .stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<OrderResponseDto>builder()
+                .content(content)
+                .pageNumber(orderPage.getNumber())
+                .pageSize(orderPage.getSize())
+                .totalElements(orderPage.getTotalElements())
+                .totalPages(orderPage.getTotalPages())
+                .first(orderPage.isFirst())
+                .last(orderPage.isLast())
+                .empty(orderPage.isEmpty())
+                .build();
+    }
+
     // ========================= PRIVATE HELPER =========================
     private Order getOrderOrThrow(Long orderId) {
         return orderRepository.findById(orderId)

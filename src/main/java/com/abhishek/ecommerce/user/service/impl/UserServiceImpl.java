@@ -15,8 +15,11 @@ import com.abhishek.ecommerce.user.mapper.UserMapper;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.user.service.UserService;
 import com.abhishek.ecommerce.seller.service.SellerService;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -117,6 +120,70 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    // ========================= PAGINATION & SEARCH =========================
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<UserResponseDto> getAllUsers(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+        List<UserResponseDto> content = userPage.getContent()
+                .stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<UserResponseDto>builder()
+                .content(content)
+                .pageNumber(userPage.getNumber())
+                .pageSize(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .first(userPage.isFirst())
+                .last(userPage.isLast())
+                .empty(userPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<UserResponseDto> searchUsersByEmail(String email, Pageable pageable) {
+        Page<User> userPage = userRepository.searchByEmail(email, pageable);
+        List<UserResponseDto> content = userPage.getContent()
+                .stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<UserResponseDto>builder()
+                .content(content)
+                .pageNumber(userPage.getNumber())
+                .pageSize(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .first(userPage.isFirst())
+                .last(userPage.isLast())
+                .empty(userPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<UserResponseDto> getUsersBySellerStatus(SellerStatus status, Pageable pageable) {
+        Page<User> userPage = userRepository.findBySellerStatus(status, pageable);
+        List<UserResponseDto> content = userPage.getContent()
+                .stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<UserResponseDto>builder()
+                .content(content)
+                .pageNumber(userPage.getNumber())
+                .pageSize(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .first(userPage.isFirst())
+                .last(userPage.isLast())
+                .empty(userPage.isEmpty())
+                .build();
     }
 
     // ========================= STATUS =========================

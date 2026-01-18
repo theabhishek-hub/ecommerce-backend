@@ -2,8 +2,12 @@ package com.abhishek.ecommerce.ui.admin.controller;
 
 import com.abhishek.ecommerce.order.service.OrderService;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,18 +28,22 @@ public class AdminOrderController {
     private final OrderService orderService;
 
     /**
-     * List all orders from all users
+     * List all orders from all users (paginated)
      */
     @GetMapping
-    public String ordersList(Model model) {
+    public String ordersList(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            Model model) {
         try {
-            List<OrderResponseDto> orders = orderService.getAllOrders();
+            PageResponseDto<OrderResponseDto> pageResponse = orderService.getAllOrders(pageable);
 
             model.addAttribute("title", "Order Oversight");
-            model.addAttribute("orders", orders);
-            model.addAttribute("hasOrders", !orders.isEmpty());
+            model.addAttribute("orders", pageResponse.getContent());
+            model.addAttribute("page", pageResponse);
+            model.addAttribute("hasOrders", !pageResponse.getContent().isEmpty());
 
-            log.info("Admin loaded all orders - Total: {}", orders.size());
+            log.info("Admin loaded all orders - Page: {}/{}, Total: {}", 
+                pageResponse.getPageNumber() + 1, pageResponse.getTotalPages(), pageResponse.getTotalElements());
             return "admin/orders/list";
         } catch (Exception e) {
             log.error("Error loading orders list", e);

@@ -31,6 +31,7 @@ public interface OrderService {
 
     OrderResponseDto getOrderById(Long orderId);
     List<OrderResponseDto> getAllOrders();
+    PageResponseDto<OrderResponseDto> getAllOrders(Pageable pageable);
     OrderResponseDto shipOrder(Long orderId);
 
     OrderResponseDto deliverOrder(Long orderId);

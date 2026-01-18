@@ -3,6 +3,8 @@ package com.abhishek.ecommerce.seller.service;
 import com.abhishek.ecommerce.seller.dto.request.SellerApplicationRequestDto;
 import com.abhishek.ecommerce.seller.dto.response.SellerResponseDto;
 import com.abhishek.ecommerce.shared.enums.SellerStatus;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -80,5 +82,16 @@ public interface SellerService {
      * Count sellers by status
      */
     long countByStatus(SellerStatus status);
+
+    // ========================= PAGINATION & SEARCH =========================
+    /**
+     * Get all sellers with pagination
+     */
+    PageResponseDto<SellerResponseDto> getAllSellers(Pageable pageable);
+
+    /**
+     * Get sellers by status with pagination
+     */
+    PageResponseDto<SellerResponseDto> getSellersByStatus(SellerStatus status, Pageable pageable);
 
 }

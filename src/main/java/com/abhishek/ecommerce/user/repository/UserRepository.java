@@ -3,6 +3,8 @@ package com.abhishek.ecommerce.user.repository;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.abhishek.ecommerce.shared.enums.SellerStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
@@ -41,4 +43,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.id = :userId AND u.status = :status")
     @QueryHints({@QueryHint(name = "org.hibernate.cacheable", value = "false")})
     Optional<User> findFreshByIdAndStatus(@Param("userId") Long userId, @Param("status") UserStatus status);
+
+    // ========================= PAGINATION SUPPORT =========================
+    /**
+     * Get all users with pagination
+     */
+    Page<User> findAll(Pageable pageable);
+
+    /**
+     * Search users by email with pagination
+     */
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))")
+    Page<User> searchByEmail(@Param("email") String email, Pageable pageable);
+
+    /**
+     * Get users by seller status with pagination
+     */
+    Page<User> findBySellerStatus(SellerStatus status, Pageable pageable);
+
+    /**
+     * Get users by user status with pagination
+     */
+    Page<User> findByStatus(UserStatus status, Pageable pageable);
 }

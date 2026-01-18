@@ -12,8 +12,11 @@ import com.abhishek.ecommerce.shared.enums.SellerStatus;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.repository.UserRepository;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -275,6 +278,48 @@ public class SellerServiceImpl implements SellerService {
     @Transactional(readOnly = true)
     public long countByStatus(SellerStatus status) {
         return sellerRepository.countByStatus(status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<SellerResponseDto> getAllSellers(Pageable pageable) {
+        Page<Seller> sellerPage = sellerRepository.findAll(pageable);
+        List<SellerResponseDto> content = sellerPage.getContent()
+                .stream()
+                .map(sellerMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<SellerResponseDto>builder()
+                .content(content)
+                .pageNumber(sellerPage.getNumber())
+                .pageSize(sellerPage.getSize())
+                .totalElements(sellerPage.getTotalElements())
+                .totalPages(sellerPage.getTotalPages())
+                .first(sellerPage.isFirst())
+                .last(sellerPage.isLast())
+                .empty(sellerPage.isEmpty())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<SellerResponseDto> getSellersByStatus(SellerStatus status, Pageable pageable) {
+        Page<Seller> sellerPage = sellerRepository.findByStatus(status, pageable);
+        List<SellerResponseDto> content = sellerPage.getContent()
+                .stream()
+                .map(sellerMapper::toDto)
+                .collect(Collectors.toList());
+
+        return PageResponseDto.<SellerResponseDto>builder()
+                .content(content)
+                .pageNumber(sellerPage.getNumber())
+                .pageSize(sellerPage.getSize())
+                .totalElements(sellerPage.getTotalElements())
+                .totalPages(sellerPage.getTotalPages())
+                .first(sellerPage.isFirst())
+                .last(sellerPage.isLast())
+                .empty(sellerPage.isEmpty())
+                .build();
     }
 
 }

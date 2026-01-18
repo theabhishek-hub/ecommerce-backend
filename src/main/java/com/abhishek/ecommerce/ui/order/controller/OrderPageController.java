@@ -2,9 +2,13 @@ package com.abhishek.ecommerce.ui.order.controller;
 
 import com.abhishek.ecommerce.order.service.OrderService;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import com.abhishek.ecommerce.order.exception.OrderNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,26 +31,30 @@ public class OrderPageController {
     private final OrderService orderService;
 
     /**
-     * Display list of all orders for authenticated user
+     * Display list of all orders for authenticated user (paginated)
+     * @param pageable pagination/sorting parameters
      * @param model Thymeleaf model
      * @return orders/list template
      */
     @GetMapping
-    public String ordersList(Model model) {
+    public String ordersList(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            Model model) {
         try {
-            // Get all orders for currently authenticated user
-            List<OrderResponseDto> orders = orderService.getOrdersForCurrentUser();
+            // Get paginated orders for currently authenticated user
+            PageResponseDto<OrderResponseDto> pageResponse = orderService.getOrdersForCurrentUser(pageable);
             
             model.addAttribute("title", "My Orders");
-            model.addAttribute("orders", orders);
-            model.addAttribute("hasOrders", !orders.isEmpty());
+            model.addAttribute("orders", pageResponse.getContent());
+            model.addAttribute("page", pageResponse);
+            model.addAttribute("hasOrders", !pageResponse.getContent().isEmpty());
             
-            log.info("Loaded {} orders for authenticated user", orders.size());
-            return "orders/list";
+            log.info("Loaded page {} of orders for authenticated user", pageResponse.getPageNumber());
+            return "orders/list-updated";
         } catch (Exception e) {
             log.error("Error loading orders list", e);
             model.addAttribute("errorMessage", "Unable to load orders. Please try again later.");
-            return "orders/list";
+            return "orders/list-updated";
         }
     }
 
