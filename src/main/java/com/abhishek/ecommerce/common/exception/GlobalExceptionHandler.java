@@ -73,6 +73,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getErrorCode(), ex.getMessage(), HttpStatus.CONFLICT.value()));
     }
 
+    @ExceptionHandler(ImageUploadException.class)
+    public ResponseEntity<ErrorResponse> handleImageUploadError(ImageUploadException ex) {
+        log.error("ImageUploadException: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getErrorCode(), ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
+    }
+
     // ========================= CATEGORY EXCEPTIONS =========================
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCategoryNotFound(CategoryNotFoundException ex) {

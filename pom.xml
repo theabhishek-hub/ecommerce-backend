@@ -188,6 +188,13 @@
             <version>1.4.6</version>
         </dependency>
 
+        <!-- Cloudinary for image storage -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.38.0</version>
+        </dependency>
+
         <!-- Optional: metadata generation for @ConfigurationProperties (no runtime impact) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
