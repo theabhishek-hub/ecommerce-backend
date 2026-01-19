@@ -18,6 +18,15 @@ public class InventoryResponseDto {
     @Schema(description = "Product name", example = "iPhone 15")
     private String productName;
 
+    @Schema(description = "Product SKU", example = "IPHONE-15-128GB")
+    private String sku;
+
+    @Schema(description = "Seller ID (null for admin products)", example = "10")
+    private Long sellerId;
+
+    @Schema(description = "Seller name (null for admin products)", example = "John's Electronics")
+    private String sellerName;
+
     @Schema(description = "Available quantity in stock", example = "50")
     private Integer quantity;
 

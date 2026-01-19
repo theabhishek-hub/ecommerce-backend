@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import java.util.List;
+
 /**
  * REST APIs for order management
  */
@@ -31,8 +33,16 @@ public class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<OrderResponseDto> placeOrder() {
-        OrderResponseDto response = orderService.placeOrderForCurrentUser();
+    public ApiResponse<OrderResponseDto> placeOrder(
+            @RequestParam(value = "paymentMethod", required = false, defaultValue = "COD") String paymentMethod) {
+        // Parse payment method, default to COD for backward compatibility
+        com.abhishek.ecommerce.payment.entity.PaymentMethod method;
+        try {
+            method = com.abhishek.ecommerce.payment.entity.PaymentMethod.valueOf(paymentMethod.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            method = com.abhishek.ecommerce.payment.entity.PaymentMethod.COD;
+        }
+        OrderResponseDto response = orderService.placeOrderForCurrentUser(method);
         return ApiResponseBuilder.created("Order placed successfully", response);
     }
 

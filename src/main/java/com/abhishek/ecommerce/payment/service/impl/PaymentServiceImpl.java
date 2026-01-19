@@ -76,10 +76,10 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setTransactionId(null);
             log.info("createPayment COD orderId={}", requestDto.getOrderId());
         } else {
-            // ONLINE (mock)
-            payment.setStatus(PaymentStatus.SUCCESS);
-            payment.setTransactionId("TXN-" + System.currentTimeMillis());
-            log.info("createPayment ONLINE orderId={} txnId={}", requestDto.getOrderId(), payment.getTransactionId());
+            // ONLINE - leave as PENDING until Razorpay verification completes
+            payment.setStatus(PaymentStatus.PENDING);
+            payment.setTransactionId(null);
+            log.info("createPayment ONLINE orderId={} status=PENDING (awaiting Razorpay verification)", requestDto.getOrderId());
         }
 
         Payment savedPayment = paymentRepository.save(payment);

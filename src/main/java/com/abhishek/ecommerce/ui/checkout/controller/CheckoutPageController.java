@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -72,6 +73,7 @@ public class CheckoutPageController {
      * Place order for the current authenticated user.
      * Uses session-based authentication (works with form login, OAuth2, etc.)
      * 
+     * @param paymentMethod Payment method (COD or ONLINE) - defaults to COD if not provided
      * @param redirectAttributes For flash messages
      * @param authentication Spring Security authentication
      * @return Redirect to orders page on success
@@ -79,6 +81,7 @@ public class CheckoutPageController {
     @PostMapping("/place-order")
     @PreAuthorize("isAuthenticated()")
     public String placeOrder(
+            @RequestParam(value = "paymentMethod", required = false, defaultValue = "COD") String paymentMethod,
             RedirectAttributes redirectAttributes,
             Authentication authentication) {
         
@@ -102,9 +105,18 @@ public class CheckoutPageController {
         }
 
         try {
-            OrderResponseDto order = orderService.placeOrderForCurrentUser();
+            // Parse payment method, default to COD for backward compatibility
+            com.abhishek.ecommerce.payment.entity.PaymentMethod method;
+            try {
+                method = com.abhishek.ecommerce.payment.entity.PaymentMethod.valueOf(paymentMethod.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid payment method '{}', defaulting to COD", paymentMethod);
+                method = com.abhishek.ecommerce.payment.entity.PaymentMethod.COD;
+            }
+
+            OrderResponseDto order = orderService.placeOrderForCurrentUser(method);
             redirectAttributes.addFlashAttribute("success", "Order placed successfully! Order ID: " + order.getId());
-            log.info("Order placed successfully via UI: orderId={}", order.getId());
+            log.info("Order placed successfully via UI: orderId={} paymentMethod={}", order.getId(), method);
             return "redirect:/orders";
         } catch (Exception e) {
             log.error("Error placing order via UI", e);

@@ -17,6 +17,16 @@ public class InventoryMapper {
         dto.setId(inventory.getId());
         dto.setProductId(inventory.getProduct() != null ? inventory.getProduct().getId() : null);
         dto.setProductName(inventory.getProduct() != null ? inventory.getProduct().getName() : null);
+        dto.setSku(inventory.getProduct() != null ? inventory.getProduct().getSku() : null);
+        
+        // Seller info
+        if (inventory.getProduct() != null && inventory.getProduct().getSeller() != null) {
+            dto.setSellerId(inventory.getProduct().getSeller().getId());
+            if (inventory.getProduct().getSeller().getUser() != null) {
+                dto.setSellerName(inventory.getProduct().getSeller().getUser().getFullName());
+            }
+        }
+        
         dto.setQuantity(inventory.getQuantity());
 
         return dto;

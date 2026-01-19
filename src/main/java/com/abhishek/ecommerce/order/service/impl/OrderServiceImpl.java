@@ -107,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
         log.info("placeOrder completed orderId={} userId={}", savedOrder.getId(), userId);
 
-        // Create payment entry (COD for now)
+        // Create payment entry (COD for now) - default behavior for backward compatibility
         com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto paymentRequest = 
             new com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto();
         paymentRequest.setOrderId(savedOrder.getId());
@@ -242,6 +242,85 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("User not authenticated");
         }
         return placeOrder(userId);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponseDto placeOrder(Long userId, PaymentMethod paymentMethod) {
+        log.info("placeOrder started for userId={} paymentMethod={}", userId, paymentMethod);
+
+        // 1️⃣ Fetch user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // 2️⃣ Fetch cart
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new CartNotFoundException(userId));
+
+        if (cart.getItems().isEmpty()) {
+            log.warn("placeOrder empty cart for userId={}", userId);
+            throw new RuntimeException("Cannot place order with empty cart");
+        }
+
+        // 3️⃣ Create Order
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus(OrderStatus.CREATED);
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        // 4️⃣ Convert cart items → order items + REDUCE INVENTORY
+        for (CartItem cartItem : cart.getItems()) {
+            com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto stockRequest = 
+                new com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto();
+            stockRequest.setQuantity(cartItem.getQuantity());
+            inventoryService.reduceStock(cartItem.getProduct().getId(), stockRequest);
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getPrice());
+
+            order.getItems().add(orderItem);
+
+            total = total.add(
+                    cartItem.getPrice().getAmount()
+                            .multiply(BigDecimal.valueOf(cartItem.getQuantity()))
+            );
+        }
+
+        // 5️⃣ Set total amount
+        order.setTotalAmount(new Money(total, "INR"));
+
+        // 6️⃣ Save order
+        Order savedOrder = orderRepository.save(order);
+        log.info("placeOrder completed orderId={} userId={}", savedOrder.getId(), userId);
+
+        // 7️⃣ Create payment entry based on payment method
+        com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto paymentRequest = 
+            new com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto();
+        paymentRequest.setOrderId(savedOrder.getId());
+        paymentRequest.setPaymentMethod(paymentMethod);
+        paymentService.createPayment(paymentRequest);
+
+        // 8️⃣ Clear cart SAFELY
+        cart.getItems().clear();
+        cartRepository.save(cart);
+
+        // 9️⃣ Send order confirmation notification (async side effect)
+        notificationService.sendOrderConfirmation(savedOrder.getId(), user.getEmail(), user.getFullName());
+
+        return orderMapper.toDto(savedOrder);
+    }
+
+    @Override
+    public OrderResponseDto placeOrderForCurrentUser(PaymentMethod paymentMethod) {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return placeOrder(userId, paymentMethod);
     }
 
     @Override

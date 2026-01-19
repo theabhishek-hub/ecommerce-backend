@@ -14,9 +14,19 @@ public interface OrderService {
     OrderResponseDto placeOrder(Long userId);
 
     /**
+     * Place order with specified payment method
+     */
+    OrderResponseDto placeOrder(Long userId, com.abhishek.ecommerce.payment.entity.PaymentMethod paymentMethod);
+
+    /**
      * Place order for the current authenticated user
      */
     OrderResponseDto placeOrderForCurrentUser();
+
+    /**
+     * Place order for current user with specified payment method
+     */
+    OrderResponseDto placeOrderForCurrentUser(com.abhishek.ecommerce.payment.entity.PaymentMethod paymentMethod);
 
     List<OrderResponseDto> getOrdersByUser(Long userId);
 

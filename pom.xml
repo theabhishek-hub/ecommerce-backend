@@ -181,6 +181,19 @@
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
 
+        <!-- Razorpay (optional at runtime; enabled only when env keys are present) -->
+        <dependency>
+            <groupId>com.razorpay</groupId>
+            <artifactId>razorpay-java</artifactId>
+            <version>1.4.6</version>
+        </dependency>
+
+        <!-- Optional: metadata generation for @ConfigurationProperties (no runtime impact) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
 
     </dependencies>
 

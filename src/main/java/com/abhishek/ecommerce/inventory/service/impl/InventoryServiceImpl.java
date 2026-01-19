@@ -1,5 +1,6 @@
 package com.abhishek.ecommerce.inventory.service.impl;
 
+import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto;
 import com.abhishek.ecommerce.inventory.dto.response.InventoryResponseDto;
 import com.abhishek.ecommerce.inventory.entity.Inventory;
@@ -11,11 +12,15 @@ import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.product.entity.Product;
 import com.abhishek.ecommerce.product.exception.ProductNotFoundException;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 /**
  * Inventory business logic
@@ -118,6 +123,90 @@ public class InventoryServiceImpl implements InventoryService {
                     return inv;
                 });
         return inventoryMapper.toDto(inventory);
+    }
+
+    // ========================= GET INVENTORY BY SELLER =========================
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<InventoryResponseDto> getInventoryBySeller(Long sellerId, Pageable pageable) {
+        log.debug("getInventoryBySeller for sellerId={}", sellerId);
+        Page<Inventory> inventoryPage = inventoryRepository.findBySellerId(sellerId, pageable);
+        
+        // Force initialization of lazy relationships within transaction
+        inventoryPage.getContent().forEach(inventory -> {
+            if (inventory.getProduct() != null) {
+                inventory.getProduct().getName(); // Initialize product
+                if (inventory.getProduct().getSeller() != null) {
+                    inventory.getProduct().getSeller().getId(); // Initialize seller
+                    if (inventory.getProduct().getSeller().getUser() != null) {
+                        inventory.getProduct().getSeller().getUser().getFullName(); // Initialize user
+                    }
+                }
+            }
+        });
+        
+        return mapToPageResponseDto(inventoryPage);
+    }
+
+    // ========================= GET INVENTORY BY SELLER WITH SEARCH =========================
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<InventoryResponseDto> getInventoryBySellerAndSearch(Long sellerId, String searchQuery, Pageable pageable) {
+        log.debug("getInventoryBySellerAndSearch for sellerId={}, searchQuery={}", sellerId, searchQuery);
+        String search = (searchQuery != null && !searchQuery.trim().isEmpty()) ? searchQuery.trim() : "";
+        Page<Inventory> inventoryPage = inventoryRepository.findBySellerIdAndProductNameContaining(sellerId, search, pageable);
+        
+        // Force initialization of lazy relationships within transaction
+        inventoryPage.getContent().forEach(inventory -> {
+            if (inventory.getProduct() != null) {
+                inventory.getProduct().getName(); // Initialize product
+                if (inventory.getProduct().getSeller() != null) {
+                    inventory.getProduct().getSeller().getId(); // Initialize seller
+                    if (inventory.getProduct().getSeller().getUser() != null) {
+                        inventory.getProduct().getSeller().getUser().getFullName(); // Initialize user
+                    }
+                }
+            }
+        });
+        
+        return mapToPageResponseDto(inventoryPage);
+    }
+
+    // ========================= GET ALL INVENTORY (ADMIN) =========================
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<InventoryResponseDto> getAllInventory(Pageable pageable) {
+        log.debug("getAllInventory - admin view");
+        // Use native query with JOIN FETCH for admin view to avoid N+1 queries
+        Page<Inventory> inventoryPage = inventoryRepository.findAll(pageable);
+        
+        // Manually fetch seller and user relationships for each inventory item
+        inventoryPage.getContent().forEach(inventory -> {
+            if (inventory.getProduct() != null && inventory.getProduct().getSeller() != null) {
+                // Force initialization of lazy relationships
+                inventory.getProduct().getSeller().getId();
+                if (inventory.getProduct().getSeller().getUser() != null) {
+                    inventory.getProduct().getSeller().getUser().getFullName();
+                }
+            }
+        });
+        
+        return mapToPageResponseDto(inventoryPage);
+    }
+
+    private PageResponseDto<InventoryResponseDto> mapToPageResponseDto(Page<Inventory> inventoryPage) {
+        return PageResponseDto.<InventoryResponseDto>builder()
+                .content(inventoryPage.getContent().stream()
+                        .map(inventoryMapper::toDto)
+                        .collect(Collectors.toList()))
+                .pageNumber(inventoryPage.getNumber())
+                .pageSize(inventoryPage.getSize())
+                .totalElements(inventoryPage.getTotalElements())
+                .totalPages(inventoryPage.getTotalPages())
+                .first(inventoryPage.isFirst())
+                .last(inventoryPage.isLast())
+                .empty(inventoryPage.isEmpty())
+                .build();
     }
 }
 

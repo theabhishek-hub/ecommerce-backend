@@ -7,6 +7,7 @@ import com.abhishek.ecommerce.common.apiResponse.ErrorResponse;
 import com.abhishek.ecommerce.inventory.exception.InsufficientStockException;
 import com.abhishek.ecommerce.inventory.exception.InventoryNotFoundException;
 import com.abhishek.ecommerce.order.exception.OrderNotFoundException;
+import com.abhishek.ecommerce.payment.gateway.razorpay.exception.RazorpayNotConfiguredException;
 import com.abhishek.ecommerce.payment.exception.PaymentNotFoundException;
 import com.abhishek.ecommerce.product.exception.*;
 import com.abhishek.ecommerce.user.exception.UserAlreadyExistsException;
@@ -131,6 +132,13 @@ public class GlobalExceptionHandler {
         log.error("PaymentNotFoundException: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(ex.getErrorCode(), ex.getMessage(), HttpStatus.NOT_FOUND.value()));
+    }
+
+    @ExceptionHandler(RazorpayNotConfiguredException.class)
+    public ResponseEntity<ErrorResponse> handleRazorpayNotConfigured(RazorpayNotConfiguredException ex) {
+        log.error("RazorpayNotConfiguredException: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("RAZORPAY_NOT_CONFIGURED", ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
     }
 
     // ========================= INVENTORY EXCEPTIONS =========================
