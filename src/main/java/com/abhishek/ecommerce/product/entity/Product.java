@@ -2,7 +2,7 @@ package com.abhishek.ecommerce.product.entity;
 
 import com.abhishek.ecommerce.common.baseEntity.BaseEntity;
 import com.abhishek.ecommerce.common.baseEntity.Money;
-import com.abhishek.ecommerce.seller.entity.Seller;
+import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.shared.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -61,12 +61,13 @@ public class Product extends BaseEntity {
 
     // ======================== SELLER OWNERSHIP ========================
     /**
-     * Optional Many-to-One relationship to Seller
+     * Optional Many-to-One relationship to User (seller)
      * null = admin-created product (global catalog)
      * not null = seller product (multi-vendor)
+     * References the User entity directly (seller_user_id) instead of Seller entity
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id")
-    private Seller seller;
+    @JoinColumn(name = "seller_user_id")
+    private User seller;
 
 }

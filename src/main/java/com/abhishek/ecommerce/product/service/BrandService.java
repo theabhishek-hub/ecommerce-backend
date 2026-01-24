@@ -16,6 +16,18 @@ public interface BrandService {
     List<BrandResponseDto> getAllBrands();
     List<BrandResponseDto> getAllActiveBrands();
     
+    // SEARCH
+    List<BrandResponseDto> searchBrandsByName(String name);
+    
+    // FILTER
+    List<BrandResponseDto> filterByStatus(String status);
+    
+    // SORT
+    List<BrandResponseDto> getAllBrandsSorted(String sortBy, String order);
+    
+    // COMBINED SEARCH & FILTER & SORT
+    List<BrandResponseDto> searchFilterSort(String name, String status, String sortBy, String order);
+    
     // UPDATE
     BrandResponseDto updateBrand(Long brandId, BrandUpdateRequestDto requestDto);
     

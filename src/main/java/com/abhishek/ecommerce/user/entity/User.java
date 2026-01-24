@@ -46,6 +46,9 @@ public class User extends BaseEntity {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(name = "phone", length = 20)
+    private String phone;
+
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
@@ -85,5 +88,15 @@ public class User extends BaseEntity {
 
     @Column(name = "seller_approved_at")
     private java.time.LocalDateTime sellerApprovedAt;
+
+    @Column(name = "seller_rejection_reason", length = 500)
+    private String sellerRejectionReason;
+
+    /**
+     * Admin who approved/rejected this user's seller application
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by_admin_id")
+    private User approvedByAdmin;
 
 }

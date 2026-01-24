@@ -7,6 +7,11 @@ import org.springframework.data.domain.Pageable;
 
 public interface InventoryService {
 
+    /**
+     * Create initial inventory record for a new product with 0 quantity
+     */
+    void createInitialInventory(Long productId);
+
     InventoryResponseDto increaseStock(Long productId, UpdateStockRequestDto requestDto);
 
     InventoryResponseDto reduceStock(Long productId, UpdateStockRequestDto requestDto);

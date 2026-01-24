@@ -5,6 +5,7 @@ import com.abhishek.ecommerce.security.oauth2.OAuth2SuccessHandler;
 import com.abhishek.ecommerce.security.authentication.FormLoginSuccessHandler;
 import com.abhishek.ecommerce.security.exception.RestAccessDeniedHandler;
 import com.abhishek.ecommerce.security.exception.RestAuthenticationEntryPoint;
+import com.abhishek.ecommerce.security.filter.SellerRoleRefreshFilter;
 import com.abhishek.ecommerce.security.logout.CustomLogoutSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,14 +43,16 @@ public class SecurityConfig {
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final CorsConfigurationSource corsConfigurationSource;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
+    private final SellerRoleRefreshFilter sellerRoleRefreshFilter;
 
     @Value("${config.security.oauth2.enabled:true}")
     private boolean oauth2Enabled;
 
     /**
-     * SecurityFilterChain for REST APIs (JWT-based, stateless)
+     * SecurityFilterChain for REST APIs (JWT + Session-based)
      * Matches: /api/** requests
-     * Authentication: JWT tokens in Authorization header
+     * Authentication: JWT tokens in Authorization header OR session cookies
+     * Session policy: IF_REQUIRED (allows both JWT and session)
      */
     @Bean("apiSecurityFilterChain")
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -58,7 +61,7 @@ public class SecurityConfig {
                 .securityMatcher(new AntPathRequestMatcher("/api/**"))
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
@@ -125,6 +128,7 @@ public class SecurityConfig {
                         .requestMatchers("/checkout/**", "/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(sellerRoleRefreshFilter, org.springframework.security.web.access.intercept.AuthorizationFilter.class)
                 .formLogin(login -> login
                         .loginPage("/login")
                         .usernameParameter("email")

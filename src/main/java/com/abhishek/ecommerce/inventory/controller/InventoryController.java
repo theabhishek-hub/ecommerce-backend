@@ -8,7 +8,6 @@ import com.abhishek.ecommerce.inventory.dto.response.InventoryResponseDto;
 import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.product.exception.ProductNotFoundException;
 import com.abhishek.ecommerce.product.service.ProductService;
-import com.abhishek.ecommerce.seller.service.SellerService;
 import com.abhishek.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,17 +33,16 @@ public class InventoryController {
 
     private final InventoryService inventoryService;
     private final UserService userService;
-    private final SellerService sellerService;
     private final ProductService productService;
 
     // ========================= INCREASE STOCK =========================
     @Operation(
         summary = "Increase product stock",
-        description = "Requires ADMIN role"
+        description = "Requires ADMIN or SELLER role (SELLER: own products only)"
     )
     @PutMapping("/products/{productId}/stock/increase")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER') and (hasRole('ADMIN') or @sellerSecurity.isSellerOwnerProduct(#productId))")
     public ApiResponse<InventoryResponseDto> increaseStock(
             @PathVariable Long productId,
             @Valid @RequestBody UpdateStockRequestDto requestDto
@@ -56,11 +54,11 @@ public class InventoryController {
     // ========================= REDUCE STOCK =========================
     @Operation(
         summary = "Reduce product stock",
-        description = "Requires ADMIN role"
+        description = "Requires ADMIN or SELLER role (SELLER: own products only)"
     )
     @PutMapping("/products/{productId}/stock/reduce")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER') and (hasRole('ADMIN') or @sellerSecurity.isSellerOwnerProduct(#productId))")
     public ApiResponse<InventoryResponseDto> reduceStock(
             @PathVariable Long productId,
             @Valid @RequestBody UpdateStockRequestDto requestDto
@@ -95,17 +93,12 @@ public class InventoryController {
             @RequestParam(required = false) String q,
             @PageableDefault(size = 10, sort = "product.name") Pageable pageable) {
         var currentUser = userService.getCurrentUserProfile();
-        var sellerProfile = sellerService.getSellerByUserId(currentUser.getId());
-        
-        if (sellerProfile == null) {
-            throw new IllegalStateException("Seller profile not found");
-        }
         
         PageResponseDto<InventoryResponseDto> response;
         if (q != null && !q.trim().isEmpty()) {
-            response = inventoryService.getInventoryBySellerAndSearch(sellerProfile.getId(), q.trim(), pageable);
+            response = inventoryService.getInventoryBySellerAndSearch(currentUser.getId(), q.trim(), pageable);
         } else {
-            response = inventoryService.getInventoryBySeller(sellerProfile.getId(), pageable);
+            response = inventoryService.getInventoryBySeller(currentUser.getId(), pageable);
         }
         
         return ApiResponseBuilder.success("Inventory fetched successfully", response);
@@ -123,14 +116,9 @@ public class InventoryController {
             @PathVariable Long productId,
             @Valid @RequestBody UpdateStockRequestDto requestDto) {
         var currentUser = userService.getCurrentUserProfile();
-        var sellerProfile = sellerService.getSellerByUserId(currentUser.getId());
-        
-        if (sellerProfile == null) {
-            throw new IllegalStateException("Seller profile not found");
-        }
         
         // Validate ownership
-        if (!productService.isSellerOwner(productId, sellerProfile.getId())) {
+        if (!productService.isSellerOwner(productId, currentUser.getId())) {
             throw new ProductNotFoundException(productId);
         }
         
@@ -150,14 +138,9 @@ public class InventoryController {
             @PathVariable Long productId,
             @Valid @RequestBody UpdateStockRequestDto requestDto) {
         var currentUser = userService.getCurrentUserProfile();
-        var sellerProfile = sellerService.getSellerByUserId(currentUser.getId());
-        
-        if (sellerProfile == null) {
-            throw new IllegalStateException("Seller profile not found");
-        }
         
         // Validate ownership
-        if (!productService.isSellerOwner(productId, sellerProfile.getId())) {
+        if (!productService.isSellerOwner(productId, currentUser.getId())) {
             throw new ProductNotFoundException(productId);
         }
         

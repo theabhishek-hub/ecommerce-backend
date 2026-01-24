@@ -3,7 +3,9 @@ package com.abhishek.ecommerce.ui.admin.controller;
 import com.abhishek.ecommerce.product.service.ProductService;
 import com.abhishek.ecommerce.product.service.CategoryService;
 import com.abhishek.ecommerce.product.service.BrandService;
+import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
+import com.abhishek.ecommerce.inventory.dto.response.InventoryResponseDto;
 import com.abhishek.ecommerce.product.dto.response.CategoryResponseDto;
 import com.abhishek.ecommerce.product.dto.response.BrandResponseDto;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
@@ -31,6 +33,7 @@ public class AdminProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final BrandService brandService;
+    private final InventoryService inventoryService;
 
     /**
      * List all products with inventory info
@@ -39,6 +42,18 @@ public class AdminProductController {
     public String productsList(Model model) {
         try {
             List<ProductResponseDto> products = productService.getAllProducts();
+            
+            // Fetch inventory information for each product
+            products.forEach(product -> {
+                try {
+                    InventoryResponseDto inventory = inventoryService.getAvailableStock(product.getId());
+                    if (inventory != null) {
+                        product.setQuantity(inventory.getQuantity());
+                    }
+                } catch (Exception e) {
+                    log.debug("No inventory found for product: {}", product.getId());
+                }
+            });
 
             model.addAttribute("title", "Product Oversight");
             model.addAttribute("products", products);
@@ -60,6 +75,16 @@ public class AdminProductController {
     public String productDetails(@PathVariable Long productId, Model model) {
         try {
             ProductResponseDto product = productService.getProductById(productId);
+            
+            // Fetch inventory information
+            try {
+                InventoryResponseDto inventory = inventoryService.getAvailableStock(productId);
+                if (inventory != null) {
+                    product.setQuantity(inventory.getQuantity());
+                }
+            } catch (Exception e) {
+                log.debug("No inventory found for product: {}", productId);
+            }
 
             model.addAttribute("title", "Product Details");
             model.addAttribute("product", product);

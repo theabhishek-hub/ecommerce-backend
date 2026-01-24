@@ -201,7 +201,32 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.toDto(savedPayment);
     }
 
+    // ========================= CONFIRM PAYMENT BY ADMIN =========================
+    @Override
+    public PaymentResponseDto confirmPaymentByAdmin(Long orderId) {
+        log.info("confirmPaymentByAdmin started for orderId={}", orderId);
 
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> {
+                    log.error("Payment not found for orderId={}", orderId);
+                    return new RuntimeException("Payment not found for orderId: " + orderId);
+                });
+
+        // Only allow confirming PENDING payments
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            log.warn("confirmPaymentByAdmin invalid status orderId={} paymentStatus={}", orderId, payment.getStatus());
+            throw new IllegalStateException("Only PENDING payments can be confirmed. Current status: " + payment.getStatus());
+        }
+
+        // Update ONLY payment status to CONFIRMED
+        // DO NOT change order status!
+        payment.setStatus(PaymentStatus.CONFIRMED);
+        Payment savedPayment = paymentRepository.save(payment);
+        log.info("confirmPaymentByAdmin completed paymentId={} orderId={} paymentStatus=CONFIRMED", 
+            savedPayment.getId(), orderId);
+
+        return paymentMapper.toDto(savedPayment);
+    }
 
 }
 

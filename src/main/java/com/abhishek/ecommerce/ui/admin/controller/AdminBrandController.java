@@ -28,12 +28,29 @@ public class AdminBrandController {
     private final BrandService brandService;
 
     @GetMapping
-    public String listBrands(Model model) {
+    public String listBrands(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String filter,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String order,
+            Model model) {
         try {
-            List<BrandResponseDto> brands = brandService.getAllBrands();
+            List<BrandResponseDto> brands;
+            
+            // Apply search, filter, and sort
+            if ((search != null && !search.isEmpty()) || (filter != null && !filter.isEmpty())) {
+                brands = brandService.searchFilterSort(search, filter, sortBy, order);
+            } else {
+                brands = brandService.getAllBrandsSorted(sortBy, order);
+            }
+            
             model.addAttribute("title", "Brand Management");
             model.addAttribute("brands", brands);
             model.addAttribute("hasBrands", !brands.isEmpty());
+            model.addAttribute("search", search);
+            model.addAttribute("filter", filter);
+            model.addAttribute("sortBy", sortBy);
+            model.addAttribute("order", order);
             return "admin/brands/list";
         } catch (Exception e) {
             log.error("Error loading brands", e);
@@ -105,6 +122,34 @@ public class AdminBrandController {
         } catch (Exception e) {
             log.error("Error deleting brand", e);
             redirectAttributes.addFlashAttribute("error", "Failed to delete brand: " + e.getMessage());
+            return "redirect:/admin/brands";
+        }
+    }
+
+    @PostMapping("/{brandId}/activate")
+    public String activateBrand(@PathVariable Long brandId,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            brandService.activateBrand(brandId);
+            redirectAttributes.addFlashAttribute("success", "Brand activated successfully");
+            return "redirect:/admin/brands";
+        } catch (Exception e) {
+            log.error("Error activating brand", e);
+            redirectAttributes.addFlashAttribute("error", "Failed to activate brand: " + e.getMessage());
+            return "redirect:/admin/brands";
+        }
+    }
+
+    @PostMapping("/{brandId}/deactivate")
+    public String deactivateBrand(@PathVariable Long brandId,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            brandService.deactivateBrand(brandId);
+            redirectAttributes.addFlashAttribute("success", "Brand deactivated successfully");
+            return "redirect:/admin/brands";
+        } catch (Exception e) {
+            log.error("Error deactivating brand", e);
+            redirectAttributes.addFlashAttribute("error", "Failed to deactivate brand: " + e.getMessage());
             return "redirect:/admin/brands";
         }
     }

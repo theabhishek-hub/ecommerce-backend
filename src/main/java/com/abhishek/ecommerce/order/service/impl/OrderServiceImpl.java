@@ -15,7 +15,9 @@ import com.abhishek.ecommerce.order.mapper.OrderMapper;
 import com.abhishek.ecommerce.order.repository.OrderRepository;
 import com.abhishek.ecommerce.order.service.OrderService;
 import com.abhishek.ecommerce.payment.entity.PaymentMethod;
+import com.abhishek.ecommerce.payment.entity.Payment;
 import com.abhishek.ecommerce.payment.service.PaymentService;
+import com.abhishek.ecommerce.payment.repository.PaymentRepository;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.shared.enums.Role;
 import com.abhishek.ecommerce.user.exception.UserNotFoundException;
@@ -47,6 +49,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final InventoryService inventoryService;
     private final PaymentService paymentService;
+    private final PaymentRepository paymentRepository;
     private final OrderMapper orderMapper;
     private final SecurityUtils securityUtils;
     private final NotificationService notificationService;
@@ -118,9 +121,7 @@ public class OrderServiceImpl implements OrderService {
         cart.getItems().clear();
         cartRepository.save(cart);
 
-        // 8️⃣ Send order confirmation notification (async side effect)
-        notificationService.sendOrderConfirmation(savedOrder.getId(), user.getEmail(), user.getFullName());
-
+        // Note: Email will be sent when seller/admin confirms the order, not on creation
         return orderMapper.toDto(savedOrder);
     }
 
@@ -159,9 +160,9 @@ public class OrderServiceImpl implements OrderService {
         log.info("shipOrder started for orderId={}", orderId);
         Order order = getOrderOrThrow(orderId);
 
-        if (order.getStatus() != OrderStatus.PAID) {
+        if (order.getStatus() != OrderStatus.CONFIRMED) {
             log.warn("shipOrder invalid status orderId={} status={}", orderId, order.getStatus());
-            throw new IllegalStateException("Only PAID orders can be shipped");
+            throw new IllegalStateException("Only CONFIRMED orders can be shipped");
         }
 
         order.setStatus(OrderStatus.SHIPPED);
@@ -236,6 +237,53 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
+    public OrderResponseDto confirmPayment(Long orderId) {
+        log.info("confirmPayment started for orderId={}", orderId);
+        Order order = getOrderOrThrow(orderId);
+
+        try {
+            // ⚠️ IMPORTANT: Update PAYMENT status, NOT order status!
+            // Payment confirmation should work regardless of order status
+            // The payment status drives the ability to confirm (must be PENDING)
+            var payment = paymentService.confirmPaymentByAdmin(orderId);
+            log.info("confirmPayment completed orderId={} paymentStatus={}", orderId, payment.getStatus());
+
+            // Note: Email will be sent when seller confirms the order, not on payment confirmation
+            return orderMapper.toDto(order);
+        } catch (Exception e) {
+            log.error("Error confirming payment for orderId={}", orderId, e);
+            throw new RuntimeException("Failed to confirm payment: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public OrderResponseDto confirmOrderAsAdmin(Long orderId) {
+        log.info("confirmOrderAsAdmin started for orderId={}", orderId);
+        Order order = getOrderOrThrow(orderId);
+
+        // Validate order is in PAID or CREATED state
+        if (order.getStatus() != OrderStatus.PAID && order.getStatus() != OrderStatus.CREATED) {
+            log.warn("confirmOrderAsAdmin invalid status orderId={} status={}", orderId, order.getStatus());
+            throw new IllegalStateException("Only PAID or CREATED orders can be confirmed. Current status: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.CONFIRMED);
+        Order savedOrder = orderRepository.save(order);
+        log.info("confirmOrderAsAdmin completed orderId={} by admin", orderId);
+
+        // Send notification to customer (async side effect)
+        log.info("[OrderService] About to call sendOrderConfirmedNotification from admin - orderId={}, email={}, name={}", 
+                savedOrder.getId(), order.getUser().getEmail(), order.getUser().getFullName());
+        notificationService.sendOrderConfirmedNotification(savedOrder.getId(), order.getUser().getEmail(),
+                order.getUser().getFullName());
+        log.info("[OrderService] sendOrderConfirmedNotification called (async method)");
+
+        return orderMapper.toDto(savedOrder);
+    }
+
+    @Override
     public OrderResponseDto placeOrderForCurrentUser() {
         Long userId = securityUtils.getCurrentUserId();
         if (userId == null) {
@@ -265,7 +313,15 @@ public class OrderServiceImpl implements OrderService {
         // 3️⃣ Create Order
         Order order = new Order();
         order.setUser(user);
-        order.setStatus(OrderStatus.CREATED);
+        // For ONLINE payment: order is created with PAID status (payment already verified in frontend)
+        // For COD: order is created with CREATED status
+        if (paymentMethod == com.abhishek.ecommerce.payment.entity.PaymentMethod.ONLINE) {
+            order.setStatus(OrderStatus.PAID);
+            log.info("ONLINE payment: Creating order with PAID status for userId={}", userId);
+        } else {
+            order.setStatus(OrderStatus.CREATED);
+            log.info("COD payment: Creating order with CREATED status for userId={}", userId);
+        }
 
         BigDecimal total = BigDecimal.ZERO;
 
@@ -295,22 +351,176 @@ public class OrderServiceImpl implements OrderService {
 
         // 6️⃣ Save order
         Order savedOrder = orderRepository.save(order);
-        log.info("placeOrder completed orderId={} userId={}", savedOrder.getId(), userId);
+        log.info("Order saved with ID: {}", savedOrder != null ? savedOrder.getId() : "NULL");
+        
+        if (savedOrder == null || savedOrder.getId() == null) {
+            log.error("CRITICAL: Order was not saved correctly! savedOrder={}", savedOrder != null ? "exists but no ID" : "is NULL");
+            throw new RuntimeException("Failed to save order - order ID is null");
+        }
+        log.info("placeOrder completed orderId={} userId={}, paymentMethod={}", savedOrder.getId(), userId, paymentMethod);
 
         // 7️⃣ Create payment entry based on payment method
+        Long orderId = savedOrder.getId();
+        log.info("About to create payment with orderId={}", orderId);
+        
         com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto paymentRequest = 
             new com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto();
-        paymentRequest.setOrderId(savedOrder.getId());
+        paymentRequest.setOrderId(orderId);
         paymentRequest.setPaymentMethod(paymentMethod);
-        paymentService.createPayment(paymentRequest);
+        
+        log.info("Payment DTO created - orderId={}, paymentMethod={}", paymentRequest.getOrderId(), paymentRequest.getPaymentMethod());
+        try {
+            paymentService.createPayment(paymentRequest);
+        } catch (Exception e) {
+            log.error("Failed to create payment for orderId={}: {}", savedOrder.getId(), e.getMessage(), e);
+            throw new RuntimeException("Failed to create payment: " + e.getMessage(), e);
+        }
+        
+        // For ONLINE payments: immediately mark as SUCCESS (signature already verified in frontend)
+        if (paymentMethod == com.abhishek.ecommerce.payment.entity.PaymentMethod.ONLINE) {
+            com.abhishek.ecommerce.payment.entity.Payment payment = paymentRepository.findByOrderId(savedOrder.getId())
+                    .orElseThrow(() -> new RuntimeException("Payment record not found after creation"));
+            payment.setStatus(com.abhishek.ecommerce.shared.enums.PaymentStatus.SUCCESS);
+            paymentRepository.save(payment);
+            log.info("ONLINE payment marked as SUCCESS for orderId={}", savedOrder.getId());
+            
+            // Send payment received notification for ONLINE orders
+            log.info("[OrderService] Sending order confirmation email for ONLINE payment - orderId={}", savedOrder.getId());
+            notificationService.sendOrderConfirmation(savedOrder.getId(), user.getEmail(), user.getFullName());
+        }
 
         // 8️⃣ Clear cart SAFELY
         cart.getItems().clear();
         cartRepository.save(cart);
 
-        // 9️⃣ Send order confirmation notification (async side effect)
-        notificationService.sendOrderConfirmation(savedOrder.getId(), user.getEmail(), user.getFullName());
+        // Note: Email will be sent when seller/admin confirms the order, not on creation
+        return orderMapper.toDto(savedOrder);
+    }
 
+    @Override
+    @Transactional
+    public OrderResponseDto placeOrder(Long userId, PaymentMethod paymentMethod, List<Long> selectedProductIds) {
+        log.info("placeOrder started for userId={} paymentMethod={} selectedProductIds={}", userId, paymentMethod, selectedProductIds);
+
+        // Validate selectedProductIds is not null or empty
+        if (selectedProductIds == null || selectedProductIds.isEmpty()) {
+            log.warn("placeOrder selectedProductIds is null or empty, treating as empty list");
+            selectedProductIds = new java.util.ArrayList<>();
+        }
+
+        // 1️⃣ Fetch user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // 2️⃣ Fetch cart
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new CartNotFoundException(userId));
+
+        if (cart.getItems().isEmpty()) {
+            log.warn("placeOrder empty cart for userId={}", userId);
+            throw new RuntimeException("Cannot place order with empty cart");
+        }
+
+        // 3️⃣ Create Order
+        Order order = new Order();
+        order.setUser(user);
+        // For ONLINE payment: order is created with PAID status (payment already verified in frontend)
+        // For COD: order is created with CREATED status
+        if (paymentMethod == com.abhishek.ecommerce.payment.entity.PaymentMethod.ONLINE) {
+            order.setStatus(OrderStatus.PAID);
+            log.info("ONLINE payment: Creating order with PAID status for userId={}", userId);
+        } else {
+            order.setStatus(OrderStatus.CREATED);
+            log.info("COD payment: Creating order with CREATED status for userId={}", userId);
+        }
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        // 4️⃣ Convert selected cart items → order items + REDUCE INVENTORY
+        List<CartItem> itemsToRemove = new java.util.ArrayList<>();
+        for (CartItem cartItem : cart.getItems()) {
+            // Only include this item if it's in the selected product IDs
+            // If selectedProductIds is empty, include all items (fallback to all items)
+            if (!selectedProductIds.isEmpty() && !selectedProductIds.contains(cartItem.getProduct().getId())) {
+                log.debug("Skipping product {} as it's not in selected products", cartItem.getProduct().getId());
+                continue;
+            }
+
+            com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto stockRequest = 
+                new com.abhishek.ecommerce.inventory.dto.request.UpdateStockRequestDto();
+            stockRequest.setQuantity(cartItem.getQuantity());
+            inventoryService.reduceStock(cartItem.getProduct().getId(), stockRequest);
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getPrice());
+
+            order.getItems().add(orderItem);
+
+            total = total.add(
+                    cartItem.getPrice().getAmount()
+                            .multiply(BigDecimal.valueOf(cartItem.getQuantity()))
+            );
+            
+            // Mark this item for removal from cart
+            itemsToRemove.add(cartItem);
+        }
+
+        if (order.getItems().isEmpty()) {
+            log.warn("placeOrder no valid items found for selected product IDs={}", selectedProductIds);
+            throw new RuntimeException("No valid products found for the selected items");
+        }
+
+        // 5️⃣ Set total amount
+        order.setTotalAmount(new Money(total, "INR"));
+
+        // 6️⃣ Persist Order (with payment pending)
+        Order savedOrder = orderRepository.save(order);
+        log.info("Order saved with ID: {}", savedOrder != null ? savedOrder.getId() : "NULL");
+        
+        if (savedOrder == null || savedOrder.getId() == null) {
+            log.error("CRITICAL: Order was not saved correctly! savedOrder={}", savedOrder != null ? "exists but no ID" : "is NULL");
+            throw new RuntimeException("Failed to save order - order ID is null");
+        }
+        log.info("placeOrder persisted orderId={} with {} items, paymentMethod={}", savedOrder.getId(), order.getItems().size(), paymentMethod);
+
+        // 7️⃣ Create Payment 
+        Long orderId = savedOrder.getId();
+        log.info("About to create payment with orderId={}", orderId);
+        
+        com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto paymentRequest = new com.abhishek.ecommerce.payment.dto.request.PaymentCreateRequestDto();
+        paymentRequest.setOrderId(orderId);
+        paymentRequest.setPaymentMethod(paymentMethod);
+        
+        log.info("Payment DTO created - orderId={}, paymentMethod={}", paymentRequest.getOrderId(), paymentRequest.getPaymentMethod());
+        try {
+            paymentService.createPayment(paymentRequest);
+        } catch (Exception e) {
+            log.error("Failed to create payment for orderId={}: {}", savedOrder.getId(), e.getMessage(), e);
+            throw new RuntimeException("Failed to create payment: " + e.getMessage(), e);
+        }
+        
+        // For ONLINE payments: immediately mark as SUCCESS (signature already verified in frontend)
+        if (paymentMethod == com.abhishek.ecommerce.payment.entity.PaymentMethod.ONLINE) {
+            com.abhishek.ecommerce.payment.entity.Payment payment = paymentRepository.findByOrderId(savedOrder.getId())
+                    .orElseThrow(() -> new RuntimeException("Payment record not found after creation"));
+            payment.setStatus(com.abhishek.ecommerce.shared.enums.PaymentStatus.SUCCESS);
+            paymentRepository.save(payment);
+            log.info("ONLINE payment marked as SUCCESS for orderId={}", savedOrder.getId());
+            
+            // Send payment received notification for ONLINE orders
+            log.info("[OrderService] Sending order confirmation email for ONLINE payment - orderId={}", savedOrder.getId());
+            notificationService.sendOrderConfirmation(savedOrder.getId(), user.getEmail(), user.getFullName());
+        }
+
+        // 8️⃣ Remove only the selected items from cart
+        cart.getItems().removeAll(itemsToRemove);
+        cartRepository.save(cart);
+        log.info("Removed {} items from cart", itemsToRemove.size());
+
+        // Note: Email will be sent when seller/admin confirms the order, not on creation
         return orderMapper.toDto(savedOrder);
     }
 
@@ -321,6 +531,15 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("User not authenticated");
         }
         return placeOrder(userId, paymentMethod);
+    }
+
+    @Override
+    public OrderResponseDto placeOrderForCurrentUser(PaymentMethod paymentMethod, List<Long> selectedProductIds) {
+        Long userId = securityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return placeOrder(userId, paymentMethod, selectedProductIds);
     }
 
     @Override
@@ -348,7 +567,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto getOrderById(Long orderId) {
         Order order = getOrderOrThrow(orderId);
         
-        // Check ownership: Admin can see all orders, users can only see their own
+        // Check ownership: Admin can see all orders, sellers can see orders with their items, users can see their own
         String currentUsername = securityUtils.getCurrentUsername();
         if (currentUsername == null) {
             throw new AccessDeniedException("User not authenticated");
@@ -357,13 +576,31 @@ public class OrderServiceImpl implements OrderService {
         User currentUser = userRepository.findByEmail(currentUsername)
                 .orElseThrow(() -> new IllegalStateException("Current user not found"));
         
+        Long currentUserId = securityUtils.getCurrentUserId();
+        
         // Admin can access any order
         if (currentUser.getRoles().contains(Role.ROLE_ADMIN)) {
             return orderMapper.toDto(order);
         }
         
+        // Seller can access orders that contain their products
+        if (currentUser.getRoles().contains(Role.ROLE_SELLER)) {
+            // Check if this order contains any items from this seller's products
+            if (order.getItems() != null && !order.getItems().isEmpty()) {
+                boolean sellerHasItems = order.getItems().stream()
+                        .anyMatch(item -> item.getProduct() != null && 
+                                 item.getProduct().getSeller() != null && 
+                                 item.getProduct().getSeller().getId().equals(currentUserId));
+                if (sellerHasItems) {
+                    return orderMapper.toDto(order);
+                }
+            }
+            log.warn("Access denied: Seller {} attempted to access order {} with no items from them", 
+                    currentUserId, orderId);
+            throw new AccessDeniedException("You do not have permission to access this order");
+        }
+        
         // Regular users can only access their own orders
-        Long currentUserId = securityUtils.getCurrentUserId();
         if (order.getUser() == null || !order.getUser().getId().equals(currentUserId)) {
             log.warn("Access denied: User {} attempted to access order {} owned by user {}", 
                     currentUserId, orderId, order.getUser() != null ? order.getUser().getId() : "null");
@@ -453,4 +690,130 @@ public class OrderServiceImpl implements OrderService {
         pageResponseDto.setLast(orderPage.isLast());
         pageResponseDto.setEmpty(orderPage.isEmpty());
         return pageResponseDto;
-    }}
+    }
+
+    // ========================= SELLER ORDER MANAGEMENT =========================
+    /**
+     * Seller confirms/accepts an order (transitions PAID -> CONFIRMED)
+     * Only seller who owns products in the order can confirm
+     */
+    @Override
+    @Transactional
+    public OrderResponseDto confirmOrder(Long orderId, Long sellerId) {
+        log.info("confirmOrder started for orderId={}, sellerId={}", orderId, sellerId);
+        Order order = getOrderOrThrow(orderId);
+
+        // Validate seller owns products in this order
+        if (!isSellerAuthorizedForOrder(order, sellerId)) {
+            log.warn("Seller {} attempted to confirm order {} without authorization", sellerId, orderId);
+            throw new AccessDeniedException("You are not authorized to confirm this order");
+        }
+
+        // Validate order is in correct state for confirmation
+        // For COD: Can confirm from CREATED or PAID status
+        // For ONLINE: Can only confirm from PAID status
+        Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
+        if (payment != null && payment.getPaymentMethod() == PaymentMethod.ONLINE) {
+            // ONLINE orders must be PAID first
+            if (order.getStatus() != OrderStatus.PAID) {
+                log.warn("confirmOrder invalid status for ONLINE orderId={} status={}", orderId, order.getStatus());
+                throw new IllegalStateException("Only PAID orders can be confirmed. Current status: " + order.getStatus());
+            }
+        } else {
+            // COD orders can be confirmed from CREATED or PAID
+            if (order.getStatus() != OrderStatus.CREATED && order.getStatus() != OrderStatus.PAID) {
+                log.warn("confirmOrder invalid status orderId={} status={}", orderId, order.getStatus());
+                throw new IllegalStateException("Order must be in CREATED or PAID status to confirm. Current status: " + order.getStatus());
+            }
+        }
+
+        order.setStatus(OrderStatus.CONFIRMED);
+        Order savedOrder = orderRepository.save(order);
+        log.info("confirmOrder completed orderId={} by sellerId={}", orderId, sellerId);
+
+        // Send notification to customer (async side effect)
+        log.info("[OrderService] About to call sendOrderConfirmedNotification - orderId={}, email={}, name={}", 
+                savedOrder.getId(), order.getUser().getEmail(), order.getUser().getFullName());
+        notificationService.sendOrderConfirmedNotification(savedOrder.getId(), order.getUser().getEmail(),
+                order.getUser().getFullName());
+        log.info("[OrderService] sendOrderConfirmedNotification called (async method)");
+
+        return orderMapper.toDto(savedOrder);
+    }
+
+    /**
+     * Seller ships order (transitions CONFIRMED -> SHIPPED)
+     * Only seller who owns products in the order can ship
+     */
+    @Override
+    @Transactional
+    public OrderResponseDto shipOrderBySeller(Long orderId, Long sellerId) {
+        log.info("shipOrderBySeller started for orderId={}, sellerId={}", orderId, sellerId);
+        Order order = getOrderOrThrow(orderId);
+
+        // Validate seller owns products in this order
+        if (!isSellerAuthorizedForOrder(order, sellerId)) {
+            log.warn("Seller {} attempted to ship order {} without authorization", sellerId, orderId);
+            throw new AccessDeniedException("You are not authorized to ship this order");
+        }
+
+        // Validate order is in CONFIRMED state
+        if (order.getStatus() != OrderStatus.CONFIRMED) {
+            log.warn("shipOrderBySeller invalid status orderId={} status={}", orderId, order.getStatus());
+            throw new IllegalStateException("Only CONFIRMED orders can be shipped. Current status: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.SHIPPED);
+        Order savedOrder = orderRepository.save(order);
+        log.info("shipOrderBySeller completed orderId={} by sellerId={}", orderId, sellerId);
+
+        // Send notification (async side effect)
+        notificationService.sendOrderShippedNotification(savedOrder.getId(), order.getUser().getEmail(),
+                order.getUser().getFullName(), "TRACKING123");
+
+        return orderMapper.toDto(savedOrder);
+    }
+
+    /**
+     * Seller marks order as delivered (transitions SHIPPED -> DELIVERED)
+     * Only seller who owns products in the order can deliver
+     */
+    @Override
+    @Transactional
+    public OrderResponseDto deliverOrderBySeller(Long orderId, Long sellerId) {
+        log.info("deliverOrderBySeller started for orderId={}, sellerId={}", orderId, sellerId);
+        Order order = getOrderOrThrow(orderId);
+
+        // Validate seller owns products in this order
+        if (!isSellerAuthorizedForOrder(order, sellerId)) {
+            log.warn("Seller {} attempted to deliver order {} without authorization", sellerId, orderId);
+            throw new AccessDeniedException("You are not authorized to deliver this order");
+        }
+
+        // Validate order is in SHIPPED state
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            log.warn("deliverOrderBySeller invalid status orderId={} status={}", orderId, order.getStatus());
+            throw new IllegalStateException("Only SHIPPED orders can be delivered. Current status: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.DELIVERED);
+        Order savedOrder = orderRepository.save(order);
+        log.info("deliverOrderBySeller completed orderId={} by sellerId={}", orderId, sellerId);
+
+        // Send notification (async side effect)
+        notificationService.sendOrderDeliveredNotification(savedOrder.getId(), order.getUser().getEmail(),
+                order.getUser().getFullName());
+
+        return orderMapper.toDto(savedOrder);
+    }
+
+    /**
+     * Check if seller is authorized to manage this order
+     * Seller is authorized if they own at least one product in the order
+     */
+    private boolean isSellerAuthorizedForOrder(Order order, Long sellerId) {
+        return order.getItems().stream()
+                .anyMatch(item -> item.getProduct().getSeller() != null 
+                        && item.getProduct().getSeller().getId().equals(sellerId));
+    }
+}

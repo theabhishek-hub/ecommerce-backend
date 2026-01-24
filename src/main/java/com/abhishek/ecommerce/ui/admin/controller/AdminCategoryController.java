@@ -28,12 +28,29 @@ public class AdminCategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public String listCategories(Model model) {
+    public String listCategories(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String filter,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String order,
+            Model model) {
         try {
-            List<CategoryResponseDto> categories = categoryService.getAllCategories();
+            List<CategoryResponseDto> categories;
+            
+            // Apply search, filter, and sort
+            if ((search != null && !search.isEmpty()) || (filter != null && !filter.isEmpty())) {
+                categories = categoryService.searchFilterSort(search, filter, sortBy, order);
+            } else {
+                categories = categoryService.getAllCategoriesSorted(sortBy, order);
+            }
+            
             model.addAttribute("title", "Category Management");
             model.addAttribute("categories", categories);
             model.addAttribute("hasCategories", !categories.isEmpty());
+            model.addAttribute("search", search);
+            model.addAttribute("filter", filter);
+            model.addAttribute("sortBy", sortBy);
+            model.addAttribute("order", order);
             return "admin/categories/list";
         } catch (Exception e) {
             log.error("Error loading categories", e);
@@ -105,6 +122,34 @@ public class AdminCategoryController {
         } catch (Exception e) {
             log.error("Error deleting category", e);
             redirectAttributes.addFlashAttribute("error", "Failed to delete category: " + e.getMessage());
+            return "redirect:/admin/categories";
+        }
+    }
+
+    @PostMapping("/{categoryId}/activate")
+    public String activateCategory(@PathVariable Long categoryId,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            categoryService.activateCategory(categoryId);
+            redirectAttributes.addFlashAttribute("success", "Category activated successfully");
+            return "redirect:/admin/categories";
+        } catch (Exception e) {
+            log.error("Error activating category", e);
+            redirectAttributes.addFlashAttribute("error", "Failed to activate category: " + e.getMessage());
+            return "redirect:/admin/categories";
+        }
+    }
+
+    @PostMapping("/{categoryId}/deactivate")
+    public String deactivateCategory(@PathVariable Long categoryId,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            categoryService.deactivateCategory(categoryId);
+            redirectAttributes.addFlashAttribute("success", "Category deactivated successfully");
+            return "redirect:/admin/categories";
+        } catch (Exception e) {
+            log.error("Error deactivating category", e);
+            redirectAttributes.addFlashAttribute("error", "Failed to deactivate category: " + e.getMessage());
             return "redirect:/admin/categories";
         }
     }

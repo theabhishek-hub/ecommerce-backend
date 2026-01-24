@@ -21,6 +21,19 @@ public class PageResponseDto<T> {
     private boolean last;
     private boolean empty;
 
+    // Helper methods for template compatibility
+    public boolean hasPrevious() {
+        return !first && pageNumber > 0;
+    }
+
+    public boolean hasNext() {
+        return !last && pageNumber < totalPages - 1;
+    }
+
+    public int getNumber() {
+        return pageNumber;
+    }
+
     public static <T> PageResponseDtoBuilder<T> builder() {
         return new PageResponseDtoBuilder<>();
     }

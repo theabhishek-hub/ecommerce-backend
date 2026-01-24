@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * UI controller for checkout page and order placement.
  * Handles both page display and order placement via session-based authentication.
@@ -74,6 +77,7 @@ public class CheckoutPageController {
      * Uses session-based authentication (works with form login, OAuth2, etc.)
      * 
      * @param paymentMethod Payment method (COD or ONLINE) - defaults to COD if not provided
+     * @param selectedProductIds Selected product IDs to include in the order (optional, comma-separated or multiple params)
      * @param redirectAttributes For flash messages
      * @param authentication Spring Security authentication
      * @return Redirect to orders page on success
@@ -82,6 +86,7 @@ public class CheckoutPageController {
     @PreAuthorize("isAuthenticated()")
     public String placeOrder(
             @RequestParam(value = "paymentMethod", required = false, defaultValue = "COD") String paymentMethod,
+            @RequestParam(value = "selectedProductIds", required = false) List<String> selectedProductIds,
             RedirectAttributes redirectAttributes,
             Authentication authentication) {
         
@@ -114,9 +119,38 @@ public class CheckoutPageController {
                 method = com.abhishek.ecommerce.payment.entity.PaymentMethod.COD;
             }
 
-            OrderResponseDto order = orderService.placeOrderForCurrentUser(method);
+            // Convert selected product IDs from String to Long
+            List<Long> productIds = new ArrayList<>();
+            if (selectedProductIds != null && !selectedProductIds.isEmpty()) {
+                log.info("Received selectedProductIds: {} (size: {})", selectedProductIds, selectedProductIds.size());
+                try {
+                    productIds = selectedProductIds.stream()
+                        .filter(id -> id != null && !id.trim().isEmpty())
+                        .map(Long::parseLong)
+                        .collect(java.util.stream.Collectors.toList());
+                    log.info("Parsed product IDs for order: {} (count: {})", productIds, productIds.size());
+                } catch (NumberFormatException e) {
+                    log.error("Invalid product ID format: {}", selectedProductIds, e);
+                    redirectAttributes.addFlashAttribute("error", "Invalid product ID format: " + e.getMessage());
+                    return "redirect:/checkout";
+                }
+            } else {
+                log.info("No selected product IDs received, selectedProductIds={}", selectedProductIds);
+            }
+
+            OrderResponseDto order;
+            if (!productIds.isEmpty()) {
+                log.info("Placing order with selected products: {} using payment method: {}", productIds, method);
+                order = orderService.placeOrderForCurrentUser(method, productIds);
+                log.info("Order placed successfully with selected products: orderId={}, productIds={}, paymentMethod={}", 
+                    order.getId(), productIds, method);
+            } else {
+                log.info("Placing order with all cart items using payment method: {}", method);
+                order = orderService.placeOrderForCurrentUser(method);
+                log.info("Order placed successfully for all cart items: orderId={}, paymentMethod={}", order.getId(), method);
+            }
+            
             redirectAttributes.addFlashAttribute("success", "Order placed successfully! Order ID: " + order.getId());
-            log.info("Order placed successfully via UI: orderId={} paymentMethod={}", order.getId(), method);
             return "redirect:/orders";
         } catch (Exception e) {
             log.error("Error placing order via UI", e);

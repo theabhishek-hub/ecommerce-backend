@@ -15,12 +15,17 @@ import com.abhishek.ecommerce.product.repository.BrandRepository;
 import com.abhishek.ecommerce.product.repository.CategoryRepository;
 import com.abhishek.ecommerce.product.repository.ProductRepository;
 import com.abhishek.ecommerce.product.service.ProductService;
+import com.abhishek.ecommerce.inventory.service.InventoryService;
+import com.abhishek.ecommerce.common.utils.SecurityUtils;
+import com.abhishek.ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +43,9 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final ProductMapper productMapper;
+    private final SecurityUtils securityUtils;
+    private final UserRepository userRepository;
+    private final InventoryService inventoryService;
 
     // ========================= CREATE =========================
     @Override
@@ -63,9 +71,37 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("Brand not found with id: " + requestDto.getBrandId()));
         product.setBrand(brand);
 
+        // ✅ ROLE-BASED: Check if current user is SELLER or ADMIN
+        // If SELLER: automatically set seller ID from SecurityContext
+        // If ADMIN: leave seller as null (global product)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SELLER"))) {
+            // Current user is a SELLER - set product owner
+            Long sellerId = securityUtils.getCurrentUserId();
+            if (sellerId != null) {
+                com.abhishek.ecommerce.user.entity.User seller = userRepository.findById(sellerId)
+                        .orElseThrow(() -> new RuntimeException("Seller not found with id: " + sellerId));
+                product.setSeller(seller);
+                log.info("createProduct: Setting seller={} for product sku={}", sellerId, requestDto.getSku());
+            }
+        } else {
+            // Current user is ADMIN - product is global (seller = null)
+            log.info("createProduct: Creating global product (admin) sku={}", requestDto.getSku());
+        }
+
         product.setStatus(ProductStatus.ACTIVE);
 
         Product savedProduct = productRepository.save(product);
+        
+        // Create initial inventory record for the product with 0 quantity
+        try {
+            inventoryService.createInitialInventory(savedProduct.getId());
+            log.info("Initial inventory created for productId={}", savedProduct.getId());
+        } catch (Exception e) {
+            log.error("Error creating initial inventory for productId={}", savedProduct.getId(), e);
+            // Don't fail the product creation if inventory creation fails
+        }
 
         log.info("createProduct completed for sku={}", requestDto.getSku());
         return productMapper.toDto(savedProduct);
@@ -392,4 +428,5 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .map(productMapper::toDto)
                 .collect(Collectors.toList());
-    }}
+    }
+}

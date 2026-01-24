@@ -71,4 +71,68 @@ public interface UserService {
     void updateUserStatus(Long userId, UserStatus status);
 
     void unlockUser(Long userId);
+
+    // ========================= SELLER APPLICATION OPERATIONS =========================
+    /**
+     * Admin approves a seller application
+     * Sets sellerStatus = APPROVED
+     * Assigns ROLE_SELLER to user
+     */
+    UserResponseDto approveSeller(Long userId, Long adminUserId);
+
+    /**
+     * Admin rejects a seller application
+     * Sets sellerStatus = REJECTED
+     * Removes ROLE_SELLER from user
+     */
+    UserResponseDto rejectSeller(Long userId, Long adminUserId, String rejectionReason);
+
+    /**
+     * Admin suspends an approved seller
+     * Sets sellerStatus = SUSPENDED
+     * Removes ROLE_SELLER from user
+     */
+    UserResponseDto suspendSeller(Long userId, Long adminUserId, String suspensionReason);
+
+    /**
+     * Get all pending seller applications
+     */
+    List<UserResponseDto> getPendingSellerApplications();
+
+    /**
+     * Submit seller application with business details
+     * User applies to become a seller
+     */
+    void applySeller(Long userId, Object applicationForm);
+
+    /**
+     * Approve a seller application by admin
+     * Sets sellerStatus = APPROVED
+     * Assigns ROLE_SELLER to user
+     */
+    void approveSellerApplication(Long userId, String adminNotes);
+
+    /**
+     * Reject a seller application by admin
+     * Sets sellerStatus = REJECTED
+     * Keeps ROLE_SELLER unless removed
+     */
+    void rejectSellerApplication(Long userId, String rejectionReason);
+
+    /**
+     * Suspend a seller account by admin
+     * Sets sellerStatus = SUSPENDED
+     */
+    void suspendSeller(Long userId, String suspensionReason);
+
+    /**
+     * Activate a suspended seller account
+     * Sets sellerStatus = APPROVED
+     */
+    void activateSuspendedSeller(Long userId);
+
+    /**
+     * Get all pending seller applications with pagination
+     */
+    PageResponseDto<UserResponseDto> getAllPendingSellerApplications(Pageable pageable);
 }

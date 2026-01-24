@@ -4,6 +4,7 @@ import com.abhishek.ecommerce.common.apiResponse.ApiResponse;
 import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
 import com.abhishek.ecommerce.payment.gateway.razorpay.RazorpayProperties;
 import com.abhishek.ecommerce.payment.gateway.razorpay.dto.request.RazorpayCreateOrderRequestDto;
+import com.abhishek.ecommerce.payment.gateway.razorpay.dto.request.RazorpayPrepareOrderRequestDto;
 import com.abhishek.ecommerce.payment.gateway.razorpay.dto.request.RazorpayVerifyPaymentRequestDto;
 import com.abhishek.ecommerce.payment.gateway.razorpay.dto.response.RazorpayCreateOrderResponseDto;
 import com.abhishek.ecommerce.payment.gateway.razorpay.dto.response.RazorpayEnabledResponseDto;
@@ -43,6 +44,26 @@ public class RazorpayPaymentController {
     public ApiResponse<RazorpayCreateOrderResponseDto> createOrder(@Valid @RequestBody RazorpayCreateOrderRequestDto requestDto) {
         RazorpayCreateOrderResponseDto response = razorpayPaymentService.createRazorpayOrder(requestDto);
         return ApiResponseBuilder.created("Razorpay order created", response);
+    }
+
+    @PostMapping("/create-order-only")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<RazorpayCreateOrderResponseDto> createOrderOnly(@Valid @RequestBody RazorpayPrepareOrderRequestDto requestDto) {
+        // Create Razorpay order without creating database order
+        // Database order will be created AFTER payment verification
+        RazorpayCreateOrderResponseDto response = razorpayPaymentService.createRazorpayOrderOnly(requestDto);
+        return ApiResponseBuilder.created("Razorpay order prepared for payment", response);
+    }
+
+    @PostMapping("/verify-signature")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<Void> verifySignature(@Valid @RequestBody RazorpayVerifyPaymentRequestDto requestDto) {
+        // Only verify signature without creating order or updating payment
+        // Order creation will happen in the UI after signature verification
+        razorpayPaymentService.verifySignatureOnly(requestDto);
+        return ApiResponseBuilder.success("Payment signature verified", null);
     }
 
     @PostMapping("/verify")

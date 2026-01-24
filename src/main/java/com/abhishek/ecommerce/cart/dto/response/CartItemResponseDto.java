@@ -29,5 +29,7 @@ public class CartItemResponseDto {
     @Schema(description = "Quantity in cart", example = "2")
     private Integer quantity;
     
+    @Schema(description = "Product image URL")
+    private String imageUrl;
+    
 }
-

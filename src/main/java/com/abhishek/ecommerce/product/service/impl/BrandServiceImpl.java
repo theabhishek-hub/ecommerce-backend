@@ -113,6 +113,96 @@ public class BrandServiceImpl implements BrandService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<BrandResponseDto> searchBrandsByName(String name) {
+        log.info("searchBrandsByName started for name={}", name);
+        return brandRepository.findAll()
+                .stream()
+                .filter(brand -> brand.getName().toLowerCase().contains(name.toLowerCase()))
+                .map(brandMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BrandResponseDto> filterByStatus(String status) {
+        log.info("filterByStatus started for status={}", status);
+        BrandStatus brandStatus = BrandStatus.valueOf(status.toUpperCase());
+        return brandRepository.findAllByStatus(brandStatus)
+                .stream()
+                .map(brandMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BrandResponseDto> getAllBrandsSorted(String sortBy, String order) {
+        log.info("getAllBrandsSorted started sortBy={} order={}", sortBy, order);
+        List<BrandResponseDto> brands = brandRepository.findAll()
+                .stream()
+                .map(brandMapper::toDto)
+                .collect(Collectors.toList());
+
+        if ("name".equalsIgnoreCase(sortBy)) {
+            brands.sort((a, b) -> "asc".equalsIgnoreCase(order) 
+                    ? a.getName().compareTo(b.getName())
+                    : b.getName().compareTo(a.getName()));
+        } else if ("id".equalsIgnoreCase(sortBy)) {
+            brands.sort((a, b) -> "asc".equalsIgnoreCase(order)
+                    ? a.getId().compareTo(b.getId())
+                    : b.getId().compareTo(a.getId()));
+        } else if ("status".equalsIgnoreCase(sortBy)) {
+            brands.sort((a, b) -> "asc".equalsIgnoreCase(order)
+                    ? a.getStatus().compareTo(b.getStatus())
+                    : b.getStatus().compareTo(a.getStatus()));
+        }
+
+        return brands;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BrandResponseDto> searchFilterSort(String name, String status, String sortBy, String order) {
+        log.info("searchFilterSort started name={} status={} sortBy={} order={}", name, status, sortBy, order);
+        
+        List<BrandResponseDto> brands = brandRepository.findAll()
+                .stream()
+                .map(brandMapper::toDto)
+                .collect(Collectors.toList());
+
+        // Apply search filter
+        if (name != null && !name.isEmpty()) {
+            brands = brands.stream()
+                    .filter(brand -> brand.getName().toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // Apply status filter
+        if (status != null && !status.isEmpty()) {
+            brands = brands.stream()
+                    .filter(brand -> brand.getStatus().toString().equalsIgnoreCase(status))
+                    .collect(Collectors.toList());
+        }
+
+        // Apply sorting
+        if ("name".equalsIgnoreCase(sortBy)) {
+            brands.sort((a, b) -> "asc".equalsIgnoreCase(order)
+                    ? a.getName().compareTo(b.getName())
+                    : b.getName().compareTo(a.getName()));
+        } else if ("id".equalsIgnoreCase(sortBy)) {
+            brands.sort((a, b) -> "asc".equalsIgnoreCase(order)
+                    ? a.getId().compareTo(b.getId())
+                    : b.getId().compareTo(a.getId()));
+        } else if ("status".equalsIgnoreCase(sortBy)) {
+            brands.sort((a, b) -> "asc".equalsIgnoreCase(order)
+                    ? a.getStatus().compareTo(b.getStatus())
+                    : b.getStatus().compareTo(a.getStatus()));
+        }
+
+        return brands;
+    }
+
     // ========================= STATUS =========================
     @Override
     @Transactional

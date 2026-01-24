@@ -26,6 +26,12 @@ public class ProductResponseDto {
     private Long sellerId;
     private String sellerEmail;
     private String sellerFullName;
+    
+    // Inventory information
+    private Integer quantity;
+    
+    // Creator information
+    private String createdBy;
 
     public void setId(Long id) {
         this.id = id;
@@ -84,5 +90,14 @@ public class ProductResponseDto {
     }
 
     public void setSellerFullName(String sellerFullName) {
-        this.sellerFullName = sellerFullName;    }
+        this.sellerFullName = sellerFullName;
+    }
+    
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+    
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 }

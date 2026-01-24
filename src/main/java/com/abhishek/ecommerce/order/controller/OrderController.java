@@ -5,8 +5,10 @@ import com.abhishek.ecommerce.common.apiResponse.ApiResponseBuilder;
 import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import com.abhishek.ecommerce.order.dto.response.OrderResponseDto;
 import com.abhishek.ecommerce.order.service.OrderService;
+import com.abhishek.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -28,13 +30,15 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final UserService userService;
 
     // ========================= PLACE ORDER =========================
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<OrderResponseDto> placeOrder(
-            @RequestParam(value = "paymentMethod", required = false, defaultValue = "COD") String paymentMethod) {
+            @RequestParam(value = "paymentMethod", required = false, defaultValue = "COD") String paymentMethod,
+            @RequestParam(value = "selectedProductIds", required = false) List<Long> selectedProductIds) {
         // Parse payment method, default to COD for backward compatibility
         com.abhishek.ecommerce.payment.entity.PaymentMethod method;
         try {
@@ -42,7 +46,13 @@ public class OrderController {
         } catch (IllegalArgumentException e) {
             method = com.abhishek.ecommerce.payment.entity.PaymentMethod.COD;
         }
-        OrderResponseDto response = orderService.placeOrderForCurrentUser(method);
+        
+        OrderResponseDto response;
+        if (selectedProductIds != null && !selectedProductIds.isEmpty()) {
+            response = orderService.placeOrderForCurrentUser(method, selectedProductIds);
+        } else {
+            response = orderService.placeOrderForCurrentUser(method);
+        }
         return ApiResponseBuilder.created("Order placed successfully", response);
     }
 
@@ -99,5 +109,47 @@ public class OrderController {
     public ApiResponse<OrderResponseDto> cancelOrder(@PathVariable Long orderId) {
         OrderResponseDto response = orderService.cancelOrder(orderId);
         return ApiResponseBuilder.success("Order cancelled successfully", response);
+    }
+
+    // ========================= SELLER: CONFIRM ORDER =========================
+    @Operation(
+        summary = "Confirm order (seller fulfillment)",
+        description = "Seller confirms order - transitions from PAID to CONFIRMED status"
+    )
+    @PutMapping("/{orderId}/confirm-seller")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('SELLER') and @sellerSecurity.isSellerInOrder(#orderId)")
+    public ApiResponse<OrderResponseDto> confirmOrderBySeller(@PathVariable Long orderId) {
+        var currentUser = userService.getCurrentUserProfile();
+        OrderResponseDto response = orderService.confirmOrder(orderId, currentUser.getId());
+        return ApiResponseBuilder.success("Order confirmed successfully", response);
+    }
+
+    // ========================= SELLER: SHIP ORDER =========================
+    @Operation(
+        summary = "Ship order (seller fulfillment)",
+        description = "Seller ships order - transitions from CONFIRMED to SHIPPED status"
+    )
+    @PutMapping("/{orderId}/ship-seller")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('SELLER') and @sellerSecurity.isSellerInOrder(#orderId)")
+    public ApiResponse<OrderResponseDto> shipOrderBySeller(@PathVariable Long orderId) {
+        var currentUser = userService.getCurrentUserProfile();
+        OrderResponseDto response = orderService.shipOrderBySeller(orderId, currentUser.getId());
+        return ApiResponseBuilder.success("Order shipped successfully", response);
+    }
+
+    // ========================= SELLER: DELIVER ORDER =========================
+    @Operation(
+        summary = "Deliver order (seller fulfillment)",
+        description = "Seller marks order as delivered - transitions from SHIPPED to DELIVERED status"
+    )
+    @PutMapping("/{orderId}/deliver-seller")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('SELLER') and @sellerSecurity.isSellerInOrder(#orderId)")
+    public ApiResponse<OrderResponseDto> deliverOrderBySeller(@PathVariable Long orderId) {
+        var currentUser = userService.getCurrentUserProfile();
+        OrderResponseDto response = orderService.deliverOrderBySeller(orderId, currentUser.getId());
+        return ApiResponseBuilder.success("Order delivered successfully", response);
     }
 }

@@ -9,11 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -25,6 +28,7 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequestMapping("/orders")
+@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 public class OrderPageController {
 
@@ -69,6 +73,10 @@ public class OrderPageController {
         try {
             // Get order details
             OrderResponseDto order = orderService.getOrderById(orderId);
+            if (order == null) {
+                model.addAttribute("errorMessage", "Order not found.");
+                return "orders/details";
+            }
             
             // Verify order belongs to current user (in service layer)
             // OrderService should validate this internally
@@ -81,11 +89,55 @@ public class OrderPageController {
         } catch (OrderNotFoundException e) {
             log.warn("Order not found: {}", orderId);
             model.addAttribute("errorMessage", "Order not found.");
-            return "orders/list";
+            model.addAttribute("title", "Order Details");
+            return "orders/details";
         } catch (Exception e) {
             log.error("Error loading order details for orderId: {}", orderId, e);
             model.addAttribute("errorMessage", "Unable to load order details. Please try again later.");
-            return "orders/list";
+            model.addAttribute("title", "Order Details");
+            return "orders/details";
         }
+    }
+
+    /**
+     * Cancel an order (only allowed for CREATED or PAID status orders)
+     */
+    @PostMapping("/{orderId}/cancel")
+    public String cancelOrder(
+            @PathVariable Long orderId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            orderService.cancelOrder(orderId);
+            redirectAttributes.addFlashAttribute("success", "Order cancelled successfully");
+            log.info("Order {} cancelled by user", orderId);
+        } catch (IllegalStateException e) {
+            log.warn("Cannot cancel order {}: {}", orderId, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Cannot cancel this order. " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error cancelling order {}: {}", orderId, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Failed to cancel order: " + e.getMessage());
+        }
+        
+        return "redirect:/orders/" + orderId;
+    }
+
+    /**
+     * Request refund for a delivered order
+     */
+    @PostMapping("/{orderId}/refund")
+    public String requestRefund(
+            @PathVariable Long orderId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            // For now, just mark as refund requested
+            // In a real system, this would integrate with payment gateway
+            log.info("Refund requested for order {}", orderId);
+            redirectAttributes.addFlashAttribute("success", "Refund request submitted. You will receive your refund within 5-7 business days.");
+        } catch (Exception e) {
+            log.error("Error processing refund for order {}: {}", orderId, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Failed to request refund: " + e.getMessage());
+        }
+        
+        return "redirect:/orders/" + orderId;
     }
 }

@@ -19,6 +19,11 @@ public interface OrderService {
     OrderResponseDto placeOrder(Long userId, com.abhishek.ecommerce.payment.entity.PaymentMethod paymentMethod);
 
     /**
+     * Place order with specified payment method and selected products
+     */
+    OrderResponseDto placeOrder(Long userId, com.abhishek.ecommerce.payment.entity.PaymentMethod paymentMethod, List<Long> selectedProductIds);
+
+    /**
      * Place order for the current authenticated user
      */
     OrderResponseDto placeOrderForCurrentUser();
@@ -27,6 +32,11 @@ public interface OrderService {
      * Place order for current user with specified payment method
      */
     OrderResponseDto placeOrderForCurrentUser(com.abhishek.ecommerce.payment.entity.PaymentMethod paymentMethod);
+
+    /**
+     * Place order for current user with specified payment method and selected products
+     */
+    OrderResponseDto placeOrderForCurrentUser(com.abhishek.ecommerce.payment.entity.PaymentMethod paymentMethod, List<Long> selectedProductIds);
 
     List<OrderResponseDto> getOrdersByUser(Long userId);
 
@@ -48,6 +58,16 @@ public interface OrderService {
 
     OrderResponseDto cancelOrder(Long orderId);
 
+    /**
+     * Admin/Seller confirms payment (transitions CREATED -> PAID)
+     */
+    OrderResponseDto confirmPayment(Long orderId);
+
+    /**
+     * Admin confirms order (transitions PAID -> CONFIRMED)
+     */
+    OrderResponseDto confirmOrderAsAdmin(Long orderId);
+
     // COUNT OPERATIONS
     long getTotalOrderCount();
 
@@ -63,4 +83,22 @@ public interface OrderService {
      * Get paginated orders for a seller
      */
     PageResponseDto<OrderResponseDto> getOrdersForSeller(Long sellerId, Pageable pageable);
+
+    /**
+     * Seller confirms/accepts an order (transitions PAID -> CONFIRMED)
+     * Only seller who owns products in the order can confirm
+     */
+    OrderResponseDto confirmOrder(Long orderId, Long sellerId);
+
+    /**
+     * Seller ships order (transitions CONFIRMED -> SHIPPED)
+     * Only seller who owns products in the order can ship
+     */
+    OrderResponseDto shipOrderBySeller(Long orderId, Long sellerId);
+
+    /**
+     * Seller marks order as delivered (transitions SHIPPED -> DELIVERED)
+     * Only seller who owns products in the order can deliver
+     */
+    OrderResponseDto deliverOrderBySeller(Long orderId, Long sellerId);
 }

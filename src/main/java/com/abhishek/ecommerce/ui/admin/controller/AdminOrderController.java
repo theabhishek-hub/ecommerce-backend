@@ -74,6 +74,37 @@ public class AdminOrderController {
     }
 
     /**
+     * Confirm payment
+     */
+    @PostMapping("/{orderId}/confirm-payment")
+    public String confirmPayment(@PathVariable Long orderId) {
+        try {
+            log.info("Admin attempting to confirm payment for orderId={}", orderId);
+            orderService.confirmPayment(orderId);
+            log.info("Admin confirmed payment successfully: {}", orderId);
+            return "redirect:/admin/orders/" + orderId + "?success=payment_confirmed";
+        } catch (Exception e) {
+            log.error("Error confirming payment for orderId={}: {}", orderId, e.getMessage(), e);
+            return "redirect:/admin/orders/" + orderId + "?error=payment_confirm_failed";
+        }
+    }
+
+    /**
+     * Confirm order
+     */
+    @PostMapping("/{orderId}/confirm")
+    public String confirmOrder(@PathVariable Long orderId) {
+        try {
+            orderService.confirmOrderAsAdmin(orderId);
+            log.info("Admin confirmed order: {}", orderId);
+            return "redirect:/admin/orders/" + orderId + "?success=confirmed";
+        } catch (Exception e) {
+            log.error("Error confirming order: {}", orderId, e);
+            return "redirect:/admin/orders/" + orderId + "?error=confirm_failed";
+        }
+    }
+
+    /**
      * Ship order
      */
     @PostMapping("/{orderId}/ship")
@@ -81,10 +112,10 @@ public class AdminOrderController {
         try {
             orderService.shipOrder(orderId);
             log.info("Admin shipped order: {}", orderId);
-            return "redirect:/admin/orders/{orderId}?success=shipped";
+            return "redirect:/admin/orders/" + orderId + "?success=shipped";
         } catch (Exception e) {
             log.error("Error shipping order: {}", orderId, e);
-            return "redirect:/admin/orders/{orderId}?error=ship_failed";
+            return "redirect:/admin/orders/" + orderId + "?error=ship_failed";
         }
     }
 
@@ -96,10 +127,10 @@ public class AdminOrderController {
         try {
             orderService.deliverOrder(orderId);
             log.info("Admin delivered order: {}", orderId);
-            return "redirect:/admin/orders/{orderId}?success=delivered";
+            return "redirect:/admin/orders/" + orderId + "?success=delivered";
         } catch (Exception e) {
             log.error("Error delivering order: {}", orderId, e);
-            return "redirect:/admin/orders/{orderId}?error=deliver_failed";
+            return "redirect:/admin/orders/" + orderId + "?error=deliver_failed";
         }
     }
 
@@ -111,10 +142,10 @@ public class AdminOrderController {
         try {
             orderService.cancelOrder(orderId);
             log.info("Admin cancelled order: {}", orderId);
-            return "redirect:/admin/orders/{orderId}?success=cancelled";
+            return "redirect:/admin/orders/" + orderId + "?success=cancelled";
         } catch (Exception e) {
             log.error("Error cancelling order: {}", orderId, e);
-            return "redirect:/admin/orders/{orderId}?error=cancel_failed";
+            return "redirect:/admin/orders/" + orderId + "?error=cancel_failed";
         }
     }
 }

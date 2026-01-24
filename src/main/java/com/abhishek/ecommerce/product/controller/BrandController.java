@@ -79,6 +79,44 @@ public class BrandController {
         return ApiResponseBuilder.success("Active brands fetched successfully", brands);
     }
 
+    // ========================= SEARCH =========================
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<BrandResponseDto>> searchBrands(@RequestParam String name) {
+        List<BrandResponseDto> brands = brandService.searchBrandsByName(name);
+        return ApiResponseBuilder.success("Brands searched successfully", brands);
+    }
+
+    // ========================= FILTER =========================
+    @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<BrandResponseDto>> filterBrands(@RequestParam String status) {
+        List<BrandResponseDto> brands = brandService.filterByStatus(status);
+        return ApiResponseBuilder.success("Brands filtered successfully", brands);
+    }
+
+    // ========================= SORT =========================
+    @GetMapping("/sort")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<BrandResponseDto>> sortBrands(
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String order) {
+        List<BrandResponseDto> brands = brandService.getAllBrandsSorted(sortBy, order);
+        return ApiResponseBuilder.success("Brands sorted successfully", brands);
+    }
+
+    // ========================= SEARCH + FILTER + SORT =========================
+    @GetMapping("/search-filter-sort")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<BrandResponseDto>> searchFilterSort(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String order) {
+        List<BrandResponseDto> brands = brandService.searchFilterSort(name, status, sortBy, order);
+        return ApiResponseBuilder.success("Brands filtered and sorted successfully", brands);
+    }
+
     // ========================= ACTIVATE =========================
     @Operation(
         summary = "Activate brand",

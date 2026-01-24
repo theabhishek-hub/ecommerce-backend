@@ -39,6 +39,7 @@ public class UserMapper {
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
+        dto.setPhone(user.getPhone());
         dto.setStatus(user.getStatus() != null ? user.getStatus().name() : null);
         dto.setRoles(user.getRoles() != null ? user.getRoles().stream()
                 .map(role -> role.name().replace("ROLE_", ""))
@@ -49,6 +50,7 @@ public class UserMapper {
         dto.setSellerRequestedAt(user.getSellerRequestedAt());
         dto.setSellerApprovedAt(user.getSellerApprovedAt());
         dto.setCreatedAt(user.getCreatedAt());
+        dto.setUpdatedAt(user.getUpdatedAt());
 
         return dto;
     }

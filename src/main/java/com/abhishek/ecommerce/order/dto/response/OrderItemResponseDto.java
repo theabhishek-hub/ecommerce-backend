@@ -39,5 +39,12 @@ public class OrderItemResponseDto {
     public void setCurrency(String currency) {
         this.currency = currency;
     }
+
+    public BigDecimal getTotalPrice() {
+        if (priceAmount == null || quantity == null) {
+            return BigDecimal.ZERO;
+        }
+        return priceAmount.multiply(new BigDecimal(quantity));
+    }
 }
 

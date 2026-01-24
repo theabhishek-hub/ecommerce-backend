@@ -1,8 +1,8 @@
 package com.abhishek.ecommerce.ui.admin.controller;
 
-import com.abhishek.ecommerce.seller.service.SellerService;
 import com.abhishek.ecommerce.shared.enums.SellerStatus;
 import com.abhishek.ecommerce.user.service.UserService;
+import com.abhishek.ecommerce.user.repository.SellerApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +14,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * ROLE_ADMIN only - enforced by SecurityConfig
  * Admin panel for managing seller applications and seller accounts
+ * 
+ * NOTE: Migrated from SellerService to UserService for seller management (Phase 2)
  */
 @Slf4j
 @Controller
@@ -23,7 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminSellerController {
 
     private final UserService userService;
-    private final SellerService sellerService;
+    private final SellerApplicationRepository sellerApplicationRepository;
 
     /**
      * GET /admin/sellers
@@ -32,7 +34,7 @@ public class AdminSellerController {
     @GetMapping
     public String listSellerRequests(Model model) {
         try {
-            var sellerRequests = sellerService.getAllPendingSellers();
+            var sellerRequests = userService.getPendingSellerApplications();
             model.addAttribute("title", "Seller Management");
             model.addAttribute("sellerRequests", sellerRequests);
             model.addAttribute("requestCount", sellerRequests.size());
@@ -54,10 +56,18 @@ public class AdminSellerController {
     @GetMapping("/{sellerId}/details")
     public String viewSellerDetails(@PathVariable Long sellerId, Model model) {
         try {
-            var seller = sellerService.getSellerById(sellerId);
+            var seller = userService.getUserById(sellerId);
             model.addAttribute("seller", seller);
+            
+            // Fetch seller application details
+            var sellerApp = sellerApplicationRepository.findByUserId(sellerId);
+            if (sellerApp.isPresent()) {
+                model.addAttribute("sellerApplication", sellerApp.get());
+            }
+            
+            log.info("Admin viewed seller details for userId={}", sellerId);
         } catch (Exception e) {
-            log.error("Error loading seller details for sellerId={}", sellerId, e);
+            log.error("Error loading seller details for userId={}", sellerId, e);
             model.addAttribute("error", "Seller not found");
         }
         return "admin/sellers/details";
@@ -71,12 +81,12 @@ public class AdminSellerController {
     public String approveSeller(@PathVariable Long sellerId, RedirectAttributes redirectAttributes) {
         try {
             var currentAdmin = userService.getCurrentUserProfile();
-            sellerService.approveSeller(sellerId, currentAdmin.getId());
+            userService.approveSeller(sellerId, currentAdmin.getId());
             redirectAttributes.addFlashAttribute("success", "Seller approved successfully");
-            log.info("Seller approved by admin for sellerId={}", sellerId);
+            log.info("Seller approved by admin for userId={}", sellerId);
             return "redirect:/admin/sellers";
         } catch (Exception e) {
-            log.error("Error approving seller for sellerId={}", sellerId, e);
+            log.error("Error approving seller for userId={}", sellerId, e);
             redirectAttributes.addFlashAttribute("error", "Error approving seller: " + e.getMessage());
             return "redirect:/admin/sellers";
         }
@@ -90,12 +100,12 @@ public class AdminSellerController {
     public String rejectSeller(@PathVariable Long sellerId, @RequestParam(required = false) String reason, RedirectAttributes redirectAttributes) {
         try {
             var currentAdmin = userService.getCurrentUserProfile();
-            sellerService.rejectSeller(sellerId, currentAdmin.getId(), reason);
+            userService.rejectSeller(sellerId, currentAdmin.getId(), reason);
             redirectAttributes.addFlashAttribute("success", "Seller application rejected");
-            log.info("Seller rejected by admin for sellerId={}", sellerId);
+            log.info("Seller rejected by admin for userId={}", sellerId);
             return "redirect:/admin/sellers";
         } catch (Exception e) {
-            log.error("Error rejecting seller for sellerId={}", sellerId, e);
+            log.error("Error rejecting seller for userId={}", sellerId, e);
             redirectAttributes.addFlashAttribute("error", "Error rejecting seller: " + e.getMessage());
             return "redirect:/admin/sellers";
         }
@@ -109,12 +119,12 @@ public class AdminSellerController {
     public String suspendSeller(@PathVariable Long sellerId, @RequestParam(required = false) String reason, RedirectAttributes redirectAttributes) {
         try {
             var currentAdmin = userService.getCurrentUserProfile();
-            sellerService.suspendSeller(sellerId, currentAdmin.getId(), reason);
+            userService.suspendSeller(sellerId, currentAdmin.getId(), reason);
             redirectAttributes.addFlashAttribute("success", "Seller account suspended");
-            log.info("Seller suspended by admin for sellerId={}", sellerId);
+            log.info("Seller suspended by admin for userId={}", sellerId);
             return "redirect:/admin/sellers";
         } catch (Exception e) {
-            log.error("Error suspending seller for sellerId={}", sellerId, e);
+            log.error("Error suspending seller for userId={}", sellerId, e);
             redirectAttributes.addFlashAttribute("error", "Error suspending seller: " + e.getMessage());
             return "redirect:/admin/sellers";
         }

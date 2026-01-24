@@ -16,6 +16,18 @@ public interface CategoryService {
     List<CategoryResponseDto> getAllCategories();
     List<CategoryResponseDto> getAllActiveCategories();
     
+    // SEARCH
+    List<CategoryResponseDto> searchCategoriesByName(String name);
+    
+    // FILTER
+    List<CategoryResponseDto> filterByStatus(String status);
+    
+    // SORT
+    List<CategoryResponseDto> getAllCategoriesSorted(String sortBy, String order);
+    
+    // COMBINED SEARCH & FILTER & SORT
+    List<CategoryResponseDto> searchFilterSort(String name, String status, String sortBy, String order);
+    
     // UPDATE
     CategoryResponseDto updateCategory(Long categoryId, CategoryUpdateRequestDto requestDto);
     

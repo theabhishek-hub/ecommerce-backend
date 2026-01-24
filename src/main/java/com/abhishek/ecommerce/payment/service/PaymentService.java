@@ -14,5 +14,11 @@ public interface PaymentService {
     PaymentResponseDto markPaymentSuccess(Long paymentId);
 
     PaymentResponseDto refundPayment(Long paymentId);
+
+    /**
+     * Confirm payment by admin/seller (for COD orders after delivery)
+     * Only updates payment status to CONFIRMED, does NOT change order status
+     */
+    PaymentResponseDto confirmPaymentByAdmin(Long orderId);
 }
 

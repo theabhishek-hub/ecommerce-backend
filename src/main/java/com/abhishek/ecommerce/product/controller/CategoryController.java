@@ -79,6 +79,44 @@ public class CategoryController {
         return ApiResponseBuilder.success("Active categories fetched successfully", categories);
     }
 
+    // ========================= SEARCH =========================
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<CategoryResponseDto>> searchCategories(@RequestParam String name) {
+        List<CategoryResponseDto> categories = categoryService.searchCategoriesByName(name);
+        return ApiResponseBuilder.success("Categories searched successfully", categories);
+    }
+
+    // ========================= FILTER =========================
+    @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<CategoryResponseDto>> filterCategories(@RequestParam String status) {
+        List<CategoryResponseDto> categories = categoryService.filterByStatus(status);
+        return ApiResponseBuilder.success("Categories filtered successfully", categories);
+    }
+
+    // ========================= SORT =========================
+    @GetMapping("/sort")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<CategoryResponseDto>> sortCategories(
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String order) {
+        List<CategoryResponseDto> categories = categoryService.getAllCategoriesSorted(sortBy, order);
+        return ApiResponseBuilder.success("Categories sorted successfully", categories);
+    }
+
+    // ========================= SEARCH + FILTER + SORT =========================
+    @GetMapping("/search-filter-sort")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<CategoryResponseDto>> searchFilterSort(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String order) {
+        List<CategoryResponseDto> categories = categoryService.searchFilterSort(name, status, sortBy, order);
+        return ApiResponseBuilder.success("Categories filtered and sorted successfully", categories);
+    }
+
     // ========================= ACTIVATE =========================
     @Operation(
         summary = "Activate category",

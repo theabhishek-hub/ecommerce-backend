@@ -1,9 +1,9 @@
 package com.abhishek.ecommerce.ui.seller.controller;
 
-import com.abhishek.ecommerce.seller.dto.request.SellerApplicationRequestDto;
-import com.abhishek.ecommerce.seller.service.SellerService;
+import com.abhishek.ecommerce.ui.seller.dto.SellerApplicationRequestDto;
 import com.abhishek.ecommerce.user.service.UserService;
 import com.abhishek.ecommerce.shared.enums.SellerStatus;
+import com.abhishek.ecommerce.common.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SellerApplicationController {
 
     private final UserService userService;
-    private final SellerService sellerService;
+    private final SecurityUtils securityUtils;
 
     /**
      * GET /seller/apply
@@ -46,42 +46,29 @@ public class SellerApplicationController {
             
             // CRITICAL FIX: Force refresh user data to get latest SellerStatus from database
             var refreshedUser = userService.getUserById(currentUser.getId());
-            var sellerProfile = sellerService.getSellerByUserId(currentUser.getId());
             
-            // CRITICAL: Check seller profile status FIRST (source of truth)
-            // If seller profile exists and is APPROVED, redirect immediately
-            if (sellerProfile != null && sellerProfile.getStatus() != null) {
-                String sellerProfileStatus = sellerProfile.getStatus();
-                model.addAttribute("sellerProfile", sellerProfile);
+            // CRITICAL: If already approved, refresh session and redirect to dashboard
+            if (SellerStatus.APPROVED.equals(refreshedUser.getSellerStatus())) {
+                log.info("Approved seller attempted /seller/apply - refreshing session and redirecting to dashboard. UserId={}", currentUser.getId());
                 
-                // If seller profile is APPROVED, redirect to dashboard
-                if (SellerStatus.APPROVED.name().equals(sellerProfileStatus)) {
-                    log.info("Approved seller (from profile) attempted /seller/apply - redirecting to dashboard. UserId={}, SellerId={}", 
-                        currentUser.getId(), sellerProfile.getId());
-                    return "redirect:/seller/dashboard";
+                // CRITICAL: Refresh the user's SecurityContext to include ROLE_SELLER
+                // This ensures Spring Security recognizes the user has ROLE_SELLER when accessing /seller/dashboard
+                try {
+                    securityUtils.refreshUserPrincipal(currentUser.getId());
+                    log.info("✅ Refreshed SecurityContext for approved seller {}", currentUser.getId());
+                } catch (Exception e) {
+                    log.warn("⚠️ Could not refresh SecurityContext for user {} (will require logout/login)", currentUser.getId(), e);
                 }
                 
-                // Update user's sellerStatus from seller profile for consistency
-                refreshedUser.setSellerStatus(sellerProfileStatus);
-            } else {
-                // No seller profile exists, use user's sellerStatus
-                if (refreshedUser.getSellerStatus() == null) {
-                    refreshedUser.setSellerStatus("NOT_A_SELLER");
-                }
-            }
-            
-            // CRITICAL: If already approved (from user status), redirect to dashboard
-            if (SellerStatus.APPROVED.name().equals(refreshedUser.getSellerStatus())) {
-                log.info("Approved seller attempted /seller/apply - redirecting to dashboard. UserId={}", currentUser.getId());
                 return "redirect:/seller/dashboard";
             }
             
             // If REQUESTED, show status page instead of form
-            if (SellerStatus.REQUESTED.name().equals(refreshedUser.getSellerStatus())) {
+            if (SellerStatus.REQUESTED.equals(refreshedUser.getSellerStatus())) {
                 log.info("Pending seller viewing application status. UserId={}", currentUser.getId());
                 model.addAttribute("user", refreshedUser);
                 model.addAttribute("title", "Application Status");
-                return "seller/application-status";
+                return "seller/apply";
             }
             
             // Add empty form DTO if not already in model
@@ -127,12 +114,13 @@ public class SellerApplicationController {
             var currentUser = userService.getCurrentUserProfile();
             
             // Verify not already approved
-            if (SellerStatus.APPROVED.name().equals(currentUser.getSellerStatus())) {
+            if (SellerStatus.APPROVED.equals(currentUser.getSellerStatus())) {
                 log.warn("Approved seller tried to resubmit application. UserId={}", currentUser.getId());
                 return "redirect:/seller/dashboard";
             }
             
-            sellerService.applyForSellerWithDetails(currentUser.getId(), applicationForm);
+            // Call UserService to handle the seller application submission
+            userService.applySeller(currentUser.getId(), applicationForm);
             redirectAttributes.addFlashAttribute("success", "Seller application submitted successfully! Your account is under review. You will be notified once approved.");
             log.info("Seller application submitted with details for userId={}", currentUser.getId());
             return "redirect:/seller/apply";

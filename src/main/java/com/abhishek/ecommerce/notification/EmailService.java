@@ -1,7 +1,7 @@
 package com.abhishek.ecommerce.notification;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,10 +15,16 @@ import jakarta.mail.internet.MimeMessage;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    
+    @Value("${spring.mail.username}")
+    private String mailFromAddress;
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     /**
      * Send a simple text email
@@ -26,6 +32,7 @@ public class EmailService {
     public void sendSimpleEmail(String to, String subject, String text) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(mailFromAddress);
             message.setTo(to);
             message.setSubject(subject);
             message.setText(text);
@@ -43,17 +50,21 @@ public class EmailService {
      */
     public void sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
+            log.info("[EmailService] Starting to send HTML email to: {} with subject: {}", to, subject);
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            helper.setFrom(mailFromAddress);
+            log.info("[EmailService] Set from address: {}", mailFromAddress);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true); // true indicates HTML
 
+            log.info("[EmailService] Prepared message, about to send via JavaMailSender to: {}", to);
             mailSender.send(message);
-            log.info("HTML email sent successfully to: {}", to);
+            log.info("[EmailService] HTML email sent successfully to: {}", to);
         } catch (MessagingException e) {
-            log.error("Failed to send HTML email to {}: {}", to, e.getMessage(), e);
+            log.error("[EmailService] FAILED to send HTML email to {}: {}", to, e.getMessage(), e);
         }
     }
 
@@ -173,6 +184,57 @@ public class EmailService {
             </body>
             </html>
             """, customerName, orderId);
+
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send shipping confirmation email to shipping team
+     * Called when order is confirmed by seller - notifies shipping department to prepare shipment
+     */
+    public void sendShippingConfirmationEmail(String to, Long orderId, String customerName) {
+        String subject = String.format("⚠️ NEW ORDER TO SHIP - Order #%d", orderId);
+        String htmlContent = String.format("""
+            <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f5f5f5;">
+                <div style="max-width: 600px; margin: 20px auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h2 style="color: #d9534f; border-bottom: 2px solid #d9534f; padding-bottom: 10px;">🚚 ORDER READY FOR SHIPMENT</h2>
+                    <p style="font-size: 16px; color: #333;">Shipping Team,</p>
+                    
+                    <p style="font-size: 14px; color: #666;">
+                        A new order has been confirmed and is ready for shipment preparation.
+                    </p>
+                    
+                    <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <h3 style="color: #333; margin-top: 0;">Order Details:</h3>
+                        <p style="margin: 8px 0;"><strong>Order ID:</strong> <span style="color: #d9534f; font-weight: bold;">#%d</span></p>
+                        <p style="margin: 8px 0;"><strong>Customer Name:</strong> %s</p>
+                        <p style="margin: 8px 0;"><strong>Status:</strong> <span style="background-color: #5cb85c; color: white; padding: 2px 8px; border-radius: 3px;">CONFIRMED</span></p>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #666;">
+                        Please prepare this order for shipment immediately.
+                    </p>
+                    
+                    <p style="font-size: 14px; color: #666; margin-bottom: 5px;">
+                        <strong>Next Steps:</strong>
+                    </p>
+                    <ul style="font-size: 14px; color: #666;">
+                        <li>Pick and verify items from warehouse</li>
+                        <li>Pack securely with appropriate materials</li>
+                        <li>Generate shipping label</li>
+                        <li>Update tracking information</li>
+                        <li>Hand over to courier partner</li>
+                    </ul>
+                    
+                    <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 20px;">
+                        <p style="font-size: 12px; color: #999; margin: 0;">This is an automated notification. Please do not reply to this email.</p>
+                        <p style="font-size: 12px; color: #999; margin: 5px 0 0 0;">For support, contact the admin dashboard.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """, orderId, customerName);
 
         sendHtmlEmail(to, subject, htmlContent);
     }

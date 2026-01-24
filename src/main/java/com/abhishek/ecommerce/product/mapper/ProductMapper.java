@@ -22,6 +22,8 @@ public class ProductMapper {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(mapToMoney(dto.getPriceAmount(), dto.getCurrency()));
+        product.setSku(dto.getSku());
+        product.setImageUrl(dto.getImageUrl());
 
         return product;
     }
@@ -39,17 +41,22 @@ public class ProductMapper {
         dto.setPriceAmount(product.getPrice() != null ? product.getPrice().getAmount() : null);
         dto.setCurrency(product.getPrice() != null ? product.getPrice().getCurrency() : null);
         dto.setStatus(product.getStatus() != null ? product.getStatus().name() : null);
+        dto.setSku(product.getSku());
+        dto.setImageUrl(product.getImageUrl());
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
         dto.setCategoryName(product.getCategory() != null ? product.getCategory().getName() : null);
         dto.setBrandId(product.getBrand() != null ? product.getBrand().getId() : null);
         dto.setBrandName(product.getBrand() != null ? product.getBrand().getName() : null);
         
         // Map seller information
-        if (product.getSeller() != null && product.getSeller().getUser() != null) {
+        if (product.getSeller() != null) {
             dto.setSellerId(product.getSeller().getId());
-            dto.setSellerEmail(product.getSeller().getUser().getEmail());
-            dto.setSellerFullName(product.getSeller().getUser().getFullName());
+            dto.setSellerEmail(product.getSeller().getEmail());
+            dto.setSellerFullName(product.getSeller().getFullName());
         }
+        
+        // Map creator information
+        dto.setCreatedBy(product.getCreatedBy());
 
         return dto;
     }

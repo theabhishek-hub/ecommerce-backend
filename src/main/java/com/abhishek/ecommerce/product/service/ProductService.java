@@ -56,4 +56,5 @@ public interface ProductService {
     /**
      * Get all active products for a specific seller
      */
-    List<ProductResponseDto> getActiveProductsBySeller(Long sellerId);}
+    List<ProductResponseDto> getActiveProductsBySeller(Long sellerId);
+}

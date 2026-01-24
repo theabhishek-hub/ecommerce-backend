@@ -7,6 +7,7 @@ import com.abhishek.ecommerce.payment.entity.Payment;
 import com.abhishek.ecommerce.payment.entity.PaymentMethod;
 import com.abhishek.ecommerce.payment.gateway.razorpay.RazorpayProperties;
 import com.abhishek.ecommerce.payment.gateway.razorpay.dto.request.RazorpayCreateOrderRequestDto;
+import com.abhishek.ecommerce.payment.gateway.razorpay.dto.request.RazorpayPrepareOrderRequestDto;
 import com.abhishek.ecommerce.payment.gateway.razorpay.dto.request.RazorpayVerifyPaymentRequestDto;
 import com.abhishek.ecommerce.payment.gateway.razorpay.dto.response.RazorpayCreateOrderResponseDto;
 import com.abhishek.ecommerce.payment.gateway.razorpay.exception.RazorpayNotConfiguredException;
@@ -161,6 +162,71 @@ public class RazorpayPaymentService {
 
         orderRepository.save(order);
         paymentRepository.save(payment);
+    }
+
+    @Transactional
+    public RazorpayCreateOrderResponseDto createRazorpayOrderOnly(RazorpayPrepareOrderRequestDto requestDto) {
+        if (!razorpayProperties.isEnabled()) {
+            throw new RazorpayNotConfiguredException();
+        }
+
+        // For ONLINE payment, create Razorpay order directly without requiring DB order
+        // The amount is passed in the request DTO
+        long amountPaise = requestDto.getAmount(); // Already in paise
+        String currency = requestDto.getCurrency() != null ? requestDto.getCurrency() : "INR";
+
+        try {
+            RazorpayClient client = new RazorpayClient(razorpayProperties.getKeyId(), razorpayProperties.getKeySecret());
+
+            JSONObject options = new JSONObject();
+            options.put("amount", amountPaise);
+            options.put("currency", currency);
+            // Use a temporary receipt for orders that don't exist in DB yet
+            options.put("receipt", "temp_order_" + System.currentTimeMillis());
+
+            com.razorpay.Order rzOrder = client.orders.create(options);
+            String razorpayOrderId = rzOrder.get("id");
+
+            log.info("Razorpay order created (no DB order): razorpayOrderId={}, amount={}, currency={}", 
+                    razorpayOrderId, amountPaise, currency);
+
+            return RazorpayCreateOrderResponseDto.builder()
+                    .enabled(true)
+                    .keyId(razorpayProperties.getKeyId())
+                    .razorpayOrderId(razorpayOrderId)
+                    .amount(amountPaise)
+                    .currency(currency)
+                    .internalOrderId(null)  // No internal order yet
+                    .build();
+        } catch (RazorpayException e) {
+            log.error("Razorpay order creation failed: {}", e.getMessage(), e);
+            throw new IllegalStateException("Failed to prepare payment");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void verifySignatureOnly(RazorpayVerifyPaymentRequestDto requestDto) {
+        if (!razorpayProperties.isEnabled()) {
+            throw new RazorpayNotConfiguredException();
+        }
+
+        // Only verify the signature - don't update any database records
+        // This is used to verify payment before creating the order
+        boolean valid = RazorpaySignatureVerifier.verify(
+                requestDto.getRazorpayOrderId(),
+                requestDto.getRazorpayPaymentId(),
+                requestDto.getRazorpaySignature(),
+                razorpayProperties.getKeySecret()
+        );
+
+        if (!valid) {
+            log.warn("Invalid Razorpay payment signature for orderId={}, paymentId={}", 
+                    requestDto.getRazorpayOrderId(), requestDto.getRazorpayPaymentId());
+            throw new IllegalStateException("Invalid payment signature");
+        }
+
+        log.info("Razorpay payment signature verified: razorpayOrderId={}, razorpayPaymentId={}", 
+                requestDto.getRazorpayOrderId(), requestDto.getRazorpayPaymentId());
     }
 
     private void validateOrderAccess(Order order) {

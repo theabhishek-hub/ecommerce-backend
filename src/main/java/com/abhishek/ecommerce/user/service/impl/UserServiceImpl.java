@@ -14,7 +14,6 @@ import com.abhishek.ecommerce.user.exception.UserNotFoundException;
 import com.abhishek.ecommerce.user.mapper.UserMapper;
 import com.abhishek.ecommerce.user.repository.UserRepository;
 import com.abhishek.ecommerce.user.service.UserService;
-import com.abhishek.ecommerce.seller.service.SellerService;
 import com.abhishek.ecommerce.common.apiResponse.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.abhishek.ecommerce.notification.NotificationService;
+import com.abhishek.ecommerce.user.entity.SellerApplication;
+import com.abhishek.ecommerce.user.repository.SellerApplicationRepository;
+import com.abhishek.ecommerce.ui.seller.dto.SellerApplicationRequestDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,7 +42,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
     private final SecurityUtils securityUtils;
-    private final SellerService sellerService;
+    private final SellerApplicationRepository sellerApplicationRepository;
 
     // ========================= CREATE =========================
     @Override
@@ -312,20 +314,398 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public long getTotalSellerCount() {
-        // Count sellers with APPROVED status
-        return sellerService.countByStatus(SellerStatus.APPROVED);
+        // Count sellers with APPROVED status from User entity
+        return userRepository.countBySellerStatus(SellerStatus.APPROVED);
     }
 
     @Override
     public long getPendingSellerRequestCount() {
-        // Count sellers with REQUESTED status using SellerService
-        return sellerService.countByStatus(SellerStatus.REQUESTED);
+        // Count sellers with REQUESTED status from User entity
+        return userRepository.countBySellerStatus(SellerStatus.REQUESTED);
     }
 
     // ========================= PRIVATE HELPER =========================
     private User getUserOrThrow(Long userId) {
         return userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
                 .orElseThrow(() -> new UserNotFoundException(userId));
+    }
+
+    // ========================= SELLER APPLICATION OPERATIONS =========================
+
+    @Override
+    public UserResponseDto approveSeller(Long userId, Long adminUserId) {
+        log.info("Admin {} approving seller application for user {}", adminUserId, userId);
+
+        User user = getUserOrThrow(userId);
+        User admin = getUserOrThrow(adminUserId);
+
+        // Validate admin has ROLE_ADMIN
+        if (!admin.getRoles().contains(Role.ROLE_ADMIN)) {
+            log.warn("Non-admin user {} attempted to approve seller", adminUserId);
+            throw new IllegalStateException("Only admins can approve sellers");
+        }
+
+        user.setSellerStatus(SellerStatus.APPROVED);
+        user.setSellerApprovedAt(LocalDateTime.now());
+        user.setApprovedByAdmin(admin);
+
+        // Assign ROLE_SELLER if not present
+        if (!user.getRoles().contains(Role.ROLE_SELLER)) {
+            user.getRoles().add(Role.ROLE_SELLER);
+        }
+
+        user = userRepository.save(user);
+        log.info("Seller {} approved by admin {}", userId, adminUserId);
+
+        // CRITICAL: Also update SellerApplication status to APPROVED
+        // User and SellerApplication are separate entities with separate status fields
+        var sellerApp = sellerApplicationRepository.findByUserId(userId);
+        if (sellerApp.isPresent()) {
+            SellerApplication app = sellerApp.get();
+            app.setStatus(SellerStatus.APPROVED);
+            sellerApplicationRepository.save(app);
+            log.info("SellerApplication status updated to APPROVED for userId={}", userId);
+        }
+
+        // Refresh user's Spring Security principal if they are currently logged in
+        // This ensures their session immediately reflects the new APPROVED status and ROLE_SELLER
+        try {
+            if (securityUtils.isUserId(userId)) {
+                securityUtils.refreshUserPrincipal(userId);
+                log.info("Refreshed principal for newly approved seller {}", userId);
+            }
+        } catch (Exception e) {
+            log.warn("Could not refresh principal for user {} after approval (may not be logged in)", userId, e);
+        }
+
+        // Send notification
+        notificationService.sendSellerApprovedNotification(user.getId(), user.getEmail(), user.getFullName());
+
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserResponseDto rejectSeller(Long userId, Long adminUserId, String rejectionReason) {
+        log.info("Admin {} rejecting seller application for user {}", adminUserId, userId);
+
+        User user = getUserOrThrow(userId);
+        User admin = getUserOrThrow(adminUserId);
+
+        // Validate admin has ROLE_ADMIN
+        if (!admin.getRoles().contains(Role.ROLE_ADMIN)) {
+            log.warn("Non-admin user {} attempted to reject seller", adminUserId);
+            throw new IllegalStateException("Only admins can reject sellers");
+        }
+
+        user.setSellerStatus(SellerStatus.REJECTED);
+        user.setSellerRejectionReason(rejectionReason);
+        user.setApprovedByAdmin(admin);
+
+        // Remove ROLE_SELLER
+        user.getRoles().remove(Role.ROLE_SELLER);
+
+        user = userRepository.save(user);
+        log.info("Seller {} rejected by admin {}", userId, adminUserId);
+
+        // CRITICAL: Also update SellerApplication status to REJECTED
+        var sellerApp = sellerApplicationRepository.findByUserId(userId);
+        if (sellerApp.isPresent()) {
+            SellerApplication app = sellerApp.get();
+            app.setStatus(SellerStatus.REJECTED);
+            sellerApplicationRepository.save(app);
+            log.info("SellerApplication status updated to REJECTED for userId={}", userId);
+        }
+
+        // Send notification
+        notificationService.sendSellerRejectedNotification(user.getId(), user.getEmail(), user.getFullName(), rejectionReason);
+
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserResponseDto suspendSeller(Long userId, Long adminUserId, String suspensionReason) {
+        log.info("Admin {} suspending seller {}", adminUserId, userId);
+
+        User user = getUserOrThrow(userId);
+        User admin = getUserOrThrow(adminUserId);
+
+        // Validate admin has ROLE_ADMIN
+        if (!admin.getRoles().contains(Role.ROLE_ADMIN)) {
+            log.warn("Non-admin user {} attempted to suspend seller", adminUserId);
+            throw new IllegalStateException("Only admins can suspend sellers");
+        }
+
+        user.setSellerStatus(SellerStatus.SUSPENDED);
+        user.setSellerRejectionReason(suspensionReason); // Reuse field for suspension reason
+        user.setApprovedByAdmin(admin);
+
+        // Remove ROLE_SELLER
+        user.getRoles().remove(Role.ROLE_SELLER);
+
+        user = userRepository.save(user);
+        log.info("Seller {} suspended by admin {}", userId, adminUserId);
+
+        // CRITICAL: Also update SellerApplication status to SUSPENDED
+        var sellerApp = sellerApplicationRepository.findByUserId(userId);
+        if (sellerApp.isPresent()) {
+            SellerApplication app = sellerApp.get();
+            app.setStatus(SellerStatus.SUSPENDED);
+            sellerApplicationRepository.save(app);
+            log.info("SellerApplication status updated to SUSPENDED for userId={}", userId);
+        }
+
+        // Send notification
+        notificationService.sendSellerSuspendedNotification(user.getId(), user.getEmail(), user.getFullName(), suspensionReason);
+
+        return userMapper.toDto(user);
+    }
+
+    /**
+     * Get pending seller applications
+     */
+    @Override
+    public List<UserResponseDto> getPendingSellerApplications() {
+        log.info("getPendingSellerApplications fetching all pending seller applications");
+        return userRepository.findBySellerStatus(SellerStatus.REQUESTED)
+                .stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * User applies to become a seller
+     * Sets sellerStatus = REQUESTED and stores form data
+     */
+    @Override
+    public void applySeller(Long userId, Object applicationForm) {
+        log.info("applySeller started for userId={}", userId);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Set seller status to REQUESTED
+        user.setSellerStatus(SellerStatus.REQUESTED);
+        user.setSellerRequestedAt(LocalDateTime.now());
+        userRepository.save(user);
+        
+        // Save seller application with form data
+        if (applicationForm instanceof SellerApplicationRequestDto) {
+            SellerApplicationRequestDto formData = (SellerApplicationRequestDto) applicationForm;
+            
+            // Check if seller application already exists (update case)
+            SellerApplication sellerApp = sellerApplicationRepository.findByUserId(userId)
+                    .orElse(new SellerApplication());
+            
+            // Map form data to entity
+            sellerApp.setUser(user);
+            sellerApp.setBusinessName(formData.getBusinessName());
+            sellerApp.setBusinessDescription(formData.getBusinessDescription());
+            sellerApp.setPan(formData.getPanNumber());
+            sellerApp.setGstNumber(formData.getGstNumber());
+            sellerApp.setAddressLine1(formData.getStreetAddress());
+            sellerApp.setCity(formData.getCity());
+            sellerApp.setState(formData.getState());
+            sellerApp.setPostalCode(formData.getPostalCode());
+            sellerApp.setCountry(formData.getCountry());
+            sellerApp.setPhoneNumber(formData.getPhoneNumber());
+            sellerApp.setBankName(""); // Not in form, will be added later if needed
+            sellerApp.setAccountHolderName(""); // Not in form, will be added later if needed
+            sellerApp.setAccountNumber(maskAccountNumber(formData.getBankAccountNumber()));
+            sellerApp.setIfscCode(formData.getBankIfscCode());
+            sellerApp.setStatus(SellerStatus.REQUESTED);
+            sellerApp.setSubmissionDate(LocalDateTime.now());
+            
+            sellerApplicationRepository.save(sellerApp);
+            log.info("SellerApplication saved for userId={}", userId);
+        }
+        
+        log.info("applySeller completed for userId={}, sellerStatus set to REQUESTED", userId);
+    }
+    
+    /**
+     * Mask account number for security
+     */
+    private String maskAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.length() < 4) {
+            return accountNumber;
+        }
+        return "**** **** **** " + accountNumber.substring(accountNumber.length() - 4);
+    }
+
+    @Override
+    public PageResponseDto<UserResponseDto> getAllPendingSellerApplications(Pageable pageable) {
+        log.info("Fetching pending seller applications with pagination");
+        Page<User> page = userRepository.findBySellerStatus(SellerStatus.REQUESTED, pageable);
+        return new PageResponseDto<UserResponseDto>(
+                page.stream().map(userMapper::toDto).collect(Collectors.toList()),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast(),
+                page.isEmpty()
+        );
+    }
+
+    /**
+     * Approve a seller application
+     */
+    @Override
+    public void approveSellerApplication(Long userId, String adminNotes) {
+        log.info("approveSellerApplication for userId={}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Check if user has pending seller status
+        if (user.getSellerStatus() != SellerStatus.REQUESTED) {
+            log.warn("approveSellerApplication invalid status for userId={}, current status={}", userId, user.getSellerStatus());
+            throw new IllegalStateException("User seller status must be REQUESTED to approve");
+        }
+
+        // Get current admin user
+        Long currentAdminId = securityUtils.getCurrentUserId();
+        if (currentAdminId == null) {
+            throw new IllegalStateException("Admin user not found");
+        }
+        User currentAdmin = userRepository.findById(currentAdminId)
+                .orElseThrow(() -> new UserNotFoundException(currentAdminId));
+
+        // Update seller status
+        user.setSellerStatus(SellerStatus.APPROVED);
+        user.setSellerApprovedAt(LocalDateTime.now());
+        user.setApprovedByAdmin(currentAdmin);
+
+        // Assign ROLE_SELLER if not already assigned
+        if (!user.getRoles().contains(Role.ROLE_SELLER)) {
+            user.getRoles().add(Role.ROLE_SELLER);
+        }
+
+        userRepository.save(user);
+
+        log.info("approveSellerApplication completed for userId={}", userId);
+
+        // Refresh user's Spring Security principal if they are currently logged in
+        try {
+            if (securityUtils.isUserId(userId)) {
+                securityUtils.refreshUserPrincipal(userId);
+                log.info("Refreshed principal for newly approved seller {}", userId);
+            }
+        } catch (Exception e) {
+            log.warn("Could not refresh principal for user {} after approval (may not be logged in)", userId, e);
+        }
+
+        // Send approval notification
+        notificationService.sendSellerApprovedNotification(user.getId(), user.getEmail(), user.getFullName());
+    }
+
+    /**
+     * Reject a seller application
+     */
+    @Override
+    public void rejectSellerApplication(Long userId, String rejectionReason) {
+        log.info("rejectSellerApplication for userId={}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Check if user has pending seller status
+        if (user.getSellerStatus() != SellerStatus.REQUESTED) {
+            log.warn("rejectSellerApplication invalid status for userId={}, current status={}", userId, user.getSellerStatus());
+            throw new IllegalStateException("User seller status must be REQUESTED to reject");
+        }
+
+        // Get current admin user
+        Long currentAdminId = securityUtils.getCurrentUserId();
+        if (currentAdminId == null) {
+            throw new IllegalStateException("Admin user not found");
+        }
+        User currentAdmin = userRepository.findById(currentAdminId)
+                .orElseThrow(() -> new UserNotFoundException(currentAdminId));
+
+        // Update seller status
+        user.setSellerStatus(SellerStatus.REJECTED);
+        user.setSellerRejectionReason(rejectionReason);
+        user.setApprovedByAdmin(currentAdmin);
+
+        userRepository.save(user);
+
+        log.info("rejectSellerApplication completed for userId={}", userId);
+
+        // Send rejection notification
+        notificationService.sendSellerRejectedNotification(user.getId(), user.getEmail(), user.getFullName(), rejectionReason);
+    }
+
+    /**
+     * Suspend a seller account
+     */
+    @Override
+    public void suspendSeller(Long userId, String suspensionReason) {
+        log.info("suspendSeller for userId={}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Check if user is an approved seller
+        if (user.getSellerStatus() != SellerStatus.APPROVED) {
+            log.warn("suspendSeller invalid status for userId={}, current status={}", userId, user.getSellerStatus());
+            throw new IllegalStateException("User must have APPROVED seller status to suspend");
+        }
+
+        // Get current admin user
+        Long currentAdminId = securityUtils.getCurrentUserId();
+        if (currentAdminId == null) {
+            throw new IllegalStateException("Admin user not found");
+        }
+        User currentAdmin = userRepository.findById(currentAdminId)
+                .orElseThrow(() -> new UserNotFoundException(currentAdminId));
+
+        // Update seller status
+        user.setSellerStatus(SellerStatus.SUSPENDED);
+        user.setSellerRejectionReason(suspensionReason); // Reuse field for suspension reason
+        user.setApprovedByAdmin(currentAdmin);
+
+        userRepository.save(user);
+
+        log.info("suspendSeller completed for userId={}", userId);
+
+        // Send suspension notification
+        notificationService.sendSellerSuspendedNotification(user.getId(), user.getEmail(), user.getFullName(), suspensionReason);
+    }
+
+    /**
+     * Activate a suspended seller account
+     */
+    @Override
+    public void activateSuspendedSeller(Long userId) {
+        log.info("activateSuspendedSeller for userId={}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Check if user is suspended
+        if (user.getSellerStatus() != SellerStatus.SUSPENDED) {
+            log.warn("activateSuspendedSeller invalid status for userId={}, current status={}", userId, user.getSellerStatus());
+            throw new IllegalStateException("User must have SUSPENDED seller status to activate");
+        }
+
+        // Get current admin user
+        Long currentAdminId = securityUtils.getCurrentUserId();
+        if (currentAdminId == null) {
+            throw new IllegalStateException("Admin user not found");
+        }
+        User currentAdmin = userRepository.findById(currentAdminId)
+                .orElseThrow(() -> new UserNotFoundException(currentAdminId));
+
+        // Update seller status back to APPROVED
+        user.setSellerStatus(SellerStatus.APPROVED);
+        user.setSellerRejectionReason(null); // Clear suspension reason
+        user.setApprovedByAdmin(currentAdmin);
+
+        userRepository.save(user);
+
+        log.info("activateSuspendedSeller completed for userId={}", userId);
     }
 }
 

@@ -22,9 +22,7 @@ public class InventoryMapper {
         // Seller info
         if (inventory.getProduct() != null && inventory.getProduct().getSeller() != null) {
             dto.setSellerId(inventory.getProduct().getSeller().getId());
-            if (inventory.getProduct().getSeller().getUser() != null) {
-                dto.setSellerName(inventory.getProduct().getSeller().getUser().getFullName());
-            }
+            dto.setSellerName(inventory.getProduct().getSeller().getFullName());
         }
         
         dto.setQuantity(inventory.getQuantity());

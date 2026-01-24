@@ -7,7 +7,6 @@ import com.abhishek.ecommerce.security.jwt.JwtUtil;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.abhishek.ecommerce.user.repository.UserRepository;
-import com.abhishek.ecommerce.seller.repository.SellerRepository;
 import com.abhishek.ecommerce.auth.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,7 +48,6 @@ import java.util.stream.Collectors;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
-    private final SellerRepository sellerRepository;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
 
@@ -173,26 +171,28 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // Check if user is SELLER
         if (user.getRoles().contains(Role.ROLE_SELLER)) {
-            // Fetch seller profile to check status
-            return sellerRepository.findByUserId(user.getId())
-                    .map(seller -> {
-                        switch (seller.getStatus()) {
-                            case APPROVED:
-                                log.debug("Seller {} has APPROVED status, redirecting to dashboard", user.getEmail());
-                                return "/seller/dashboard";
-                            case REQUESTED:
-                            case NOT_A_SELLER:
-                                log.debug("Seller {} has {} status, redirecting to apply page", user.getEmail(), seller.getStatus());
-                                return "/seller/apply";
-                            case REJECTED:
-                            case SUSPENDED:
-                                log.warn("Seller {} has {} status, redirecting to home", user.getEmail(), seller.getStatus());
-                                return "/";
-                            default:
-                                return "/";
-                        }
-                    })
-                    .orElse("/seller/apply");
+            // Check seller status directly from User entity
+            SellerStatus sellerStatus = user.getSellerStatus();
+            if (sellerStatus == null) {
+                sellerStatus = SellerStatus.NOT_A_SELLER;
+            }
+            switch (sellerStatus) {
+                case APPROVED:
+                    log.debug("Seller {} has APPROVED status, redirecting to dashboard", user.getEmail());
+                    return "/seller/dashboard";
+                case REQUESTED:
+                    log.debug("Seller {} has REQUESTED status, redirecting to apply page", user.getEmail());
+                    return "/seller/apply";
+                case NOT_A_SELLER:
+                    log.debug("Seller {} has NOT_A_SELLER status, redirecting to apply page", user.getEmail());
+                    return "/seller/apply";
+                case REJECTED:
+                case SUSPENDED:
+                    log.warn("Seller {} has {} status, redirecting to home", user.getEmail(), sellerStatus);
+                    return "/";
+                default:
+                    return "/";
+            }
         }
 
         // Default: Regular USER -> Home

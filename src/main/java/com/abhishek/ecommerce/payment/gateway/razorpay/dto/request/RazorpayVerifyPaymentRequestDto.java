@@ -9,7 +9,8 @@ import lombok.Setter;
 @Setter
 public class RazorpayVerifyPaymentRequestDto {
 
-    @NotNull(message = "Order ID is required")
+    // orderId is optional - only needed when verifying payment for an existing order
+    // For two-stage payment flow, signature is verified BEFORE order is created
     private Long orderId;
 
     @NotBlank(message = "razorpay_order_id is required")

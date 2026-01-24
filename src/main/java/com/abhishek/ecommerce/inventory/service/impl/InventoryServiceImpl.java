@@ -35,6 +35,28 @@ public class InventoryServiceImpl implements InventoryService {
     private final ProductRepository productRepository;
     private final InventoryMapper inventoryMapper;
 
+    // ========================= CREATE INITIAL INVENTORY =========================
+    @Override
+    public void createInitialInventory(Long productId) {
+        log.info("createInitialInventory for productId={}", productId);
+        
+        // Check if inventory already exists
+        if (inventoryRepository.findByProductId(productId).isPresent()) {
+            log.debug("Inventory already exists for productId={}", productId);
+            return;
+        }
+        
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new com.abhishek.ecommerce.product.exception.ProductNotFoundException(productId));
+        
+        Inventory inventory = new Inventory();
+        inventory.setProduct(product);
+        inventory.setQuantity(0);  // Start with 0 quantity
+        
+        inventoryRepository.save(inventory);
+        log.info("Initial inventory created for productId={}", productId);
+    }
+
     // ========================= INCREASE STOCK =========================
     @Override
     public InventoryResponseDto increaseStock(Long productId, UpdateStockRequestDto requestDto) {
@@ -137,10 +159,8 @@ public class InventoryServiceImpl implements InventoryService {
             if (inventory.getProduct() != null) {
                 inventory.getProduct().getName(); // Initialize product
                 if (inventory.getProduct().getSeller() != null) {
-                    inventory.getProduct().getSeller().getId(); // Initialize seller
-                    if (inventory.getProduct().getSeller().getUser() != null) {
-                        inventory.getProduct().getSeller().getUser().getFullName(); // Initialize user
-                    }
+                    inventory.getProduct().getSeller().getId(); // Initialize seller (now User)
+                    inventory.getProduct().getSeller().getFullName(); // Initialize seller full name
                 }
             }
         });
@@ -161,10 +181,8 @@ public class InventoryServiceImpl implements InventoryService {
             if (inventory.getProduct() != null) {
                 inventory.getProduct().getName(); // Initialize product
                 if (inventory.getProduct().getSeller() != null) {
-                    inventory.getProduct().getSeller().getId(); // Initialize seller
-                    if (inventory.getProduct().getSeller().getUser() != null) {
-                        inventory.getProduct().getSeller().getUser().getFullName(); // Initialize user
-                    }
+                    inventory.getProduct().getSeller().getId(); // Initialize seller (now User)
+                    inventory.getProduct().getSeller().getFullName(); // Initialize seller full name
                 }
             }
         });
@@ -185,9 +203,7 @@ public class InventoryServiceImpl implements InventoryService {
             if (inventory.getProduct() != null && inventory.getProduct().getSeller() != null) {
                 // Force initialization of lazy relationships
                 inventory.getProduct().getSeller().getId();
-                if (inventory.getProduct().getSeller().getUser() != null) {
-                    inventory.getProduct().getSeller().getUser().getFullName();
-                }
+                inventory.getProduct().getSeller().getFullName();
             }
         });
         

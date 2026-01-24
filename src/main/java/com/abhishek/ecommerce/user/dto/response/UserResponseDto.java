@@ -13,6 +13,7 @@ public class UserResponseDto {
     private Long id;
     private String fullName;
     private String email;
+    private String phone;
     private String status;
     private Set<String> roles;
 
@@ -21,4 +22,5 @@ public class UserResponseDto {
     private LocalDateTime sellerRequestedAt;
     private LocalDateTime sellerApprovedAt;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
