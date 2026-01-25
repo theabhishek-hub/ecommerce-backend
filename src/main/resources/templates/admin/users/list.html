@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">User Management - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">User Management</h1>
+            <div style="display: flex; gap: 10px;">
+                <a th:href="@{/admin}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+        <div th:if="${param.success}" class="alert alert-success">Action completed successfully.</div>
+        <div th:if="${param.error}" class="alert alert-error">An error occurred. Please try again.</div>
+
+        <!-- Search Bar with Filters -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px;">
+            <form method="get" th:action="@{/admin/users}" style="display: grid; gap: 15px;">
+                <!-- Search Row -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <input type="text" name="q" placeholder="Search by email or name..." th:value="${searchQuery ?: ''}" 
+                           style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    <button type="submit" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        🔍 Search
+                    </button>
+                    <a th:href="@{/admin/users}" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block;">
+                        Clear
+                    </a>
+                </div>
+
+                <!-- Filter & Sort Row -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <!-- Status Filter -->
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px;">Filter by Status:</label>
+                        <select name="status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">-- All Status --</option>
+                            <option value="ACTIVE" th:selected="${filterStatus == 'ACTIVE'}">Active</option>
+                            <option value="INACTIVE" th:selected="${filterStatus == 'INACTIVE'}">Inactive</option>
+                            <option value="LOCKED" th:selected="${filterStatus == 'LOCKED'}">Locked</option>
+                        </select>
+                    </div>
+
+                    <!-- Role Filter -->
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px;">Filter by Role:</label>
+                        <select name="role" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">-- All Roles --</option>
+                            <option value="USER" th:selected="${filterRole == 'USER'}">USER</option>
+                            <option value="SELLER" th:selected="${filterRole == 'SELLER'}">SELLER</option>
+                            <option value="ADMIN" th:selected="${filterRole == 'ADMIN'}">ADMIN</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px;">Sort By:</label>
+                        <div style="display: flex; gap: 5px;">
+                            <select name="sortBy" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="email" th:selected="${sortBy == 'email'}">Email</option>
+                                <option value="name" th:selected="${sortBy == 'name'}">Name</option>
+                                <option value="status" th:selected="${sortBy == 'status'}">Status</option>
+                                <option value="created" th:selected="${sortBy == 'created'}">Created Date</option>
+                            </select>
+                            <select name="sortOrder" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="asc" th:selected="${sortOrder == 'asc'}">Ascending</option>
+                                <option value="desc" th:selected="${sortOrder == 'desc'}">Descending</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" style="padding: 10px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; align-self: start;">
+                    Apply Filters
+                </button>
+            </form>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasUsers}" class="empty-state">
+            <p>No users found in the system.</p>
+        </div>
+
+        <!-- Users Table -->
+        <div th:if="${hasUsers}" class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.id}">1</td>
+                        <td th:text="${user.email}">user@example.com</td>
+                        <td th:text="${user.fullName}">John Doe</td>
+                        <td>
+                            <span th:if="${user.roles != null and !user.roles.isEmpty()}" 
+                                  class="badge" 
+                                  th:each="role : ${user.roles}" 
+                                  th:classappend="${'badge-' + role.toLowerCase()}" 
+                                  th:text="${role}">USER</span>
+                            <span th:if="${user.roles == null or user.roles.isEmpty()}" class="badge badge-default">NO ROLE</span>
+                        </td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${user.status == 'ACTIVE' ? 'badge-active' : 'badge-inactive'}" 
+                                  th:text="${user.status == 'ACTIVE' ? 'Active' : user.status}">Active</span>
+                        </td>
+                        <td th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy')}">Jan 01, 2025</td>
+                        <td class="actions">
+                            <a th:href="@{/admin/users/{userId}(userId=${user.id})}" class="btn btn-sm btn-primary">View</a>
+                            <form method="post" th:action="@{/admin/users/{userId}/delete(userId=${user.id})}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete user? This cannot be undone.')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

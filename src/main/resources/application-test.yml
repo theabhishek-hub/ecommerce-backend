@@ -1,0 +1,98 @@
+# =============================================================================
+# TEST ENVIRONMENT CONFIGURATION
+# All values are placeholders - Override in test setup if needed
+# =============================================================================
+
+server:
+  port: 8081
+
+# ======================= DATABASE CONFIGURATION =======================
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: ${TEST_DB_USER:sa}
+    password: ${TEST_DB_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Always recreate schema for tests
+    show-sql: false
+    open-in-view: false
+
+  # ======================= CACHE CONFIGURATION =======================
+  cache:
+    type: none  # No caching during tests
+
+  # ======================= ASYNC CONFIGURATION =======================
+  task:
+    execution:
+      pool:
+        core-size: 1
+        max-size: 1
+        queue-capacity: 0  # Synchronous execution for predictable tests
+
+  # ======================= DATA CONFIGURATION =======================
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: default
+
+  # ======================= EMAIL CONFIGURATION =======================
+  mail:
+    host: ${TEST_MAIL_HOST:localhost}
+    port: ${TEST_MAIL_PORT:1025}
+    username: ${TEST_MAIL_USER:test@ecommerce.com}
+    password: ${TEST_MAIL_PASSWORD:test-password}
+
+  # ======================= SECURITY CONFIGURATION =======================
+config:
+  jwt:
+    access-secret: ${TEST_JWT_ACCESS_SECRET:test-secret-key-for-jwt-access-token-generation-placeholder}
+    refresh-secret: ${TEST_JWT_REFRESH_SECRET:test-secret-key-for-jwt-refresh-token-generation-placeholder}
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000
+  
+  security:
+    max-failed-attempts: 3
+    lockout-duration-minutes: 5
+    password-reset-token-expiry-hours: 1
+    oauth2:
+      enabled: false  # Disable OAuth2 in tests
+    autoconfigure:
+      exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+  
+  admin:
+    # Admin credentials for testing
+    email: ${TEST_ADMIN_EMAIL:test-admin@ecommerce.com}
+    password: ${TEST_ADMIN_PASSWORD:TestAdminPassword123!}
+    full-name: ${TEST_ADMIN_FULL_NAME:Test Administrator}
+  
+  email:
+    shipping-team-email: ${TEST_SHIPPING_EMAIL}
+
+# ======================= EXTERNAL SERVICES =======================
+cloudinary:
+  cloud-name: ${TEST_CLOUDINARY_CLOUD_NAME:}
+  api-key: ${TEST_CLOUDINARY_API_KEY:}
+  api-secret: ${TEST_CLOUDINARY_API_SECRET:}
+
+razorpay:
+  key-id: ${TEST_RAZORPAY_KEY_ID:}
+  key-secret: ${TEST_RAZORPAY_KEY_SECRET:}
+
+# ======================= ACTUATOR & MONITORING =======================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# ======================= LOGGING =======================
+logging:
+  level:
+    root: warn
+    com.abhishek.ecommerce: info

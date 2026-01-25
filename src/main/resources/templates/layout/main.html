@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'Home'">Home</title>
+
+    <!-- Disable automatic favicon request to prevent 404 errors -->
+    <link rel="icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" />
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<div th:replace="~{layout/navbar :: navbar}"></div>
+
+<!-- Main content -->
+<main class="main-content" th:replace="${content}">
+    <!-- Content will be inserted here -->
+</main>
+
+<!-- Footer -->
+<div th:replace="~{layout/footer :: footer}"></div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+

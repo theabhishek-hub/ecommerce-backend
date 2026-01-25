@@ -6,6 +6,7 @@ import com.abhishek.ecommerce.shared.enums.ProductStatus;
 import com.abhishek.ecommerce.product.service.impl.ProductServiceImpl;
 
 import com.abhishek.ecommerce.common.baseEntity.Money;
+import com.abhishek.ecommerce.inventory.service.InventoryService;
 import com.abhishek.ecommerce.product.dto.request.ProductCreateRequestDto;
 import com.abhishek.ecommerce.product.dto.request.ProductUpdateRequestDto;
 import com.abhishek.ecommerce.product.dto.response.ProductResponseDto;
@@ -46,6 +47,9 @@ class ProductServiceTest {
 
     @Mock
     private ProductMapper productMapper;
+
+    @Mock
+    private InventoryService inventoryService;
 
     @InjectMocks
     private ProductServiceImpl productService;
@@ -114,6 +118,7 @@ class ProductServiceTest {
         when(productMapper.toEntity(createRequestDto)).thenReturn(product);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(productMapper.toDto(product)).thenReturn(productResponseDto);
+        doNothing().when(inventoryService).createInitialInventory(anyLong());
 
         // When
         ProductResponseDto result = productService.createProduct(createRequestDto);

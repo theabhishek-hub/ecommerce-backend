@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Product Oversight - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">Product Oversight</h1>
+            <div style="display: flex; gap: 10px;">
+                <a th:href="@{/admin/products/add}" class="btn btn-primary">+ Add New Product</a>
+                <a th:href="@{/admin}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+        <div th:if="${param.success}" class="alert alert-success">Action completed successfully.</div>
+        <div th:if="${param.error}" class="alert alert-error">An error occurred. Please try again.</div>
+
+        <!-- Search Bar -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <form method="get" th:action="@{/admin/products}" style="display: flex; gap: 10px; flex: 1; min-width: 300px; align-items: center;">
+                <input type="text" name="q" placeholder="Search by product name..." th:value="${param.q ?: ''}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; flex: 1;">
+                <button type="submit" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>
+            </form>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasProducts}" class="empty-state">
+            <p>No products found in the system.</p>
+        </div>
+
+        <!-- Products Table -->
+        <div th:if="${hasProducts}" class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Name</th>
+                        <th>SKU</th>
+                        <th>Price</th>
+                        <th>Inventory</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="product : ${products}">
+                        <td th:text="${product.id}">1</td>
+                        <td th:text="${product.name}">Product Name</td>
+                        <td th:text="${product.sku}">SKU123</td>
+                        <td th:text="|${product.currency} ${#numbers.formatDecimal(product.priceAmount, 1, 2)}|">$99.99</td>
+                        <td th:text="${product.quantity != null ? product.quantity : 'N/A'}">0</td>
+                        <td>
+                            <span class="badge" th:classappend="${product.status == 'ACTIVE' ? 'badge-active' : 'badge-inactive'}" th:text="${product.status}">ACTIVE</span>
+                        </td>
+                        <td class="actions" style="display: flex !important; gap: 8px !important; flex-wrap: wrap !important;">
+                            <a th:href="@{/admin/products/{productId}(productId=${product.id})}" class="btn btn-sm btn-primary" style="display: inline-block !important; padding: 8px 14px !important; text-decoration: none !important;">View</a>
+                            <form method="post" th:action="@{/admin/products/{productId}/toggle(productId=${product.id})}" style="display:inline-block !important;">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-sm" th:classappend="${product.status == 'ACTIVE' ? 'btn-warning' : 'btn-success'}" th:text="${product.status == 'ACTIVE' ? 'Deactivate' : 'Activate'}" style="display: inline-block !important; padding: 8px 14px !important; border: none !important; cursor: pointer !important;">Toggle</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

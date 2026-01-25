@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<div th:fragment="content" data-authenticated="true" th:data-authenticated="${#authorization.expression('isAuthenticated()')}">
+
+<link rel="stylesheet" th:href="@{/css/product/details.css}">
+<style>
+    .product-details__stock-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .product-details__stock-status.stock-in {
+        background: #d4edda;
+        color: #155724;
+    }
+    .product-details__stock-status.stock-out {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .product-details__btn.disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
+
+<div class="product-details">
+    <div class="product-details__container">
+        <!-- Loading indicator -->
+        <div id="loadingSpinner" class="product-details__loading">
+            <p>Loading product details...</p>
+        </div>
+
+        <!-- Product details -->
+        <div id="productDetails" style="display: none;">
+            <div class="product-details__back-link">
+                <a th:href="@{/products-page}" class="product-details__back">← Back to Products</a>
+            </div>
+
+            <div class="product-details__display">
+                <div class="product-details__image-section">
+                    <img id="productImage" src="" alt="Product" class="product-details__image" />
+                </div>
+
+                <div class="product-details__info-section">
+                    <h1 id="productName" class="product-details__title"></h1>
+                    
+                    <div class="product-details__meta">
+                        <div class="product-details__meta-row">
+                            <span class="product-details__meta-label">SKU:</span>
+                            <span id="productSku" class="product-details__meta-value"></span>
+                        </div>
+                        <div class="product-details__meta-row">
+                            <span class="product-details__meta-label">Brand:</span>
+                            <span id="productBrand" class="product-details__meta-value"></span>
+                        </div>
+                        <div class="product-details__meta-row">
+                            <span class="product-details__meta-label">Category:</span>
+                            <span id="productCategory" class="product-details__meta-value"></span>
+                        </div>
+                        <div class="product-details__meta-row">
+                            <span class="product-details__meta-label">Status:</span>
+                            <span id="productStatus" class="product-details__meta-value"></span>
+                        </div>
+                        <div class="product-details__meta-row">
+                            <span class="product-details__meta-label">Stock:</span>
+                            <span id="productStockStatus" class="product-details__stock-status">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="product-details__price-section">
+                        <span class="product-details__price-label">Price:</span>
+                        <span id="productPrice" class="product-details__price"></span>
+                    </div>
+
+                    <div class="product-details__description-section">
+                        <h2 class="product-details__description-title">Description</h2>
+                        <p id="productDescription" class="product-details__description"></p>
+                    </div>
+
+                    <div class="product-details__actions" style="display: flex; gap: 10px;">
+                        <button id="addToCartBtn" class="product-details__btn product-details__btn--primary" style="flex: 1;">Add to Cart</button>
+                        <button id="buyNowBtn" class="product-details__btn product-details__btn--success" style="flex: 1; background-color: #28a745;">Buy Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty/Not found state -->
+        <div id="emptyState" class="product-details__empty" style="display: none;">
+            <p>Product not found</p>
+            <a th:href="@{/products-page}" class="product-details__empty-link">Back to Products</a>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="product-details__error" style="display: none;">
+            <p id="errorMessage" class="product-details__error-message">Failed to load product. Please try again later.</p>
+            <a th:href="@{/products-page}" class="product-details__error-link">Back to Products</a>
+        </div>
+    </div>
+</div>
+
+</div>
+</html>
+
+<script th:src="@{/js/product/details.js}"></script>

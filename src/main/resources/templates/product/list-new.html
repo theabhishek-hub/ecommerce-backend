@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<div th:fragment="content">
+
+<link rel="stylesheet" th:href="@{/css/product/list.css}">
+<style>
+    .search-sort-container {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 5px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .search-sort-container form {
+        display: flex;
+        gap: 10px;
+        flex: 1;
+        min-width: 300px;
+        align-items: center;
+    }
+    .search-sort-container input[type="text"],
+    .search-sort-container select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .search-sort-container button {
+        padding: 8px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    .pagination a, .pagination span {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #007bff;
+    }
+    .pagination a:hover {
+        background: #007bff;
+        color: white;
+    }
+    .pagination .active {
+        background: #007bff;
+        color: white;
+    }
+    .pagination .disabled {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+</style>
+
+<div class="product-list">
+    <div class="product-list__container">
+        <div class="product-list__header">
+            <h1 class="product-list__title">Product Catalog</h1>
+        </div>
+
+        <!-- Search and Sort Form -->
+        <div class="search-sort-container">
+            <form method="get" th:action="@{/products-page}">
+                <input type="text" name="q" placeholder="Search products..." th:value="${param.q ?: ''}">
+                <select name="sort">
+                    <option value="">Sort by</option>
+                    <option value="createdAt,desc" th:selected="${param.sort == 'createdAt,desc'}">Newest</option>
+                    <option value="createdAt,asc" th:selected="${param.sort == 'createdAt,asc'}">Oldest</option>
+                    <option value="price,asc" th:selected="${param.sort == 'price,asc'}">Price: Low to High</option>
+                    <option value="price,desc" th:selected="${param.sort == 'price,desc'}">Price: High to Low</option>
+                    <option value="name,asc" th:selected="${param.sort == 'name,asc'}">Name: A-Z</option>
+                </select>
+                <button type="submit">Search & Sort</button>
+            </form>
+        </div>
+
+        <!-- Products grid -->
+        <div id="productsGrid" class="product-list__grid">
+            <div th:each="product : ${page.content}" class="product-card">
+                <div class="product-card__image">
+                    <img th:src="${product.imageUrl ?: 'https://via.placeholder.com/300x300?text=No+Image'}" 
+                         th:alt="${product.name}" style="width: 100%; height: 250px; object-fit: cover;">
+                </div>
+                <div class="product-card__content">
+                    <h3 th:text="${product.name}">Product Name</h3>
+                    <p class="product-card__price" th:text="${'$' + #numbers.formatDecimal(product.price, 1, 2)}">$99.99</p>
+                    <p class="product-card__category" th:text="${product.categoryName ?: 'N/A'}">Category</p>
+                    <a th:href="@{/product-details/{id}(id=${product.id})}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${page.empty}" class="product-list__empty">
+            <p>No products found</p>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="!${page.empty}" class="pagination">
+            <a th:if="${!page.first}" th:href="@{/products-page(page=0,q=${param.q ?: ''},sort=${param.sort ?: ''})}">First</a>
+            <span th:if="${page.first}" class="disabled">First</span>
+
+            <a th:if="${page.hasPrevious()}" th:href="@{/products-page(page=${page.number - 1},q=${param.q ?: ''},sort=${param.sort ?: ''})}">Previous</a>
+            <span th:if="!${page.hasPrevious()}" class="disabled">Previous</span>
+
+            <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                <span th:if="${i == page.number}" class="active" th:text="${i + 1}">1</span>
+                <a th:if="${i != page.number}" th:href="@{/products-page(page=${i},q=${param.q ?: ''},sort=${param.sort ?: ''})}" th:text="${i + 1}">1</a>
+            </th:block>
+
+            <a th:if="${page.hasNext()}" th:href="@{/products-page(page=${page.number + 1},q=${param.q ?: ''},sort=${param.sort ?: ''})}">Next</a>
+            <span th:if="!${page.hasNext()}" class="disabled">Next</span>
+
+            <a th:if="!${page.last}" th:href="@{/products-page(page=${page.totalPages - 1},q=${param.q ?: ''},sort=${param.sort ?: ''})}">Last</a>
+            <span th:if="${page.last}" class="disabled">Last</span>
+        </div>
+    </div>
+</div>
+
+</div>
+</html>

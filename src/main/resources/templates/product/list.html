@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<div th:fragment="content">
+
+<link rel="stylesheet" th:href="@{/css/product/list.css}">
+<style>
+    .search-sort-bar {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 5px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .search-sort-bar form {
+        display: flex;
+        gap: 10px;
+        flex: 1;
+        min-width: 300px;
+        align-items: center;
+    }
+    .search-sort-bar input, .search-sort-bar select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .search-sort-bar button {
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    .search-sort-bar button:hover {
+        background: #0056b3;
+    }
+    .product-list__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+    .product-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        transition: transform 0.3s;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .product-card img {
+        max-width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    .product-card h3 {
+        margin: 10px 0;
+        font-size: 16px;
+    }
+    .product-card .price {
+        font-size: 18px;
+        font-weight: bold;
+        color: #28a745;
+        margin: 10px 0;
+    }
+    .product-list__stock-info {
+        margin: 8px 0;
+    }
+    .product-list__stock-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .product-list__stock-status.in-stock {
+        background: #d4edda;
+        color: #155724;
+    }
+    .product-list__stock-status.out-of-stock {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .pagination {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    .pagination a, .pagination span {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #007bff;
+    }
+    .pagination a:hover {
+        background: #007bff;
+        color: white;
+    }
+    .pagination .active {
+        background: #007bff;
+        color: white;
+    }
+    .pagination .disabled {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+</style>
+
+<div class="product-list">
+    <div class="product-list__container">
+        <div class="product-list__header">
+            <h1 class="product-list__title">Product Catalog</h1>
+        </div>
+
+        <!-- Search and Sort Form -->
+        <div class="search-sort-bar">
+            <form method="get" th:action="@{/products-page}">
+                <input type="text" name="q" placeholder="Search by product name..." th:value="${param.q ?: ''}">
+                <select name="sort">
+                    <option value="">Sort by</option>
+                    <option value="createdAt,desc" th:selected="${param.sort == 'createdAt,desc'}">Newest First</option>
+                    <option value="createdAt,asc" th:selected="${param.sort == 'createdAt,asc'}">Oldest First</option>
+                    <option value="price,asc" th:selected="${param.sort == 'price,asc'}">Price: Low to High</option>
+                    <option value="price,desc" th:selected="${param.sort == 'price,desc'}">Price: High to Low</option>
+                    <option value="name,asc" th:selected="${param.sort == 'name,asc'}">Name: A-Z</option>
+                </select>
+                <button type="submit">Search & Sort</button>
+            </form>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loadingSpinner" class="product-list__loading">
+            <p>Loading products...</p>
+        </div>
+
+        <!-- Products grid -->
+        <div id="productsGrid" class="product-list__grid" style="display: none;">
+            <!-- Products will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="emptyState" class="product-list__empty" style="display: none;">
+            <p>No products found matching your search.</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="product-list__error" style="display: none;">
+            <p id="errorMessage" class="product-list__error-message">Failed to load products. Please try again later.</p>
+        </div>
+    </div>
+</div>
+
+</div>
+</html>
+
+<script th:src="@{/js/product/list.js}"></script>

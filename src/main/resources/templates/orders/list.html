@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">My Orders - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/orders.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="orders-container">
+        <div class="orders-header">
+            <h1 th:text="${title}">My Orders</h1>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasOrders}" class="empty-state">
+            <div class="empty-state-content">
+                <h2>No Orders Yet</h2>
+                <p>You haven't placed any orders yet.</p>
+                <a th:href="@{/products-page}" class="btn btn-primary">Start Shopping</a>
+            </div>
+        </div>
+
+        <!-- Search & Sort Bar -->
+        <div th:if="${hasOrders}" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <form method="get" th:action="@{/orders}" style="display: flex; gap: 10px; align-items: center;">
+                <select name="sort" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Sort by</option>
+                    <option value="createdAt,desc" th:selected="${param.sort == 'createdAt,desc'}">Newest First</option>
+                    <option value="createdAt,asc" th:selected="${param.sort == 'createdAt,asc'}">Oldest First</option>
+                    <option value="totalAmount,desc" th:selected="${param.sort == 'totalAmount,desc'}">Highest Amount</option>
+                    <option value="totalAmount,asc" th:selected="${param.sort == 'totalAmount,asc'}">Lowest Amount</option>
+                </select>
+                <button type="submit" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Sort</button>
+            </form>
+        </div>
+
+        <!-- Orders Table -->
+        <div th:if="${hasOrders}" class="orders-table-wrapper">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td th:text="${order.id}">12345</td>
+                        <td th:text="${#dates.format(order.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2025 10:30</td>
+                        <td>
+                            <span class="badge" th:classappend="${'badge-' + order.status.toLowerCase()}" th:text="${order.status}">PENDING</span>
+                        </td>
+                        <td th:text="${'$' + #numbers.formatDecimal(order.totalAmount, 1, 2)}">$99.99</td>
+                        <td>
+                            <a th:href="@{/orders/{orderId}(orderId=${order.id})}" class="btn btn-sm btn-primary">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Back to Shopping Link -->
+        <div class="orders-footer" th:if="${hasOrders}">
+            <a th:href="@{/products-page}" class="link-secondary">Continue Shopping</a>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

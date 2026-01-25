@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Account Under Review</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .pending-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .status-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .status-title {
+            font-size: 28px;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .status-message {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin: 20px 0 30px 0;
+        }
+
+        .status-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .status-info {
+            text-align: left;
+            color: #666;
+        }
+
+        .status-info h4 {
+            color: #333;
+            margin: 10px 0 5px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-info p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f0f0;
+        }
+
+        .timeline {
+            text-align: left;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .timeline h4 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .timeline-item::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: -2px;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .timeline-item.pending::before {
+            content: "⏳";
+            color: #ffc107;
+        }
+
+        .timeline-item.disabled::before {
+            content: "→";
+            color: #ccc;
+        }
+
+        .timeline-item p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .timeline-item.disabled p {
+            color: #999;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #004085;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .refresh-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="pending-container">
+        <div class="status-icon">⏳</div>
+        <h1 class="status-title">Account Under Review</h1>
+        
+        <p class="status-message">
+            Your seller account application is being reviewed by our admin team. 
+            We will notify you via email once approved.
+        </p>
+
+        <!-- Current Status -->
+        <div class="status-card">
+            <div class="status-info">
+                <h4>Application Status</h4>
+                <p>Your seller account is currently under review by our admin team.</p>
+                <p style="font-size: 14px; color: #999; margin-top: 10px;">Status: <strong>PENDING APPROVAL</strong></p>
+            </div>
+        </div>
+
+        <!-- What's Next -->
+        <div class="timeline">
+            <h4>What's Next?</h4>
+            <div class="timeline-item">
+                <p><strong>Step 1:</strong> Admin reviews your application (2-3 business days)</p>
+            </div>
+            <div class="timeline-item pending">
+                <p><strong>Step 2:</strong> You receive approval/rejection email</p>
+            </div>
+            <div class="timeline-item disabled">
+                <p><strong>Step 3:</strong> Access seller dashboard and start selling!</p>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            💡 <strong>Tip:</strong> Check your email (including spam folder) for approval notifications. 
+            You can refresh this page anytime to check for updates.
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a th:href="@{/}" class="btn btn-primary">← Continue Shopping</a>
+            <button type="button" class="btn btn-secondary" onclick="manualRefreshStatus();" id="refresh-btn">
+                🔄 Refresh Status
+            </button>
+        </div>
+
+        <div class="refresh-hint">
+            <p>Page auto-refreshes every 5 seconds. Your approval will appear automatically.</p>
+            <p id="last-check" style="font-size: 11px; color: #999; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/alerts}"></div>
+    <div th:replace="~{layout/footer :: footer}"></div>
+
+    <script>
+        // Flag to prevent multiple redirects
+        let isRedirecting = false;
+        let checkCount = 0;
+        
+        // Enhanced status check with better debugging and cache busting
+        function checkApprovalStatus(manual = false) {
+            if (isRedirecting) return; // Prevent multiple simultaneous checks
+            
+            checkCount++;
+            
+            // Add cache-busting parameter to avoid stale responses
+            const timestamp = new Date().getTime();
+            
+            if (manual) {
+                console.log('[MANUAL CHECK] Checking seller approval status...');
+            }
+            
+            fetch(`/api/v1/users/me/seller-status?t=${timestamp}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                cache: 'no-store'
+            })
+                .then(response => {
+                    console.log(`[Check #${checkCount}] API Response Status: ${response.status}`);
+                    if (!response.ok) {
+                        console.warn(`[Check #${checkCount}] API returned status:`, response.status);
+                        updateLastCheckTime(`Error: HTTP ${response.status}`);
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) {
+                        console.warn(`[Check #${checkCount}] No data returned from API`);
+                        updateLastCheckTime('Error: No response data');
+                        return;
+                    }
+                    
+                    console.log(`[Check #${checkCount}] Full API Response:`, JSON.stringify(data, null, 2));
+                    
+                    // Extract seller status from nested data object
+                    // API response structure: { success: true, data: { approved: true, sellerStatus: "APPROVED" } }
+                    let sellerStatus = null;
+                    let isApproved = false;
+                    
+                    // Handle different response formats
+                    if (data.data) {
+                        sellerStatus = data.data.sellerStatus || data.data.status;
+                        isApproved = data.data.approved || (sellerStatus === 'APPROVED');
+                    } else {
+                        // Fallback for flat response
+                        sellerStatus = data.sellerStatus || data.status;
+                        isApproved = data.approved || (sellerStatus === 'APPROVED');
+                    }
+                    
+                    console.log(`[Check #${checkCount}] Extracted - sellerStatus: "${sellerStatus}", isApproved: ${isApproved}`);
+                    updateLastCheckTime(`Status: ${sellerStatus || 'Unknown'}`);
+                    
+                    // If status is APPROVED, redirect to dashboard
+                    if (sellerStatus === 'APPROVED' || isApproved === true) {
+                        console.log('✅ Seller approved! Redirecting to dashboard...');
+                        isRedirecting = true;
+                        showRedirectMessage('✅ Approval confirmed! Redirecting to your dashboard...', 'success');
+                        // Add small delay to ensure everything is ready
+                        setTimeout(() => {
+                            window.location.href = '/seller/dashboard?refresh=' + timestamp;
+                        }, 500);
+                    }
+                    // If REJECTED or SUSPENDED, show rejection page
+                    else if (sellerStatus === 'REJECTED') {
+                        console.log('❌ Application REJECTED');
+                        isRedirecting = true;
+                        showRedirectMessage('❌ Your application was rejected.', 'error');
+                        setTimeout(() => {
+                            window.location.href = '/seller/rejection';
+                        }, 1000);
+                    }
+                    else if (sellerStatus === 'SUSPENDED') {
+                        console.log('❌ Account SUSPENDED');
+                        isRedirecting = true;
+                        showRedirectMessage('❌ Your account has been suspended.', 'error');
+                        setTimeout(() => {
+                            window.location.href = '/seller/suspended';
+                        }, 1000);
+                    }
+                    else {
+                        console.log(`[Check #${checkCount}] ⏳ Still waiting... Current Status: ${sellerStatus || 'PENDING'}`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`[Check #${checkCount}] Status check error:`, error);
+                    updateLastCheckTime(`Error: ${error.message}`);
+                    // Don't redirect on error - just log it
+                });
+        }
+
+        function updateLastCheckTime(status) {
+            const lastCheckEl = document.getElementById('last-check');
+            if (lastCheckEl) {
+                const time = new Date().toLocaleTimeString();
+                lastCheckEl.textContent = `Last checked: ${time} - ${status}`;
+            }
+        }
+
+        function showRedirectMessage(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; padding: 15px 20px; border-radius: 6px; font-weight: 600;';
+            if (type === 'success') {
+                alertDiv.style.background = '#d4edda';
+                alertDiv.style.color = '#155724';
+            } else {
+                alertDiv.style.background = '#f8d7da';
+                alertDiv.style.color = '#721c24';
+            }
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+        }
+
+        function manualRefreshStatus() {
+            console.log('Manual refresh button clicked');
+            checkApprovalStatus(true);
+        }
+
+        // Initial check immediately on page load
+        console.log('Seller approval pending page loaded. Checking status...');
+        checkApprovalStatus(false);
+        
+        // Check every 5 seconds for faster detection
+        const statusCheckInterval = setInterval(() => {
+            if (!isRedirecting) {
+                checkApprovalStatus(false);
+            }
+        }, 5000);
+        
+        // Clear interval if user leaves page
+        window.addEventListener('beforeunload', () => {
+            clearInterval(statusCheckInterval);
+        });
+    </script>
+</body>
+</html>

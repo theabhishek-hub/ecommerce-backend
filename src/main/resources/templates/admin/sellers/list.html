@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Requests - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-open {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+        }
+        .modal-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">Seller Management</h1>
+            <a th:href="@{/admin}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <!-- Success Message -->
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <!-- Search & Filter Bar -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <form method="get" th:action="@{/admin/sellers}" style="display: flex; gap: 10px; align-items: center;">
+                <select name="status" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">All Statuses</option>
+                    <option value="PENDING" th:selected="${param.status == 'PENDING'}">Pending</option>
+                    <option value="APPROVED" th:selected="${param.status == 'APPROVED'}">Approved</option>
+                    <option value="REJECTED" th:selected="${param.status == 'REJECTED'}">Rejected</option>
+                    <option value="SUSPENDED" th:selected="${param.status == 'SUSPENDED'}">Suspended</option>
+                </select>
+                <button type="submit" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Filter</button>
+            </form>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasPendingRequests}" class="empty-state">
+            <p>No seller requests at this time.</p>
+        </div>
+
+        <!-- Seller Requests Table -->
+        <div th:if="${hasPendingRequests}" class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Requested At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="request : ${sellerRequests}">
+                        <td th:text="${request.fullName}"></td>
+                        <td th:text="${request.email}"></td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${request.sellerStatus == 'REQUESTED' ? 'badge-warning' : request.sellerStatus == 'APPROVED' ? 'badge-success' : request.sellerStatus == 'REJECTED' ? 'badge-danger' : request.sellerStatus == 'SUSPENDED' ? 'badge-secondary' : 'badge-info'}" 
+                                  th:text="${#strings.replace(request.sellerStatus, '_', ' ')}">REQUESTED</span>
+                        </td>
+                        <td th:text="${#temporals.format(request.createdAt, 'MMM dd, yyyy')}"></td>
+                        <td class="actions">
+                            <a th:href="@{/admin/sellers/{sellerId}/details(sellerId=${request.id})}" class="btn btn-sm btn-primary">View</a>
+                            
+                            <!-- Approve/Reject only for REQUESTED sellers -->
+                            <th:block th:if="${request.sellerStatus == 'REQUESTED'}">
+                                <form method="post" th:action="@{/admin/sellers/{sellerId}/approve(sellerId=${request.id})}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <button type="button" class="btn btn-sm btn-danger" th:onclick="|openRejectModal(${request.id})|">Reject</button>
+                            </th:block>
+                            
+                            <!-- Suspend only for APPROVED sellers -->
+                            <th:block th:if="${request.sellerStatus == 'APPROVED'}">
+                                <button type="button" class="btn btn-sm btn-warning" th:onclick="|openSuspendModal(${request.id})|">Suspend</button>
+                            </th:block>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            <div th:if="${page != null && page.totalPages > 1}" style="margin-top: 20px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;">
+                <a th:if="${page.pageNumber > 0}" th:href="@{/admin/sellers(page=0)}" class="btn btn-sm btn-secondary">First</a>
+                <a th:if="${page.pageNumber > 0}" th:href="@{/admin/sellers(page=${page.pageNumber - 1})}" class="btn btn-sm btn-secondary">Previous</a>
+                
+                <span style="padding: 6px 12px; background: #007bff; color: white; border-radius: 4px;">
+                    <span th:text="${page.pageNumber + 1}">1</span> / <span th:text="${page.totalPages}">1</span>
+                </span>
+                
+                <a th:if="${page.pageNumber < page.totalPages - 1}" th:href="@{/admin/sellers(page=${page.pageNumber + 1})}" class="btn btn-sm btn-secondary">Next</a>
+                <a th:if="${page.pageNumber < page.totalPages - 1}" th:href="@{/admin/sellers(page=${page.totalPages - 1})}" class="btn btn-sm btn-secondary">Last</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <h2>Reject Seller</h2>
+            <p>Please provide a reason for rejection:</p>
+            <form method="post" id="rejectForm" th:action="@{/admin/sellers}">
+                <input type="hidden" id="rejectSellerId" name="sellerId">
+                <textarea name="reason" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial; min-height: 120px;" placeholder="Enter rejection reason..." required></textarea>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Suspend Modal -->
+    <div id="suspendModal" class="modal">
+        <div class="modal-content">
+            <h2>Suspend Seller</h2>
+            <p>Please provide a reason for suspension:</p>
+            <form method="post" id="suspendForm" th:action="@{/admin/sellers}">
+                <input type="hidden" id="suspendSellerId" name="sellerId">
+                <textarea name="reason" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial; min-height: 120px;" placeholder="Enter suspension reason..." required></textarea>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeSuspendModal()">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Suspend</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentModalSellerId = null;
+
+        function openRejectModal(sellerId) {
+            currentModalSellerId = sellerId;
+            document.getElementById('rejectSellerId').value = sellerId;
+            document.getElementById('rejectForm').action = `/admin/sellers/${sellerId}/reject`;
+            document.getElementById('rejectModal').classList.add('modal-open');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('modal-open');
+        }
+
+        function openSuspendModal(sellerId) {
+            currentModalSellerId = sellerId;
+            document.getElementById('suspendSellerId').value = sellerId;
+            document.getElementById('suspendForm').action = `/admin/sellers/${sellerId}/suspend`;
+            document.getElementById('suspendModal').classList.add('modal-open');
+        }
+
+        function closeSuspendModal() {
+            document.getElementById('suspendModal').classList.remove('modal-open');
+        }
+    </script>
+
+    <div th:replace="~{fragments/alerts}"></div>
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

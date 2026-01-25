@@ -126,7 +126,7 @@ class UserServiceTest {
     @Test
     void getUserById_ShouldReturnUser() {
         // Given
-        when(userRepository.findByIdAndStatus(1L, UserStatus.ACTIVE)).thenReturn(Optional.of(user));
+        when(userRepository.findFreshByIdAndStatus(1L, UserStatus.ACTIVE)).thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(userResponseDto);
 
         // When
@@ -137,20 +137,20 @@ class UserServiceTest {
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getEmail()).isEqualTo("john.doe@example.com");
 
-        verify(userRepository).findByIdAndStatus(1L, UserStatus.ACTIVE);
+        verify(userRepository).findFreshByIdAndStatus(1L, UserStatus.ACTIVE);
         verify(userMapper).toDto(user);
     }
 
     @Test
     void getUserById_ShouldThrowException_WhenUserNotFound() {
         // Given
-        when(userRepository.findByIdAndStatus(1L, UserStatus.ACTIVE)).thenReturn(Optional.empty());
+        when(userRepository.findFreshByIdAndStatus(1L, UserStatus.ACTIVE)).thenReturn(Optional.empty());
 
         // When & Then
         assertThatThrownBy(() -> userService.getUserById(1L))
                 .isInstanceOf(UserNotFoundException.class);
 
-        verify(userRepository).findByIdAndStatus(1L, UserStatus.ACTIVE);
+        verify(userRepository).findFreshByIdAndStatus(1L, UserStatus.ACTIVE);
         verify(userMapper, never()).toDto(any(User.class));
     }
 

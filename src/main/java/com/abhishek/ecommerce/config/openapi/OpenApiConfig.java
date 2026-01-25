@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 // @OpenAPIDefinition(
 //         info = @Info(
-//                 title = "E-Commerce Backend API",
+//                 title = "AbhiOnlineDukaan Backend API",
 //                 version = "v1",
 //                 description = """
-//                 Monolithic modular e-commerce backend.
+//                 Modular monolithic AbhiOnlineDukaan backend.
 //
 //                 Security implemented:
 //                 • JWT access token

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Profile Information</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .profile-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .profile-header h1 {
+            margin: 0;
+            color: #333;
+        }
+        .btn-edit {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-edit:hover {
+            background: #0056b3;
+        }
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .profile-field {
+            margin-bottom: 15px;
+        }
+        .profile-field label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .profile-field p {
+            margin: 0;
+            color: #333;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="profile-container">
+        <a th:href="@{/dashboard}" class="back-link">← Back to Dashboard</a>
+
+        <div class="profile-card">
+            <div class="profile-header">
+                <h1>Profile Information</h1>
+                <a href="#" class="btn-edit" onclick="alert('Profile editing coming soon'); return false;">Edit Profile</a>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+            <div th:if="${user}" class="profile-info">
+                <div class="profile-field">
+                    <label>Full Name</label>
+                    <p th:text="${user.fullName}">John Doe</p>
+                </div>
+
+                <div class="profile-field">
+                    <label>Email</label>
+                    <p th:text="${user.email}">john@example.com</p>
+                </div>
+
+                <div class="profile-field">
+                    <label>Phone</label>
+                    <p th:text="${user.phone ?: 'Not provided'}">+1 (555) 000-0000</p>
+                </div>
+
+                <div class="profile-field">
+                    <label>Account Status</label>
+                    <p>
+                        <span class="badge" 
+                              th:classappend="${user.status == 'ACTIVE' ? 'badge-success' : 'badge-danger'}"
+                              th:text="${user.status}">ACTIVE</span>
+                    </p>
+                </div>
+
+                <div class="profile-field">
+                    <label>Member Since</label>
+                    <p th:text="${#temporals.format(user.createdAt, 'MMMM dd, yyyy')}">January 15, 2026</p>
+                </div>
+
+                <div class="profile-field">
+                    <label>Last Updated</label>
+                    <p th:text="${#temporals.format(user.updatedAt, 'MMMM dd, yyyy HH:mm')}">January 22, 2026 10:30 AM</p>
+                </div>
+
+                <div class="profile-field" style="grid-column: 1 / -1;">
+                    <label>Your Roles</label>
+                    <p>
+                        <span th:if="${user.roles != null and !user.roles.isEmpty()}"
+                              th:each="role : ${user.roles}"
+                              class="badge badge-info"
+                              th:text="${#strings.replace(role, 'ROLE_', '')}">USER</span>
+                        <span th:if="${user.roles == null or user.roles.isEmpty()}" class="badge badge-secondary">No roles assigned</span>
+                    </p>
+                </div>
+            </div>
+
+            <div th:if="!${user}" class="alert alert-error">
+                Unable to load profile information. Please refresh the page.
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="profile-card">
+            <h3>Quick Links</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <a th:href="@{/addresses}" class="setting-item" style="padding: 15px; background: #f9f9f9; border-radius: 4px; text-decoration: none; color: #333; border-left: 3px solid #007bff; display: block;">
+                    <span style="font-weight: 600;">📍 Addresses</span>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Manage saved addresses</p>
+                </a>
+
+                <a th:href="@{/payments}" class="setting-item" style="padding: 15px; background: #f9f9f9; border-radius: 4px; text-decoration: none; color: #333; border-left: 3px solid #007bff; display: block;">
+                    <span style="font-weight: 600;">💳 Payments</span>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Saved payment methods</p>
+                </a>
+
+                <a th:href="@{/preferences}" class="setting-item" style="padding: 15px; background: #f9f9f9; border-radius: 4px; text-decoration: none; color: #333; border-left: 3px solid #007bff; display: block;">
+                    <span style="font-weight: 600;">⚙️ Preferences</span>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Notification & preferences</p>
+                </a>
+
+                <a th:href="@{/orders}" class="setting-item" style="padding: 15px; background: #f9f9f9; border-radius: 4px; text-decoration: none; color: #333; border-left: 3px solid #007bff; display: block;">
+                    <span style="font-weight: 600;">📦 Orders</span>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">View your orders</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

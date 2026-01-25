@@ -1,0 +1,279 @@
+/* main.css */
+
+/* ===== GLOBAL ===== */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f8;
+    color: #333;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* Add padding-top to account for fixed navbar height (approximately 50px) */
+    padding-top: 70px;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+    background: linear-gradient(135deg, #1f2933 0%, #0f1419 100%);
+    padding: 12px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    /* Ensure navbar doesn't clip content */
+    min-height: auto;
+    overflow: visible;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 15px;
+}
+
+.nav-logo {
+    display: inline-block;
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.8rem;
+    font-weight: bold;
+    white-space: nowrap;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+
+/* Hide search bar on admin pages to prevent navbar clutter */
+.nav-search {
+    display: none !important;
+}
+
+/* Show search only on product/user pages (when not on admin) */
+body:not(.admin-page) .nav-search {
+    display: flex !important;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.nav-links li {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    line-height: 1.4;
+}
+
+.nav-links a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.3s ease, border-bottom 0.3s ease;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.4;
+}
+
+.nav-links a:hover {
+    color: #ffd700;
+    border-bottom: 2px solid #ffd700;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    flex: 1;
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+#home-content {
+    text-align: center;
+    padding: 40px;
+}
+
+#home-content h1 {
+    color: #1f2933;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+#home-content .message {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background-color: #1f2933;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #0f1419;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(31, 41, 51, 0.3);
+}
+
+.btn-secondary {
+    background-color: #ffd700;
+    color: #1f2933;
+}
+
+.btn-secondary:hover {
+    background-color: #ffed4e;
+    transform: translateY(-2px);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.btn-warning {
+    background-color: #ff9800;
+    color: white;
+}
+
+.btn-warning:hover {
+    background-color: #fb8c00;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #da190b;
+    transform: translateY(-2px);
+}
+
+.btn-info {
+    background-color: #2196f3;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #0b7dda;
+    transform: translateY(-2px);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+    background-color: #1f2933;
+    color: #ffffff;
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: auto;
+    border-top: 2px solid #ffd700;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-content p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+h1 {
+    color: #111827;
+}
+
+/* ===== FOOTER ELEMENT ===== */
+footer {
+    margin-top: 40px;
+    padding: 12px;
+    background-color: #e5e7eb;
+    text-align: center;
+    color: #374151;
+    font-size: 14px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    body {
+        padding-top: 90px;
+    }
+
+    .navbar {
+        padding: 10px 15px;
+    }
+
+    .nav-links {
+        gap: 12px;
+    }
+
+    .nav-links a {
+        font-size: 0.85rem;
+    }
+
+    .main-content {
+        padding: 20px 10px;
+    }
+
+    #home-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .nav-container {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}
+
+

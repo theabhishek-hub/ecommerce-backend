@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Inventory Management - Seller Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/seller.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1 th:text="${title}">Inventory Management</h1>
+                <span class="subtitle">Manage stock levels for your products</span>
+            </div>
+            <div class="button-group">
+                <a th:href="@{/seller/products}" class="btn btn-secondary">Back to Products</a>
+            </div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <div th:if="${param.success}" class="alert alert-success">Stock updated successfully.</div>
+
+        <!-- Search Bar -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <form method="get" th:action="@{/seller/inventory}" style="display: flex; gap: 10px; flex: 1; min-width: 300px; align-items: center;">
+                <input type="text" name="q" placeholder="Search by product name or SKU..." th:value="${searchQuery ?: ''}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; flex: 1;">
+                <button type="submit" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>
+                <a th:href="@{/seller/inventory}" style="padding: 8px 16px; background: #6c757d; color: white; border-radius: 4px; text-decoration: none;">Clear</a>
+            </form>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasInventory}" class="empty-state">
+            <p>📦 No inventory items</p>
+            <p>Add products to manage their stock levels</p>
+            <a th:href="@{/seller/products/add}" class="btn btn-primary" style="margin-top: 20px;">Add Your First Product</a>
+        </div>
+
+        <!-- Inventory Table -->
+        <div th:if="${hasInventory}" class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>SKU</th>
+                        <th>Current Stock</th>
+                        <th>Stock Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inventory : ${inventoryList}">
+                        <td th:text="${inventory.productName}">Product Name</td>
+                        <td th:text="${inventory.sku}">SKU-123</td>
+                        <td th:text="${inventory.quantity}">0</td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${inventory.quantity > 10 ? 'badge-success' : (inventory.quantity > 0 ? 'badge-warning' : 'badge-danger')}"
+                                  th:text="${inventory.quantity > 10 ? 'In Stock' : (inventory.quantity > 0 ? 'Low Stock' : 'Out of Stock')}">
+                                Status
+                            </span>
+                        </td>
+                        <td class="actions" style="display: flex !important; gap: 8px !important; flex-wrap: wrap !important;">
+                            <a th:href="@{/seller/inventory/{productId}(productId=${inventory.productId})}" class="btn btn-sm btn-primary" style="display: inline-block !important; padding: 8px 14px !important; text-decoration: none !important;">View Details</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div style="margin-top: 20px; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
+                <a th:if="${!page.first}" th:href="@{/seller/inventory(page=0,q=${searchQuery})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">« First</a>
+                <a th:if="${page.hasPrevious()}" th:href="@{/seller/inventory(page=${page.number - 1},q=${searchQuery})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">‹ Previous</a>
+                
+                <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                    <span th:if="${i == page.number}" style="padding: 8px 12px; border: 1px solid #007bff; background: #007bff; color: white; border-radius: 4px;" th:text="${i + 1}">1</span>
+                    <a th:if="${i != page.number}" th:href="@{/seller/inventory(page=${i},q=${searchQuery})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;" th:text="${i + 1}">1</a>
+                </th:block>
+                
+                <a th:if="${page.hasNext()}" th:href="@{/seller/inventory(page=${page.number + 1},q=${searchQuery})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">Next ›</a>
+                <a th:if="${!page.last}" th:href="@{/seller/inventory(page=${page.totalPages - 1},q=${searchQuery})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">Last »</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

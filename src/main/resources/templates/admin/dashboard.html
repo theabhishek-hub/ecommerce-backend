@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Admin Dashboard - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">Admin Dashboard</h1>
+            <p class="subtitle">System Overview & Quick Statistics</p>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-grid">
+            <!-- Users Card -->
+            <div class="stat-card">
+                <div class="stat-icon users-icon">👥</div>
+                <div class="stat-content">
+                    <h3>Total Users</h3>
+                    <p class="stat-number" th:text="${totalUsers}">0</p>
+                    <a th:href="@{/admin/users}" class="stat-link">Manage Users</a>
+                </div>
+            </div>
+
+            <!-- Products Card -->
+            <div class="stat-card">
+                <div class="stat-icon products-icon">📦</div>
+                <div class="stat-content">
+                    <h3>Total Products</h3>
+                    <p class="stat-number" th:text="${totalProducts}">0</p>
+                    <a th:href="@{/admin/products}" class="stat-link">View Products</a>
+                </div>
+            </div>
+
+            <!-- Orders Card -->
+            <div class="stat-card">
+                <div class="stat-icon orders-icon">📋</div>
+                <div class="stat-content">
+                    <h3>Total Orders</h3>
+                    <p class="stat-number" th:text="${totalOrders}">0</p>
+                    <a th:href="@{/admin/orders}" class="stat-link">View Orders</a>
+                </div>
+            </div>
+
+            <!-- Pending Orders Card -->
+            <div class="stat-card highlight">
+                <div class="stat-icon pending-icon">⏳</div>
+                <div class="stat-content">
+                    <h3>Pending Orders</h3>
+                    <p class="stat-number" th:text="${pendingOrders}">0</p>
+                    <a th:href="@{/admin/orders}" class="stat-link">Process Orders</a>
+                </div>
+            </div>
+
+            <!-- Pending Seller Requests Card -->
+            <div class="stat-card highlight">
+                <div class="stat-icon sellers-icon">👔</div>
+                <div class="stat-content">
+                    <h3>Seller Requests</h3>
+                    <p class="stat-number" th:text="${pendingSellerRequests}">0</p>
+                    <a th:href="@{/admin/sellers}" class="stat-link">Review Requests</a>
+                </div>
+            </div>
+
+            <!-- Categories Card -->
+            <div class="stat-card">
+                <div class="stat-icon categories-icon">📁</div>
+                <div class="stat-content">
+                    <h3>Categories</h3>
+                    <p class="stat-number">-</p>
+                    <a th:href="@{/admin/categories}" class="stat-link">Manage Categories</a>
+                </div>
+            </div>
+
+            <!-- Brands Card -->
+            <div class="stat-card">
+                <div class="stat-icon brands-icon">🏷️</div>
+                <div class="stat-content">
+                    <h3>Brands</h3>
+                    <p class="stat-number">-</p>
+                    <a th:href="@{/admin/brands}" class="stat-link">Manage Brands</a>
+                </div>
+            </div>
+
+            <!-- Inventory Overview Card -->
+            <div class="stat-card">
+                <div class="stat-icon inventory-icon">📦</div>
+                <div class="stat-content">
+                    <h3>Inventory</h3>
+                    <p class="stat-number">-</p>
+                    <a th:href="@{/admin/inventory}" class="stat-link">View Inventory</a>
+                </div>
+            </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

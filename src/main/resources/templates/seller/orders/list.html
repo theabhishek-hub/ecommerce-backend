@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">My Orders - Seller Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/seller.css}">
+    <style>
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-CREATED {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .badge-PLACED {
+            background: #cfe2ff;
+            color: #084298;
+        }
+        
+        .badge-PAID {
+            background: #cfe2ff;
+            color: #084298;
+        }
+        
+        .badge-CONFIRMED {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+        
+        .badge-SHIPPED {
+            background: #fff3cd;
+            color: #664d03;
+        }
+        
+        .badge-DELIVERED {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-CANCELLED {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1 th:text="${title}">My Orders</h1>
+                <span class="subtitle">Manage your seller orders</span>
+            </div>
+            <div class="button-group">
+                <a th:href="@{/seller/dashboard}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+        <div th:if="${param.success}" class="alert alert-success">Order action completed successfully.</div>
+        <div th:if="${param.error}" class="alert alert-error">An error occurred. Please try again.</div>
+
+        <!-- Search Bar -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <form method="get" th:action="@{/seller/orders}" style="display: flex; gap: 10px; flex: 1; min-width: 300px; align-items: center;">
+                <input type="text" name="q" placeholder="Search by order ID..." th:value="${param.q ?: ''}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; flex: 1;">
+                <button type="submit" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>
+            </form>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasOrders}" class="empty-state">
+            <p>📦 No orders yet</p>
+            <p>Your customer orders will appear here</p>
+        </div>
+
+        <!-- Orders Table -->
+        <div th:if="${hasOrders}" class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer ID</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Payment Status</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td th:text="${'#' + order.id}">Order #1</td>
+                        <td th:text="${order.userId}">1</td>
+                        <td th:text="${#temporals.format(order.createdAt, 'MMM dd, yyyy')}">Jan 01, 2025</td>
+                        <td>
+                            <span class="badge" th:classappend="${'badge-' + order.status}" th:text="${order.status}">PENDING</span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${'badge-' + order.paymentStatus}" th:text="${order.paymentStatus}">PENDING</span>
+                        </td>
+                        <td>0</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">$99.99</td>
+                        <td class="actions" style="display: flex !important; gap: 8px !important;">
+                            <a th:href="@{/seller/orders/{orderId}(orderId=${order.id})}" class="btn btn-sm btn-primary" style="display: inline-block !important; padding: 8px 14px !important; text-decoration: none !important;">View Details</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${hasOrders}" style="margin-top: 20px; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
+            <a th:if="${!page.first}" th:href="@{/seller/orders(page=0)}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">« First</a>
+            <span th:if="${page.first}" style="padding: 8px 12px; color: #ccc;">« First</span>
+            
+            <a th:if="${page.hasPrevious()}" th:href="@{/seller/orders(page=${page.number - 1})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">‹ Previous</a>
+            <span th:if="!${page.hasPrevious()}" style="padding: 8px 12px; color: #ccc;">‹ Previous</span>
+            
+            <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                <span th:if="${i == page.number}" style="padding: 8px 12px; border: 1px solid #007bff; background: #007bff; color: white; border-radius: 4px;" th:text="${i + 1}">1</span>
+                <a th:if="${i != page.number}" th:href="@{/seller/orders(page=${i})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;" th:text="${i + 1}">1</a>
+            </th:block>
+            
+            <a th:if="${page.hasNext()}" th:href="@{/seller/orders(page=${page.number + 1})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">Next ›</a>
+            <span th:if="!${page.hasNext()}" style="padding: 8px 12px; color: #ccc;">Next ›</span>
+            
+            <a th:if="!${page.last}" th:href="@{/seller/orders(page=${page.totalPages - 1})}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px;">Last »</a>
+            <span th:if="${page.last}" style="padding: 8px 12px; color: #ccc;">Last »</span>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

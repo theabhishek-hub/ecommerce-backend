@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Oversight - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .search-sort-container { margin-bottom: 20px; padding: 15px; background: #f9f9f9; display: flex; gap: 15px; }
+        .search-sort-container form { display: flex; gap: 10px; flex: 1; }
+        .search-sort-container input, .search-sort-container select { padding: 8px 12px; border: 1px solid #ddd; }
+        .search-sort-container button { padding: 8px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; gap: 5px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; }
+        .pagination .active { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Order Oversight</h1>
+            <a th:href="@{/admin}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <div th:if="!${page.empty}">
+            <div class="search-sort-container">
+                <form method="get" th:action="@{/admin/orders}">
+                    <select name="sort">
+                        <option value="">Sort by</option>
+                        <option value="createdAt,desc" th:selected="${param.sort == 'createdAt,desc'}">Newest</option>
+                        <option value="createdAt,asc" th:selected="${param.sort == 'createdAt,asc'}">Oldest</option>
+                    </select>
+                    <button type="submit">Sort</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Email</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${page.content}">
+                            <td th:text="${order.id}">1001</td>
+                            <td th:text="${order.userEmail}">customer@example.com</td>
+                            <td th:text="${#dates.format(order.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2025 10:30</td>
+                            <td>
+                                <span class="badge" th:classappend="${'badge-' + order.status.toLowerCase()}" th:text="${order.status}">CREATED</span>
+                            </td>
+                            <td th:text="${'$' + #numbers.formatDecimal(order.totalAmount, 1, 2)}">$199.99</td>
+                            <td>
+                                <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-primary">View</a>
+                                <form method="post" th:action="@{/admin/orders/{id}/ship(id=${order.id})}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success" th:if="${order.status == 'CREATED' || order.status == 'CONFIRMED'}">Ship</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <a th:if="${!page.first}" th:href="@{/admin/orders(page=0,sort=${param.sort ?: ''})}">First</a>
+                <a th:if="${page.hasPrevious()}" th:href="@{/admin/orders(page=${page.number - 1},sort=${param.sort ?: ''})}">Previous</a>
+                <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                    <span th:if="${i == page.number}" class="active" th:text="${i + 1}">1</span>
+                    <a th:if="${i != page.number}" th:href="@{/admin/orders(page=${i},sort=${param.sort ?: ''})}" th:text="${i + 1}">1</a>
+                </th:block>
+                <a th:if="${page.hasNext()}" th:href="@{/admin/orders(page=${page.number + 1},sort=${param.sort ?: ''})}">Next</a>
+                <a th:if="!${page.last}" th:href="@{/admin/orders(page=${page.totalPages - 1},sort=${param.sort ?: ''})}">Last</a>
+            </div>
+        </div>
+
+        <div th:if="${page.empty}" class="empty-state">
+            <p>No orders found.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

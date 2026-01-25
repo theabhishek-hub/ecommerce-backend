@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">User Dashboard - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="user-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-content">
+                <h1>Welcome Back, <span th:text="${username}">User</span>!</h1>
+                <p class="subtitle">Manage your account, orders, and preferences</p>
+            </div>
+            <div class="welcome-actions">
+                <a th:href="@{/products-page}" class="btn btn-primary">Continue Shopping</a>
+                <a th:href="@{/orders}" class="btn btn-secondary">View Orders</a>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Quick Stats -->
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <h3>Total Orders</h3>
+                    <p class="stat-number" th:text="${totalOrders ?: 0}">0</p>
+                    <a th:href="@{/orders}" class="stat-link">View Orders</a>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <h3>Total Spent</h3>
+                    <p class="stat-number" th:text="${totalSpent ?: '$0.00'}">$0.00</p>
+                    <a th:href="@{/orders}" class="stat-link">Order History</a>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🛒</div>
+                <div class="stat-content">
+                    <h3>Cart Items</h3>
+                    <p class="stat-number" th:text="${cartCount ?: 0}">0</p>
+                    <a th:href="@{/cart}" class="stat-link">Go to Cart</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>Recent Orders</h2>
+                <a th:href="@{/orders}" class="view-all">View All →</a>
+            </div>
+
+            <div th:if="${recentOrders != null and recentOrders.size() > 0}" class="orders-grid">
+                <div th:each="order : ${recentOrders}" class="order-item">
+                    <div class="order-header">
+                        <span class="order-id">Order <span th:text="${order.id}">123</span></span>
+                        <span class="order-date" th:text="${#dates.format(order.createdAt, 'MMM dd, yyyy')}">Jan 15, 2026</span>
+                    </div>
+                    <div class="order-details">
+                        <span class="order-amount" th:text="${'$' + order.totalAmount}">$99.99</span>
+                        <span class="order-status" th:classappend="${order.status}" th:text="${order.status}">PENDING</span>
+                    </div>
+                    <a th:href="@{/orders/{id}(id=${order.id})}" class="order-link">View Details</a>
+                </div>
+            </div>
+
+            <div th:if="${recentOrders == null or recentOrders.size() == 0}" class="empty-state">
+                <p>No orders yet. <a th:href="@{/products-page}">Start shopping</a></p>
+            </div>
+        </div>
+
+        <!-- Account Settings Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>Account Settings</h2>
+            </div>
+
+            <div class="settings-grid">
+                <a th:href="@{/profile}" class="setting-item">
+                    <span class="setting-icon">👤</span>
+                    <span class="setting-text">Profile Information</span>
+                    <span class="setting-arrow">→</span>
+                </a>
+
+                <a th:href="@{/addresses}" class="setting-item">
+                    <span class="setting-icon">📍</span>
+                    <span class="setting-text">Saved Addresses</span>
+                    <span class="setting-arrow">→</span>
+                </a>
+
+                <a th:href="@{/payments}" class="setting-item">
+                    <span class="setting-icon">💳</span>
+                    <span class="setting-text">Payment Methods</span>
+                    <span class="setting-arrow">→</span>
+                </a>
+
+                <a th:href="@{/preferences}" class="setting-item">
+                    <span class="setting-icon">⚙️</span>
+                    <span class="setting-text">Preferences</span>
+                    <span class="setting-arrow">→</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Become Seller CTA -->
+        <div class="cta-section" sec:authorize="hasRole('USER') and !hasRole('SELLER')">
+            <div class="cta-content">
+                <h2>Ready to Become a Seller?</h2>
+                <p>Start selling your products and reach thousands of customers</p>
+                <a th:href="@{/seller/apply}" class="btn btn-primary btn-lg">Apply as Seller</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

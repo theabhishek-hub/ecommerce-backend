@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title th:text="${title} ?: 'Checkout'"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/checkout.css}">
+</head>
+<body>
+    <!-- Include Navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <main class="checkout-container">
+        <div class="checkout-content">
+            <!-- Page Header -->
+            <section class="checkout-header">
+                <h1>Checkout</h1>
+                <p class="breadcrumb">Cart → Checkout → Payment</p>
+            </section>
+
+            <!-- Two Column Layout -->
+            <div class="checkout-grid">
+                <!-- Left Column: Forms -->
+                <div class="checkout-forms">
+
+                    <!-- Shipping Address Section -->
+                    <section class="checkout-section">
+                        <h2>Shipping Address</h2>
+                        <form id="shippingForm" class="form-group">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="firstName">First Name *</label>
+                                    <input type="text" id="firstName" name="firstName" required>
+                                </div>
+                                <div class="form-col">
+                                    <label for="lastName">Last Name *</label>
+                                    <input type="text" id="lastName" name="lastName" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+
+                            <div class="form-row">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+
+                            <div class="form-row">
+                                <label for="address">Street Address *</label>
+                                <input type="text" id="address" name="address" placeholder="123 Main St" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="city">City *</label>
+                                    <input type="text" id="city" name="city" required>
+                                </div>
+                                <div class="form-col">
+                                    <label for="state">State *</label>
+                                    <input type="text" id="state" name="state" required>
+                                </div>
+                                <div class="form-col">
+                                    <label for="zipCode">ZIP Code *</label>
+                                    <input type="text" id="zipCode" name="zipCode" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <label for="country">Country *</label>
+                                <input type="text" id="country" name="country" value="India" required>
+                            </div>
+                        </form>
+                    </section>
+
+                    <!-- Payment Method Section -->
+                    <section class="checkout-section">
+                        <h2>Payment Method</h2>
+                        <div class="payment-methods">
+                            <div class="payment-option">
+                                <input type="radio" id="cod" name="paymentMethod" value="COD" checked>
+                                <label for="cod" class="payment-label">
+                                    <span class="payment-title">Cash on Delivery (COD)</span>
+                                    <span class="payment-desc">Pay when your order arrives</span>
+                                </label>
+                            </div>
+
+                            <div class="payment-option" id="razorpayOption" style="display: none;">
+                                <input type="radio" id="online" name="paymentMethod" value="ONLINE">
+                                <label for="online" class="payment-label">
+                                    <span class="payment-title">Online Payment (Razorpay)</span>
+                                    <span class="payment-desc">Pay via card, UPI, or netbanking</span>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <aside class="checkout-summary">
+                    <section class="summary-section">
+                        <h2>Order Summary</h2>
+                        
+                        <!-- Cart Items -->
+                        <div id="cartItems" class="summary-items">
+                            <p class="loading-text">Loading cart...</p>
+                        </div>
+
+                        <!-- Summary Totals -->
+                        <div class="summary-totals">
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span id="subtotal">₹0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Shipping</span>
+                                <span id="shipping">₹0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Tax</span>
+                                <span id="tax">₹0.00</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Total</span>
+                                <span id="total">₹0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Place Order Button -->
+                        <button id="placeOrderBtn" class="btn btn-primary btn-block" disabled>
+                            Place Order
+                        </button>
+                        <p id="authMessage" class="auth-message" style="display: none;">
+                            Please log in to place your order
+                        </p>
+
+                        <!-- Continue Shopping Link -->
+                        <a th:href="@{/cart}" class="btn btn-secondary btn-block">Back to Cart</a>
+                    </section>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Include Footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+
+    <!-- Scripts -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script th:src="@{/js/checkout.js}"></script>
+</body>
+</html>

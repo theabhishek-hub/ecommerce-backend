@@ -1,0 +1,143 @@
+# =============================================================================
+# DEVELOPMENT ENVIRONMENT CONFIGURATION
+# Use environment variables for sensitive data
+
+# ======================= THYMELEAF CONFIGURATION =======================
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+    check-template-location: true
+
+  # ======================= DATABASE CONFIGURATION =======================
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+
+  # ======================= CACHE CONFIGURATION =======================
+  cache:
+    type: simple  # Simple in-memory caching only
+
+  # ======================= SECURITY & OAUTH =======================
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            scope:
+              - email
+              - profile
+
+  # ======================= SESSION CONFIGURATION =======================
+  servlet:
+    session:
+      persistent: false
+      store-type: none
+      timeout: 30m
+      tracking-modes: COOKIE
+
+  # ======================= EMAIL CONFIGURATION =======================
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USER}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
+# ======================= SECURITY CONFIGURATION =======================
+config:
+  jwt:
+    # Use strong secrets - minimum 32 characters
+    access-secret: ${JWT_ACCESS_SECRET}
+    refresh-secret: ${JWT_REFRESH_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}      # 15 minutes
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION} # 7 days
+  
+  security:
+    max-failed-attempts: 5
+    lockout-duration-minutes: 30
+    password-reset-token-expiry-hours: 24
+    oauth2:
+      enabled: true
+  
+  admin:
+    # Admin credentials loaded from environment variables
+    # ENV: ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_FULL_NAME
+    # These are used to bootstrap the initial admin user on startup
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+    full-name: ${ADMIN_FULL_NAME}
+  
+  email:
+    shipping-team-email: ${SHIPPING_TEAM_EMAIL}
+
+# ======================= EXTERNAL SERVICES =======================
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID}
+  key-secret: ${RAZORPAY_KEY_SECRET}
+
+# ======================= ACTUATOR & MONITORING =======================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,caches,env,configprops
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  health:
+    db:
+      enabled: true
+
+info:
+  git:
+    enabled: true
+  build:
+    enabled: true
+
+# ======================= LOGGING =======================
+logging:
+  level:
+    root: info
+    com.abhishek.ecommerce: debug
+    org.hibernate.sql: debug
+    org.springframework.security: debug
+

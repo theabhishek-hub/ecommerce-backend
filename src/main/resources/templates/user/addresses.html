@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Saved Addresses</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        .empty-state p {
+            margin: 15px 0;
+        }
+        .addresses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .address-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .address-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .address-card p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .address-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .address-actions button,
+        .address-actions a {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        .btn-edit {
+            background: #007bff;
+            color: white;
+        }
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="container">
+        <a th:href="@{/profile}" class="back-link">← Back to Profile</a>
+
+        <div class="card">
+            <div class="header">
+                <h1>Saved Addresses</h1>
+                <button class="btn btn-primary" onclick="alert('Add address feature coming soon'); return false;">+ Add New Address</button>
+            </div>
+
+            <div class="empty-state">
+                <h3>No saved addresses yet</h3>
+                <p>You haven't saved any delivery addresses. Add one to make checkout faster.</p>
+                <button class="btn btn-primary" onclick="alert('Add address feature coming soon'); return false;">Add Your First Address</button>
+            </div>
+
+            <!-- Example addresses (when feature is implemented) -->
+            <!--
+            <div class="addresses-grid">
+                <div class="address-card">
+                    <h3>Home</h3>
+                    <p>123 Main Street</p>
+                    <p>Apt 4B</p>
+                    <p>New York, NY 10001</p>
+                    <p><strong>Phone:</strong> (555) 123-4567</p>
+                    <div class="address-actions">
+                        <a href="#" class="btn-edit">Edit</a>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+
+        <div class="card">
+            <h3>ℹ️ Address Management</h3>
+            <p style="color: #666; line-height: 1.6;">
+                Saved addresses help you checkout faster. You can add multiple addresses (home, office, etc.) 
+                and select the one you need during checkout.
+            </p>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

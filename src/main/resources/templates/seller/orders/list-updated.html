@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Seller</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/seller.css}">
+    <style>
+        .search-sort-container { margin-bottom: 20px; padding: 15px; background: #f9f9f9; display: flex; gap: 15px; }
+        .search-sort-container form { display: flex; gap: 10px; flex: 1; }
+        .search-sort-container input, .search-sort-container select { padding: 8px 12px; border: 1px solid #ddd; }
+        .search-sort-container button { padding: 8px 20px; background: #28a745; color: white; border: none; cursor: pointer; }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; gap: 5px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; }
+        .pagination .active { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="seller-container">
+        <div class="seller-header">
+            <h1>My Orders (Containing My Products)</h1>
+        </div>
+
+        <div th:if="!${page.empty}">
+            <div class="search-sort-container">
+                <form method="get" th:action="@{/seller/orders}">
+                    <select name="sort">
+                        <option value="">Sort by</option>
+                        <option value="createdAt,desc" th:selected="${param.sort == 'createdAt,desc'}">Newest First</option>
+                        <option value="createdAt,asc" th:selected="${param.sort == 'createdAt,asc'}">Oldest First</option>
+                    </select>
+                    <button type="submit">Sort</button>
+                </form>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${page.content}">
+                        <td th:text="${order.id}">1001</td>
+                        <td th:text="${order.userEmail}">customer@example.com</td>
+                        <td th:text="${#dates.format(order.createdAt, 'MMM dd, yyyy')}">Jan 01, 2025</td>
+                        <td><span class="badge" th:classappend="${'badge-' + order.status.toLowerCase()}" th:text="${order.status}">CREATED</span></td>
+                        <td th:text="${'$' + #numbers.formatDecimal(order.totalAmount, 1, 2)}">$199.99</td>
+                        <td>
+                            <a th:href="@{/orders/{id}(id=${order.id})}" class="btn btn-sm btn-primary">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <a th:if="${!page.first}" th:href="@{/seller/orders(page=0,sort=${param.sort ?: ''})}">First</a>
+                <a th:if="${page.hasPrevious()}" th:href="@{/seller/orders(page=${page.number - 1},sort=${param.sort ?: ''})}">Previous</a>
+                <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                    <span th:if="${i == page.number}" class="active" th:text="${i + 1}">1</span>
+                    <a th:if="${i != page.number}" th:href="@{/seller/orders(page=${i},sort=${param.sort ?: ''})}" th:text="${i + 1}">1</a>
+                </th:block>
+                <a th:if="${page.hasNext()}" th:href="@{/seller/orders(page=${page.number + 1},sort=${param.sort ?: ''})}">Next</a>
+                <a th:if="!${page.last}" th:href="@{/seller/orders(page=${page.totalPages - 1},sort=${param.sort ?: ''})}">Last</a>
+            </div>
+        </div>
+
+        <div th:if="${page.empty}" class="empty-state">
+            <p>No orders containing your products yet.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

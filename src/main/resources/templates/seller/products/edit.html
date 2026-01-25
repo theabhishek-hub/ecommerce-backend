@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+</head>
+<body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 0; margin: 0;">
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div style="max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+        <h1 style="margin: 0 0 20px 0; color: #333;">Edit Product</h1>
+
+        <!-- Error Messages -->
+        <div th:if="${errorMessage}" style="padding: 12px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 20px;" th:text="${errorMessage}"></div>
+
+        <div th:if="${product}">
+            <!-- Edit Form -->
+            <form method="post" th:action="@{/seller/products/{productId}/update(productId=${product.id})}" style="margin-bottom: 30px;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Product Name -->
+                <div style="margin-bottom: 20px;">
+                    <label for="name" style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">Product Name *</label>
+                    <input type="text" id="name" name="name" th:value="${product.name}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px;">
+                </div>
+
+                <!-- Description -->
+                <div style="margin-bottom: 20px;">
+                    <label for="description" style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">Description *</label>
+                    <textarea id="description" name="description" required rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;" th:text="${product.description}"></textarea>
+                </div>
+
+                <!-- Price -->
+                <div style="margin-bottom: 20px;">
+                    <label for="priceAmount" style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">Price *</label>
+                    <input type="number" id="priceAmount" name="priceAmount" step="0.01" min="0" th:value="${product.priceAmount}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px;">
+                </div>
+
+                <!-- SKU -->
+                <div style="margin-bottom: 20px;">
+                    <label for="sku" style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">SKU *</label>
+                    <input type="text" id="sku" name="sku" th:value="${product.sku}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px;">
+                </div>
+
+                <!-- Category -->
+                <div style="margin-bottom: 20px;">
+                    <label for="categoryId" style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">Category *</label>
+                    <select id="categoryId" name="categoryId" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px;">
+                        <option value="">-- Select Category --</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}" th:selected="${product.categoryId == cat.id}">Category</option>
+                    </select>
+                </div>
+
+                <!-- Brand -->
+                <div style="margin-bottom: 20px;">
+                    <label for="brandId" style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">Brand *</label>
+                    <select id="brandId" name="brandId" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px;">
+                        <option value="">-- Select Brand --</option>
+                        <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.name}" th:selected="${product.brandId == brand.id}">Brand</option>
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div style="margin-bottom: 20px;">
+                    <label for="status" style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">Status *</label>
+                    <select id="status" name="status" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px;">
+                        <option value="ACTIVE" th:selected="${product.status == 'ACTIVE'}">Active</option>
+                        <option value="INACTIVE" th:selected="${product.status == 'INACTIVE'}">Inactive</option>
+                        <option value="ARCHIVED" th:selected="${product.status == 'ARCHIVED'}">Archived</option>
+                    </select>
+                </div>
+
+                <!-- Form Buttons -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">💾 Update Product</button>
+                    <a th:href="@{/seller/products}" style="padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; display: inline-block; font-size: 14px;">Cancel</a>
+                </div>
+            </form>
+
+            <!-- Delete Section -->
+            <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <h3 style="color: #dc3545; margin: 0 0 10px 0;">⚠️ Danger Zone</h3>
+                <p style="color: #666; font-size: 14px; margin: 0 0 15px 0;">Delete this product. This action cannot be undone.</p>
+                <form method="post" th:action="@{/seller/products/{productId}/delete(productId=${product.id})}" style="display: inline;" onsubmit="return confirm('Are you absolutely sure? This will permanently delete this product. This action cannot be undone.');">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">🗑️ Delete Product</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- No Product -->
+        <div th:if="!${product}" style="padding: 40px; background: #f9f9f9; border: 2px dashed #ddd; border-radius: 8px; text-align: center;">
+            <p style="color: #666; font-size: 14px;">Product not found</p>
+            <a th:href="@{/seller/products}" style="padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 15px;">Back to Products</a>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+# =============================================================================
+# H2 LOCAL DEVELOPMENT CONFIGURATION (File-based H2 Database)
+# All values are placeholders - Use only for local development
+
+# ======================= DATABASE CONFIGURATION =======================
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/ecommerce-db
+    driver-class-name: org.h2.Driver
+    username: ${H2_DB_USER:sa}
+    password: ${H2_DB_PASSWORD:}
+    h2:
+      console:
+        enabled: true
+        path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # ======================= CACHE CONFIGURATION =======================
+  cache:
+    type: simple
+
+  # ======================= SECURITY CONFIGURATION =======================
+# ======================= SECURITY CONFIGURATION =======================
+config:
+  jwt:
+    access-secret: ${H2_JWT_ACCESS_SECRET:dummy-access-secret-for-h2-testing-at-least-32-characters-long}
+    refresh-secret: ${H2_JWT_REFRESH_SECRET:dummy-refresh-secret-for-h2-testing-at-least-32-characters-long}
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000
+  
+  security:
+    max-failed-attempts: 5
+    lockout-duration-minutes: 30
+    password-reset-token-expiry-hours: 24
+    oauth2:
+      enabled: false  # Disable OAuth2 for H2 local testing
+  
+  admin:
+    # Admin credentials for H2 local development
+    email: ${H2_ADMIN_EMAIL:admin@local.dev}
+    password: ${H2_ADMIN_PASSWORD:AdminPassword123!}
+    full-name: ${H2_ADMIN_FULL_NAME:Local Administrator}
+  
+  email:
+    shipping-team-email: ${H2_SHIPPING_EMAIL}
+
+# ======================= EXTERNAL SERVICES =======================
+cloudinary:
+  cloud-name: ${H2_CLOUDINARY_CLOUD_NAME:}
+  api-key: ${H2_CLOUDINARY_API_KEY:}
+  api-secret: ${H2_CLOUDINARY_API_SECRET:}
+
+razorpay:
+  key-id: ${H2_RAZORPAY_KEY_ID:}
+  key-secret: ${H2_RAZORPAY_KEY_SECRET:}
+
+# ======================= ACTUATOR & MONITORING =======================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,h2-console
+  endpoint:
+    health:
+      show-details: always
+
+# ======================= LOGGING =======================
+logging:
+  level:
+    root: info
+    com.abhishek.ecommerce: debug
+    org.hibernate.sql: debug

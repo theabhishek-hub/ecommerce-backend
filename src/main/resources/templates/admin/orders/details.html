@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Order Details - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="breadcrumb">
+            <a th:href="@{/admin/orders}">Orders</a>
+            <span class="separator">/</span>
+            <span>Order Details</span>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <!-- Order Details -->
+        <div th:if="${order}" class="order-details-card">
+            <div class="order-header">
+                <h1>Order <span th:text="${order.id}">#1</span></h1>
+                <span class="badge" th:classappend="${'badge-' + order.status.toLowerCase()}" th:text="${order.status}">PENDING</span>
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <label>User ID</label>
+                    <span th:text="${order.userId}">1</span>
+                </div>
+                <div class="detail-item">
+                    <label>Date</label>
+                    <span th:text="${#temporals.format(order.createdAt, 'MMMM dd, yyyy HH:mm:ss')}">January 01, 2025 10:30:00</span>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <span th:text="${order.status}">PENDING</span>
+                </div>
+                <div class="detail-item">
+                    <label>Total Amount</label>
+                    <span th:text="${order.currency} + ' ' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">USD 99.99</span>
+                </div>
+            </div>
+
+            <!-- Order Status Timeline -->
+            <div class="order-timeline">
+                <h2>Order Progress</h2>
+                <div class="timeline">
+                    <!-- Created -->
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">✓</div>
+                        <div class="timeline-content">
+                            <h3>Order Created</h3>
+                            <p>Order has been created</p>
+                        </div>
+                    </div>
+
+                    <!-- Confirmed by Seller -->
+                    <div class="timeline-item" th:classappend="${order.status == 'CONFIRMED' or order.status == 'SHIPPED' or order.status == 'DELIVERED' ? 'completed' : ''}">
+                        <div class="timeline-marker">✓</div>
+                        <div class="timeline-content">
+                            <h3>Order Confirmed</h3>
+                            <p>Order has been confirmed and is being prepared</p>
+                        </div>
+                    </div>
+
+                    <!-- Shipped -->
+                    <div class="timeline-item" th:classappend="${order.status == 'SHIPPED' or order.status == 'DELIVERED' ? 'completed' : ''}">
+                        <div class="timeline-marker">✓</div>
+                        <div class="timeline-content">
+                            <h3>Order Shipped</h3>
+                            <p>Order is on the way to customer</p>
+                        </div>
+                    </div>
+
+                    <!-- Delivered -->
+                    <div class="timeline-item" th:classappend="${order.status == 'DELIVERED' ? 'completed' : ''}">
+                        <div class="timeline-marker">✓</div>
+                        <div class="timeline-content">
+                            <h3>Delivered</h3>
+                            <p>Order has been delivered</p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Confirmed (Final Step) -->
+                    <div class="timeline-item" th:classappend="${(order.currency == 'USD' and (order.status == 'CONFIRMED' or order.status == 'SHIPPED' or order.status == 'DELIVERED')) or (order.currency != 'USD' and order.status == 'DELIVERED') ? 'completed' : ''}">
+                        <div class="timeline-marker">✓</div>
+                        <div class="timeline-content">
+                            <h3>Payment Confirmed</h3>
+                            <p th:text="${order.currency} == 'USD' ? 'Online payment received' : 'Payment collected on delivery'">Payment confirmed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="detail-section" th:if="${!#lists.isEmpty(order.items)}">
+                <h2>Items</h2>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${order.items}">
+                            <td th:text="${item.productName}">Product Name</td>
+                            <td th:text="${item.currency} + ' ' + ${#numbers.formatDecimal(item.priceAmount, 1, 2)}">USD 49.99</td>
+                            <td th:text="${item.quantity}">2</td>
+                            <td th:text="${item.currency} + ' ' + ${#numbers.formatDecimal(item.priceAmount * item.quantity, 1, 2)}">USD 99.98</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Payment Information Section -->
+            <div class="payment-info">
+                <h2>Payment Information</h2>
+                <div class="payment-details">
+                    <div class="payment-method">
+                        <label>Payment Method:</label>
+                        <span class="badge" th:if="${order.paymentMethod != null}" th:classappend="${order.paymentMethod == 'ONLINE' ? 'badge-primary' : 'badge-secondary'}">
+                            <span th:text="${order.paymentMethod == 'ONLINE' ? 'Online Payment' : 'Cash on Delivery'}">Payment Method</span>
+                        </span>
+                        <span class="badge badge-warning" th:if="${order.paymentMethod == null}">No Payment Info</span>
+                    </div>
+                    <div class="payment-amount">
+                        <label>Payment Status:</label>
+                        <span class="badge" th:if="${order.paymentStatus != null}" th:classappend="${order.paymentStatus == 'CONFIRMED' ? 'badge-primary' : 'badge-secondary'}">
+                            <span th:text="${order.paymentStatus}">PENDING</span>
+                        </span>
+                        <span class="badge badge-warning" th:if="${order.paymentStatus == null}">No Payment Status</span>
+                    </div>
+                    <div class="payment-amount">
+                        <label>Amount:</label>
+                        <span class="amount" th:text="${order.currency} + ' ' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">USD 0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Actions -->
+            <div class="actions">
+                <h3>Update Order Status</h3>
+                <div class="action-buttons">
+                    <!-- Payment Confirmed (for ONLINE: anytime when PENDING, for COD: only when DELIVERED) -->
+                    <form method="post" th:action="@{/admin/orders/{orderId}/confirm-payment(orderId=${order.id})}" style="display:inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-secondary" 
+                            th:disabled="${order.paymentStatus != 'PENDING' or (order.paymentMethod != null and order.paymentMethod == 'COD' and order.status != 'DELIVERED')}">
+                            <span th:text="${order.paymentMethod == 'ONLINE' ? 'Confirm Online Payment' : 'Confirm Payment Collected'}">Confirm Payment</span>
+                        </button>
+                    </form>
+                    <!-- Confirm Order (only when status is CREATED and payment is PENDING, or status is PAID) -->
+                    <form method="post" th:action="@{/admin/orders/{orderId}/confirm(orderId=${order.id})}" style="display:inline;">
+                        <button type="submit" class="btn btn-info" th:disabled="${order.status != 'CREATED' and order.status != 'PAID'}">Confirm Order</button>
+                    </form>
+                    <!-- Ship Order (only when status is CONFIRMED) -->
+                    <form method="post" th:action="@{/admin/orders/{orderId}/ship(orderId=${order.id})}" style="display:inline;">
+                        <button type="submit" class="btn btn-primary" th:disabled="${order.status != 'CONFIRMED'}">Ship Order</button>
+                    </form>
+                    <!-- Deliver Order (only when status is SHIPPED) -->
+                    <form method="post" th:action="@{/admin/orders/{orderId}/deliver(orderId=${order.id})}" style="display:inline;">
+                        <button type="submit" class="btn btn-success" th:disabled="${order.status != 'SHIPPED'}">Deliver Order</button>
+                    </form>
+                    <!-- Cancel Order (disabled if already DELIVERED or CANCELLED) -->
+                    <form method="post" th:action="@{/admin/orders/{orderId}/cancel(orderId=${order.id})}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger" th:disabled="${order.status == 'DELIVERED' || order.status == 'CANCELLED'}" onclick="return confirm('Cancel this order?')">Cancel Order</button>
+                    </form>
+                </div>
+            </div>
+            </div>
+
+            <div class="back-link">
+                <a th:href="@{/admin/orders}">Back to Orders</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

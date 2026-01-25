@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<div th:fragment="content" data-authenticated="true" th:data-authenticated="${#authorization.expression('isAuthenticated()')}">
+
+<link rel="stylesheet" th:href="@{/css/cart.css}">
+
+<div class="cart">
+    <div class="cart__container">
+        <div class="cart__header">
+            <h1 class="cart__title">Shopping Cart</h1>
+        </div>
+
+        <!-- Empty cart state -->
+        <div id="emptyCartState" class="cart__empty" style="display: none;">
+            <p class="cart__empty-message">Your cart is empty</p>
+            <a th:href="@{/products-page}" class="cart__empty-link">Continue Shopping</a>
+        </div>
+
+        <!-- Cart items container -->
+        <div id="cartContainer" class="cart__content" style="display: none;">
+            <!-- Cart items table -->
+            <div class="cart__items">
+                <div class="cart__header-row">
+                    <div class="cart__col cart__col--select">
+                        <input type="checkbox" id="selectAllCheckbox" class="cart__select-all" title="Select all items" checked />
+                    </div>
+                    <div class="cart__col cart__col--product">Product</div>
+                    <div class="cart__col cart__col--price">Price</div>
+                    <div class="cart__col cart__col--quantity">Quantity</div>
+                    <div class="cart__col cart__col--subtotal">Subtotal</div>
+                    <div class="cart__col cart__col--actions">Action</div>
+                </div>
+                <div id="cartItemsList" class="cart__items-list">
+                    <!-- Cart items will be rendered here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Cart summary section -->
+            <div class="cart__summary">
+                <div class="cart__summary-section">
+                    <div class="cart__summary-row">
+                        <span class="cart__summary-label">Subtotal:</span>
+                        <span id="subtotalAmount" class="cart__summary-value">$0.00</span>
+                    </div>
+                    <div class="cart__summary-row">
+                        <span class="cart__summary-label">Shipping:</span>
+                        <span class="cart__summary-value">Free</span>
+                    </div>
+                    <div class="cart__summary-row">
+                        <span class="cart__summary-label">Tax:</span>
+                        <span id="taxAmount" class="cart__summary-value">$0.00</span>
+                    </div>
+                    <div class="cart__summary-row cart__summary-row--total">
+                        <span class="cart__summary-label">Total:</span>
+                        <span id="totalAmount" class="cart__summary-value">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Auth warning if needed -->
+                <div id="authWarning" class="cart__auth-warning" style="display: none;">
+                    <p class="cart__auth-warning-text">Login required to proceed to checkout</p>
+                    <a th:href="@{/login}" class="cart__btn-login">Login</a>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="cart__actions">
+                    <a th:href="@{/products-page}" class="cart__btn cart__btn--secondary">Continue Shopping</a>
+                    <button id="checkoutBtn" class="cart__btn cart__btn--primary">Proceed to Checkout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="cart__error" style="display: none;">
+            <p id="errorMessage" class="cart__error-message">Failed to load cart</p>
+            <a th:href="@{/products-page}" class="cart__error-link">Back to Shopping</a>
+        </div>
+    </div>
+</div>
+
+</div>
+</html>
+
+<script defer th:src="@{/js/cart.js}"></script>

@@ -1,0 +1,142 @@
+# =============================================================================
+# PRODUCTION ENVIRONMENT CONFIGURATION
+# All values must come from environment variables - NO HARDCODED SECRETS
+# =============================================================================
+
+server:
+  port: ${PORT}
+  compression:
+    enabled: true
+    min-response-size: 1024
+  http2:
+    enabled: true
+
+# ======================= DATABASE CONFIGURATION =======================
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: ${DB_MIN_IDLE:2}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # NEVER use update/create in production
+    show-sql: false  # Disable for performance
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: ${DB_DIALECT}
+        jdbc:
+          batch_size: 50
+          fetch_size: 100
+        use_second_level_cache: true
+        cache:
+          use_structured_entries: true
+
+  # ======================= CACHE CONFIGURATION =======================
+  cache:
+    type: simple  # Simple in-memory caching
+
+  # ======================= SECURITY & OAUTH =======================
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "${GOOGLE_REDIRECT_URI}"
+            scope:
+              - email
+              - profile
+
+  # ======================= SESSION CONFIGURATION =======================
+  servlet:
+    session:
+      persistent: false
+      store-type: none  # No Redis, use simple session
+      timeout: 60m
+      tracking-modes: COOKIE
+
+  # ======================= EMAIL CONFIGURATION =======================
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
+# ======================= SECURITY CONFIGURATION =======================
+config:
+  jwt:
+    # CRITICAL: Use strong, unique secrets in environment variables
+    access-secret: ${JWT_ACCESS_SECRET}
+    refresh-secret: ${JWT_REFRESH_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}      # 15 minutes
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION} # 7 days
+  
+  security:
+    max-failed-attempts: ${SECURITY_MAX_FAILED_ATTEMPTS}
+    lockout-duration-minutes: ${SECURITY_LOCKOUT_DURATION_MINUTES}
+    password-reset-token-expiry-hours: ${SECURITY_PASSWORD_RESET_TOKEN_EXPIRY_HOURS}
+    oauth2:
+      enabled: ${OAUTH2_ENABLED}
+  
+  admin:
+    # Admin credentials loaded from environment variables
+    # ENV: ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_FULL_NAME
+    # These are used to bootstrap the initial admin user on startup
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+    full-name: ${ADMIN_FULL_NAME}
+  
+  email:
+    shipping-team-email: ${SHIPPING_TEAM_EMAIL}
+
+# ======================= EXTERNAL SERVICES =======================
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID}
+  key-secret: ${RAZORPAY_KEY_SECRET}
+
+# ======================= ACTUATOR & MONITORING =======================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health  # Only health endpoint in production for security
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never  # Never show details in production
+  health:
+    db:
+      enabled: true
+
+# ======================= LOGGING =======================
+logging:
+  level:
+    root: warn
+    com.abhishek.ecommerce: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  file:
+    name: /var/log/ecommerce/application.log
+    max-size: 10MB
+    max-history: 30

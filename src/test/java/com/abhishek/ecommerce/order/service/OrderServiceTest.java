@@ -123,8 +123,7 @@ class OrderServiceTest {
         when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(cart));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
-        when(paymentService.createPayment(any())).thenReturn(paymentResponseDto);
-        doNothing().when(notificationService).sendOrderConfirmation(anyLong(), anyString(), anyString());
+        when(inventoryService.reduceStock(anyLong(), any(UpdateStockRequestDto.class))).thenReturn(null);
 
         // When
         OrderResponseDto result = orderService.placeOrder(1L);
@@ -211,7 +210,7 @@ class OrderServiceTest {
     @Test
     void shipOrder_ShouldUpdateOrderStatusToShipped() {
         // Given
-        order.setStatus(OrderStatus.PAID);
+        order.setStatus(OrderStatus.CONFIRMED);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);

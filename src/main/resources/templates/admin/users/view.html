@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">User Details - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">User Details</h1>
+            <div style="display: flex; gap: 10px;">
+                <a th:href="@{/admin/users}" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+        <div th:if="${param.success}" class="alert alert-success">Action completed successfully.</div>
+
+        <!-- User Details Card -->
+        <div class="detail-card">
+            <div class="card-header">
+                <h2>Account Information</h2>
+            </div>
+            <div class="card-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>User ID</label>
+                        <p th:text="${user.id}">1</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Full Name</label>
+                        <p th:text="${user.fullName}">John Doe</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email</label>
+                        <p th:text="${user.email}">john@example.com</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Phone</label>
+                        <p th:text="${user.phone ?: 'Not provided'}">Not provided</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status</label>
+                        <p>
+                            <span class="badge" 
+                                  th:classappend="${user.status == 'ACTIVE' ? 'badge-active' : 'badge-inactive'}" 
+                                  th:text="${user.status}">ACTIVE</span>
+                        </p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Account Created</label>
+                        <p th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2025 10:30</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Last Updated</label>
+                        <p th:text="${#temporals.format(user.updatedAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2025 10:30</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Roles</label>
+                        <p>
+                            <span th:if="${user.roles != null and !user.roles.isEmpty()}" 
+                                  th:each="role : ${user.roles}" 
+                                  class="badge" 
+                                  th:classappend="${'badge-' + role.toLowerCase()}" 
+                                  th:text="${role}">USER</span>
+                            <span th:if="${user.roles == null or user.roles.isEmpty()}" class="badge badge-default">NO ROLE</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-section">
+            <h3>Actions</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <!-- FOR SELLER ROLE: Show Suspend/Demote option -->
+                <form th:if="${user.roles != null and user.roles.contains('SELLER')}" method="post" th:action="@{/admin/users/{userId}/roles/seller/remove(userId=${user.id})}" style="display: inline;">
+                    <button type="submit" class="btn btn-warning" onclick="return confirm('Suspend this seller? Remove seller role and revert to user only?')">
+                        🔴 Suspend (Remove Seller Role)
+                    </button>
+                </form>
+
+                <!-- FOR DEACTIVATED/INACTIVE: Show Activate option -->
+                <form th:if="${user.status != null and (user.status == 'INACTIVE' or user.status == 'LOCKED')}" method="post" th:action="@{/admin/users/{userId}/activate(userId=${user.id})}" style="display: inline;">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Activate this user?')">
+                        ✓ Activate User
+                    </button>
+                </form>
+
+                <!-- FOR ACTIVE: Show Deactivate option -->
+                <form th:if="${user.status != null and user.status == 'ACTIVE'}" method="post" th:action="@{/admin/users/{userId}/deactivate(userId=${user.id})}" style="display: inline;">
+                    <button type="submit" class="btn btn-warning" onclick="return confirm('Deactivate this user? They won\'t be able to login.')">
+                        ⏸ Deactivate User
+                    </button>
+                </form>
+
+                <!-- DELETE: Always show delete button -->
+                <form method="post" th:action="@{/admin/users/{userId}/delete(userId=${user.id})}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this user? This action cannot be undone.')">
+                        🗑 Delete User
+                    </button>
+                </form>
+            </div>
+
+            <!-- Info about actions -->
+            <div style="margin-top: 20px; padding: 15px; background: #f0f7ff; border-left: 4px solid #007bff; border-radius: 4px;">
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                    <strong>Suspend:</strong> Removes seller role, user becomes regular user<br>
+                    <strong>Deactivate:</strong> User cannot login (soft disable)<br>
+                    <strong>Activate:</strong> Re-enable deactivated or locked user<br>
+                    <strong>Delete:</strong> Soft delete (permanent action)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+
+    <style>
+        .detail-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-item label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item p {
+            margin: 0;
+            color: #333;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .action-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .action-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-user {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .badge-seller {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-admin {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+    </style>
+</body>
+</html>

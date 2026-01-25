@@ -1,0 +1,230 @@
+/* ========================================
+   Product Details - Feature-Scoped Styles
+   Prefix: .product-details
+   ======================================== */
+
+.product-details__container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Back Link */
+.product-details__back-link {
+    margin-bottom: 1.5rem;
+}
+
+.product-details__back {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.product-details__back:hover {
+    text-decoration: underline;
+}
+
+/* Product Display */
+.product-details__display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Image Section */
+.product-details__image-section {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.product-details__image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+}
+
+/* Info Section */
+.product-details__info-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-details__title {
+    font-size: 2rem;
+    color: #333;
+    margin: 0 0 1rem 0;
+}
+
+/* Metadata */
+.product-details__meta {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.product-details__meta-row {
+    display: flex;
+    margin-bottom: 0.8rem;
+}
+
+.product-details__meta-label {
+    font-weight: 600;
+    color: #555;
+    width: 100px;
+    min-width: 100px;
+}
+
+.product-details__meta-value {
+    color: #777;
+}
+
+/* Price Section */
+.product-details__price-section {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.product-details__price-label {
+    color: #666;
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.product-details__price {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+/* Description Section */
+.product-details__description-section {
+    margin-bottom: 2rem;
+}
+
+.product-details__description-title {
+    font-size: 1.3rem;
+    color: #333;
+    margin: 0 0 1rem 0;
+}
+
+.product-details__description {
+    color: #666;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+}
+
+/* Action Buttons */
+.product-details__actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: auto;
+}
+
+.product-details__btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex: 1;
+}
+
+.product-details__btn--primary {
+    background-color: #27ae60;
+    color: white;
+}
+
+.product-details__btn--primary:hover {
+    background-color: #229954;
+}
+
+.product-details__btn--secondary {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.product-details__btn--secondary:hover {
+    background-color: #7f8c8d;
+}
+
+/* ========================================
+   State Styles for Details View
+   ======================================== */
+
+.product-details__loading {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.1rem;
+    color: #666;
+}
+
+.product-details__empty {
+    text-align: center;
+    padding: 3rem;
+    color: #999;
+    font-size: 1.1rem;
+}
+
+.product-details__empty-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #3498db;
+    text-decoration: none;
+}
+
+.product-details__empty-link:hover {
+    text-decoration: underline;
+}
+
+.product-details__error {
+    text-align: center;
+    padding: 2rem;
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    margin-top: 2rem;
+}
+
+.product-details__error-message {
+    margin: 0;
+}
+
+/* ========================================
+   Responsive Design - Product Details
+   ======================================== */
+
+@media (max-width: 768px) {
+    .product-details__display {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .product-details__title {
+        font-size: 1.5rem;
+    }
+
+    .product-details__image {
+        max-width: 100%;
+    }
+
+    .product-details__actions {
+        flex-direction: column;
+    }
+
+    .product-details__btn {
+        flex: none;
+        width: 100%;
+    }
+}

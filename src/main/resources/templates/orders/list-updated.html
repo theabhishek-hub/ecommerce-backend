@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">My Orders - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/orders.css}">
+    <style>
+        .search-sort-container { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; display: flex; gap: 15px; flex-wrap: wrap; }
+        .search-sort-container form { display: flex; gap: 10px; flex: 1; min-width: 300px; }
+        .search-sort-container input, .search-sort-container select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; }
+        .search-sort-container button { padding: 8px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #007bff; }
+        .pagination a:hover { background: #007bff; color: white; }
+        .pagination .active { background: #007bff; color: white; }
+        .pagination .disabled { color: #ccc; }
+        .order-products { display: flex; flex-direction: column; gap: 8px; }
+        .product-item { padding: 8px; background: #f0f0f0; border-radius: 4px; display: flex; flex-direction: column; gap: 4px; }
+        .product-item span { font-size: 14px; }
+        .product-item > span:first-child { font-weight: 500; color: #333; }
+        .product-qty { color: #666; font-size: 12px; }
+        .product-price { color: #007bff; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="orders-container">
+        <div class="orders-header">
+            <h1 th:text="${title}">My Orders</h1>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <div th:if="${page.empty}" class="empty-state">
+            <h2>No Orders Yet</h2>
+            <p>You haven't placed any orders yet.</p>
+            <a th:href="@{/products-page}" class="btn btn-primary">Start Shopping</a>
+        </div>
+
+        <div th:if="!${page.empty}">
+            <div class="search-sort-container">
+                <form method="get" th:action="@{/orders}">
+                    <select name="sort">
+                        <option value="">Sort by</option>
+                        <option value="createdAt,desc" th:selected="${param.sort == 'createdAt,desc'}">Newest First</option>
+                        <option value="createdAt,asc" th:selected="${param.sort == 'createdAt,asc'}">Oldest First</option>
+                    </select>
+                    <button type="submit">Sort</button>
+                </form>
+            </div>
+
+            <div class="orders-table-wrapper">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Products</th>
+                            <th>Status</th>
+                            <th>Total Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${page.content}">
+                            <td th:text="${order.id}">12345</td>
+                            <td th:text="${#temporals.format(order.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2025 10:30</td>
+                            <td>
+                                <div class="order-products">
+                                    <div th:each="item : ${order.items}" class="product-item">
+                                        <span th:text="${item.productName}">Product Name</span>
+                                        <span class="product-qty">(Qty: <span th:text="${item.quantity}">1</span>)</span>
+                                        <span class="product-price" th:text="${'$' + #numbers.formatDecimal(item.priceAmount, 1, 2)}">$29.99</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${'badge-' + order.status.toLowerCase()}" th:text="${order.status}">PENDING</span>
+                            </td>
+                            <td th:text="${'$' + #numbers.formatDecimal(order.totalAmount, 1, 2)}">$99.99</td>
+                            <td>
+                                <a th:href="@{/orders/{orderId}(orderId=${order.id})}" class="btn btn-sm btn-primary">View</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <a th:if="${!page.first}" th:href="@{/orders(page=0,sort=${param.sort ?: ''})}">First</a>
+                <span th:if="${page.first}" class="disabled">First</span>
+                <a th:if="${page.hasPrevious()}" th:href="@{/orders(page=${page.number - 1},sort=${param.sort ?: ''})}">Previous</a>
+                <span th:if="!${page.hasPrevious()}" class="disabled">Previous</span>
+                <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                    <span th:if="${i == page.number}" class="active" th:text="${i + 1}">1</span>
+                    <a th:if="${i != page.number}" th:href="@{/orders(page=${i},sort=${param.sort ?: ''})}" th:text="${i + 1}">1</a>
+                </th:block>
+                <a th:if="${page.hasNext()}" th:href="@{/orders(page=${page.number + 1},sort=${param.sort ?: ''})}">Next</a>
+                <span th:if="!${page.hasNext()}" class="disabled">Next</span>
+                <a th:if="!${page.last}" th:href="@{/orders(page=${page.totalPages - 1},sort=${param.sort ?: ''})}">Last</a>
+                <span th:if="${page.last}" class="disabled">Last</span>
+            </div>
+
+            <div class="orders-footer">
+                <a th:href="@{/products-page}" class="link-secondary">Continue Shopping</a>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

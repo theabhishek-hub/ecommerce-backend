@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Payment Methods</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        .empty-state p {
+            margin: 15px 0;
+        }
+        .payments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .payment-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+            position: relative;
+        }
+        .payment-card.primary {
+            border-color: #007bff;
+            background: #e7f3ff;
+        }
+        .payment-type {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .payment-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .payment-card p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .card-number {
+            font-family: monospace;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        .payment-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .payment-actions button,
+        .payment-actions a {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        .btn-edit {
+            background: #007bff;
+            color: white;
+        }
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-primary-method {
+            background: #28a745;
+            color: white;
+        }
+        .primary-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="container">
+        <a th:href="@{/profile}" class="back-link">← Back to Profile</a>
+
+        <div class="card">
+            <div class="header">
+                <h1>Payment Methods</h1>
+                <button class="btn btn-primary" onclick="alert('Add payment method feature coming soon'); return false;">+ Add Payment Method</button>
+            </div>
+
+            <div class="empty-state">
+                <h3>No payment methods saved</h3>
+                <p>You haven't added any payment methods yet. Add one to checkout faster.</p>
+                <button class="btn btn-primary" onclick="alert('Add payment method feature coming soon'); return false;">Add Payment Method</button>
+            </div>
+
+            <!-- Example payment methods (when feature is implemented) -->
+            <!--
+            <div class="payments-grid">
+                <div class="payment-card primary">
+                    <div class="primary-badge">PRIMARY</div>
+                    <div class="payment-type">💳 Credit Card</div>
+                    <h3>Visa</h3>
+                    <p><span class="card-number">•••• •••• •••• 4242</span></p>
+                    <p><strong>Expires:</strong> 12/26</p>
+                    <p><strong>Name:</strong> John Doe</p>
+                    <div class="payment-actions">
+                        <a href="#" class="btn-edit">Edit</a>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+
+        <div class="card">
+            <h3>🔒 Payment Security</h3>
+            <p style="color: #666; line-height: 1.6;">
+                Your payment information is encrypted and securely stored. We never store full credit card details 
+                and use PCI-DSS compliant payment processors. You can remove any payment method at any time.
+            </p>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

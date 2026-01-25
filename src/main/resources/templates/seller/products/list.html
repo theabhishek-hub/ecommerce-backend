@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">My Products</title>
+</head>
+<body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px;">
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+    
+    <div style="max-width: 1200px; margin: 30px auto; background: white; padding: 20px; border-radius: 8px;">
+        <h1 th:text="${title}">My Products</h1>
+        <p>Total: <strong th:text="${totalProducts ?: 0}">0</strong></p>
+        
+        <p>
+            <a th:href="@{/seller/products/add}" style="padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">+ Add Product</a>
+            <a th:href="@{/seller/dashboard}" style="padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; display: inline-block; margin-left: 10px;">Back to Dashboard</a>
+        </p>
+
+        <div th:if="${!hasProducts}" style="padding: 40px; background: #f9f9f9; border: 2px dashed #ddd; border-radius: 8px; text-align: center;">
+            <p>No products yet</p>
+            <a th:href="@{/seller/products/add}" style="padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">Add Your First Product</a>
+        </div>
+
+        <table th:if="${hasProducts}" border="1" cellpadding="12" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white; margin-top: 20px;">
+            <thead style="background: #f8f9fa;">
+                <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>SKU</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="product : ${products}">
+                    <td style="text-align: center;">
+                        <img th:if="${product.imageUrl}" th:src="${product.imageUrl}" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                        <span th:if="!${product.imageUrl}">-</span>
+                    </td>
+                    <td th:text="${product.name}">Name</td>
+                    <td th:text="${product.sku}">SKU</td>
+                    <td th:text="|${product.currency} ${#numbers.formatDecimal(product.priceAmount, 1, 2)}">Price</td>
+                    <td style="text-align: center;" th:text="${product.quantity != null ? product.quantity : '0'}">0</td>
+                    <td>
+                        <span th:if="${product.quantity > 10}">In Stock</span>
+                        <span th:if="${product.quantity > 0 and product.quantity <= 10}">Low Stock</span>
+                        <span th:if="${product.quantity == 0}">Out of Stock</span>
+                        <span th:if="${product.quantity == null}">No Stock</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/seller/products/{productId}/view(productId=${product.id})}" style="background: #007bff; color: white; padding: 5px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin-right: 3px;">View</a>
+                        <a th:if="${!isPending}" th:href="@{/seller/products/{productId}/edit(productId=${product.id})}" style="background: #17a2b8; color: white; padding: 5px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin-right: 3px;">Edit</a>
+                        <a th:if="${!isPending}" th:href="@{/seller/inventory/{productId}(productId=${product.id})}" style="background: #28a745; color: white; padding: 5px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin-right: 3px;">Stock</a>
+                        <form th:if="${!isPending}" method="post" th:action="@{/seller/products/{productId}/delete(productId=${product.id})}" style="display: inline;" onsubmit="return confirm('Delete this product?');">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" style="background: #dc3545; color: white; padding: 5px 8px; border: none; border-radius: 3px; cursor: pointer; font-size: 13px;">Delete</button>
+                        </form>
+                        <span th:if="${isPending}">Under Review</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

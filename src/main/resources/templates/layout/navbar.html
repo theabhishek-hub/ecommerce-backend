@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AbhiOnlineDukaan</title>
+</head>
+<body>
+
+<!-- layout/navbar.html -->
+<nav class="navbar" th:fragment="navbar">
+    <div class="nav-container">
+        <h1 class="nav-logo"><a th:href="@{/}" style="text-decoration: none; color: white;">AbhiOnlineDukaan</a></h1>
+        
+        <!-- Product Search Bar (visible to all users) -->
+        <form th:action="@{/products-page}" method="get" class="nav-search" style="display: flex; gap: 8px; margin-left: auto; margin-right: 20px;">
+            <input type="text" name="q" placeholder="Search products..." th:value="${param.q ?: ''}" style="padding: 8px 12px; border: none; border-radius: 4px; width: 200px;">
+            <button type="submit" style="padding: 8px 16px; background: #ffc107; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Search</button>
+        </form>
+        
+        <ul class="nav-links">
+            <!-- ==================================================== -->
+            <!-- ANONYMOUS USER (Not logged in) -->
+            <!-- ==================================================== -->
+            <li sec:authorize="isAnonymous()">
+                <a th:href="@{/}">Home</a>
+            </li>
+            <li sec:authorize="isAnonymous()">
+                <a th:href="@{/products-page}">Browse Products</a>
+            </li>
+            <li sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" style="color: #ffc107; font-weight: 500;">Become a Seller</a>
+            </li>
+            
+            <!-- ==================================================== -->
+            <!-- REGULAR USER (ROLE_USER, not yet seller) -->
+            <!-- ==================================================== -->
+            <li sec:authorize="hasRole('USER') and !hasRole('SELLER')">
+                <a th:href="@{/cart}">Cart</a>
+            </li>
+            <li sec:authorize="hasRole('USER') and !hasRole('SELLER')">
+                <a th:href="@{/orders}">Orders</a>
+            </li>
+            
+            <!-- "Become Seller" - visible only if user is NOT an approved seller -->
+            <li sec:authorize="hasRole('USER') and !hasRole('SELLER')">
+                <a th:href="@{/seller/apply}" style="color: #ffc107; font-weight: 500;">Become a Seller</a>
+            </li>
+            
+            <!-- ==================================================== -->
+            <!-- SELLER NAVIGATION (ROLE_SELLER) -->
+            <!-- 
+                - APPROVED sellers see: Dashboard | My Products | Inventory | Orders | Profile
+                - PENDING sellers see: Dashboard (review page) | Profile
+                - Seller Dashboard link works for both (shows dashboard if APPROVED, approval-pending if PENDING)
+                - My Products, Inventory, Orders links only visible for APPROVED sellers
+            -->
+            <!-- ==================================================== -->
+            <!-- Seller Dashboard - Always visible for all sellers -->
+            <li sec:authorize="hasRole('SELLER')">
+                <a th:href="@{/seller/dashboard}" style="color: #ffc107; font-weight: 600;">📊 Seller Dashboard</a>
+            </li>
+            <!-- My Products - Only visible for APPROVED sellers -->
+            <li sec:authorize="hasRole('SELLER')" th:if="${@securityUtils.isSellerApproved()}">
+                <a th:href="@{/seller/products}" style="color: #ffc107;">📦 My Products</a>
+            </li>
+            <!-- Inventory - Only visible for APPROVED sellers -->
+            <li sec:authorize="hasRole('SELLER')" th:if="${@securityUtils.isSellerApproved()}">
+                <a th:href="@{/seller/inventory}" style="color: #ffc107;">📊 Inventory</a>
+            </li>
+            <!-- Orders - Only visible for APPROVED sellers -->
+            <li sec:authorize="hasRole('SELLER')" th:if="${@securityUtils.isSellerApproved()}">
+                <a th:href="@{/seller/orders}" style="color: #ffc107;">📋 Orders</a>
+            </li>
+            
+            <!-- ==================================================== -->
+            <!-- ADMIN (ROLE_ADMIN) -->
+            <!-- ==================================================== -->
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin}" style="color: #ff6b6b; font-weight: 600;">⚙️ Admin Dashboard</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/users}" style="color: #ff6b6b;">User Management</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/sellers}" style="color: #ff6b6b;">Seller Management</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/products}" style="color: #ff6b6b;">Product Management</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/orders}" style="color: #ff6b6b;">Orders</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/categories}" style="color: #ff6b6b;">Categories</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/brands}" style="color: #ff6b6b;">Brands</a>
+            </li>
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/inventory}" style="color: #ff6b6b;">Inventory Overview</a>
+            </li>
+            
+            <!-- ==================================================== -->
+            <!-- RIGHT-ALIGNED AUTH SECTION -->
+            <!-- ==================================================== -->
+            
+            <!-- ANONYMOUS: Login & Signup -->
+            <li sec:authorize="isAnonymous()" style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                <a th:href="@{/login}" style="color: #fff;">Login</a>
+                <a th:href="@{/register}" style="color: #fff; background-color: #007bff; padding: 5px 12px; border-radius: 3px; text-decoration: none; font-weight: 600;">Sign Up</a>
+            </li>
+            
+            <!-- AUTHENTICATED: User Info & Logout (for all authenticated users) -->
+            <li sec:authorize="isAuthenticated()" style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+                <span style="color: #fff; font-size: 14px;" th:text="${@securityUtils.getCurrentUsername()}"></span>
+                <form method="post" th:action="@{/logout}" style="display: inline; margin: 0;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 600;">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+</body>
+</html>
+
+

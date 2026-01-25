@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Product Form - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">Product Form</h1>
+            <a th:href="@{/admin/products}" class="btn btn-secondary">Back to Products</a>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <!-- Product Form -->
+        <div class="form-container" style="max-width: 800px; margin: 20px auto;">
+            <form th:action="${productId != null ? '/admin/products/' + productId : '/admin/products'}" 
+                  method="post" th:object="${product}" class="admin-form">
+                
+                <div class="form-group">
+                    <label for="name">Product Name *</label>
+                    <input type="text" id="name" name="name" th:field="*{name}" 
+                           class="form-control" required placeholder="Enter product name">
+                    <span th:if="${#fields.hasErrors('name')}" class="form-error" th:errors="*{name}">Error</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" th:field="*{description}" 
+                              class="form-control" rows="4" required placeholder="Enter product description"></textarea>
+                    <span th:if="${#fields.hasErrors('description')}" class="form-error" th:errors="*{description}">Error</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="categoryId">Category *</label>
+                        <select id="categoryId" name="categoryId" th:field="*{categoryId}" 
+                                class="form-control" required>
+                            <option value="">-- Select Category --</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat.id}" th:text="${cat.name}">
+                            </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('categoryId')}" class="form-error" th:errors="*{categoryId}">Error</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brandId">Brand *</label>
+                        <select id="brandId" name="brandId" th:field="*{brandId}" 
+                                class="form-control" required>
+                            <option value="">-- Select Brand --</option>
+                            <option th:each="brand : ${brands}" 
+                                    th:value="${brand.id}" th:text="${brand.name}">
+                            </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('brandId')}" class="form-error" th:errors="*{brandId}">Error</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="priceAmount">Price (₹) *</label>
+                        <input type="number" id="priceAmount" name="priceAmount" th:field="*{priceAmount}" 
+                               class="form-control" step="0.01" required placeholder="0.00">
+                        <span th:if="${#fields.hasErrors('priceAmount')}" class="form-error" th:errors="*{priceAmount}">Error</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currency">Currency *</label>
+                        <input type="text" id="currency" name="currency" th:field="*{currency}" 
+                               class="form-control" maxlength="3" value="INR" required placeholder="INR">
+                        <span th:if="${#fields.hasErrors('currency')}" class="form-error" th:errors="*{currency}">Error</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sku">SKU *</label>
+                        <input type="text" id="sku" name="sku" th:field="*{sku}" 
+                               class="form-control" required placeholder="SKU123">
+                        <span th:if="${#fields.hasErrors('sku')}" class="form-error" th:errors="*{sku}">Error</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stockQuantity">Stock Quantity *</label>
+                        <input type="number" id="stockQuantity" name="stockQuantity" th:field="*{stockQuantity}" 
+                               class="form-control" required placeholder="100">
+                        <span th:if="${#fields.hasErrors('stockQuantity')}" class="form-error" th:errors="*{stockQuantity}">Error</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageUrl">Image URL</label>
+                    <input type="url" id="imageUrl" name="imageUrl" th:field="*{imageUrl}" 
+                           class="form-control" placeholder="https://example.com/image.jpg">
+                    <span th:if="${#fields.hasErrors('imageUrl')}" class="form-error" th:errors="*{imageUrl}">Error</span>
+                </div>
+
+                <div class="form-actions" style="margin-top: 30px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span th:text="${productId != null ? 'Update Product' : 'Create Product'}">Save</span>
+                    </button>
+                    <a th:href="@{/admin/products}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

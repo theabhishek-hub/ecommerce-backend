@@ -1,0 +1,13 @@
+# =============================================================================
+# BASE APPLICATION CONFIGURATION - Minimal
+# Profile-specific configs will override these defaults
+# =============================================================================
+
+spring:
+  application:
+    name: ${APPLICATION_NAME}
+  
+  profiles:
+    active: ${PROFILES_ACTIVE}
+
+

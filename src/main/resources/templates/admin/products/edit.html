@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product - Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1>Edit Product</h1>
+                <span class="subtitle">Update product information</span>
+            </div>
+            <a th:href="@{/admin/products}" class="btn btn-secondary">Back to Products</a>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="form-container">
+            <form th:action="@{/admin/products/{productId}(productId=${productId})}" method="POST" th:object="${product}" enctype="multipart/form-data">
+                
+                <!-- Product Name -->
+                <div class="form-group form-row full">
+                    <div>
+                        <label for="name">Product Name <span style="color: red;">*</span></label>
+                        <input type="text" id="name" th:field="*{name}" placeholder="Enter product name" required>
+                        <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"></small>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group form-row full">
+                    <div>
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" placeholder="Enter product description"></textarea>
+                        <small th:if="${#fields.hasErrors('description')}" th:errors="*{description}" style="color: red;"></small>
+                    </div>
+                </div>
+
+                <!-- Price and Currency -->
+                <div class="form-group form-row">
+                    <div>
+                        <label for="priceAmount">Price Amount <span style="color: red;">*</span></label>
+                        <input type="number" id="priceAmount" th:field="*{priceAmount}" placeholder="0.00" step="0.01" required>
+                        <small th:if="${#fields.hasErrors('priceAmount')}" th:errors="*{priceAmount}" style="color: red;"></small>
+                    </div>
+                    <div>
+                        <label for="currency">Currency <span style="color: red;">*</span></label>
+                        <input type="text" id="currency" th:field="*{currency}" placeholder="USD" maxlength="3" required>
+                        <small th:if="${#fields.hasErrors('currency')}" th:errors="*{currency}" style="color: red;"></small>
+                    </div>
+                </div>
+
+                <!-- SKU and Image Upload -->
+                <div class="form-group form-row">
+                    <div>
+                        <label for="sku">SKU <span style="color: red;">*</span></label>
+                        <input type="text" id="sku" th:field="*{sku}" placeholder="Enter SKU" required>
+                        <small th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}" style="color: red;"></small>
+                    </div>
+                    <div>
+                        <label for="imageUrl">Product Image</label>
+                        <input type="file" id="imageUrl" name="imageUrl" accept="image/*" style="padding: 10px; border: 1px dashed #ddd; border-radius: 4px;">
+                        <small style="display: block; color: #666; margin-top: 5px;">Formats: JPG, PNG | Max Size: 1MB | Recommended: 800x800px or 1200x1200px</small>
+                    </div>
+                </div>
+
+                <!-- Category and Brand -->
+                <div class="form-group form-row">
+                    <div>
+                        <label for="categoryId">Category <span style="color: red;">*</span></label>
+                        <select id="categoryId" th:field="*{categoryId}" required>
+                            <option value="">-- Select Category --</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}" style="color: red;"></small>
+                    </div>
+                    <div>
+                        <label for="brandId">Brand <span style="color: red;">*</span></label>
+                        <select id="brandId" th:field="*{brandId}" required>
+                            <option value="">-- Select Brand --</option>
+                            <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.name}"></option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('brandId')}" th:errors="*{brandId}" style="color: red;"></small>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Update Product</button>
+                    <a th:href="@{/admin/products}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

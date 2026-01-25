@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage User Roles - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Manage User Roles</h1>
+            <a th:href="@{/admin/users/{userId}(userId=${user.id})}" class="btn btn-secondary">Back to User Details</a>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+        <div th:if="${param.success}" class="alert alert-success" th:text="${param.success}">Action completed successfully.</div>
+
+        <!-- User Info -->
+        <div class="details-card" style="max-width: 800px; margin: 20px auto;">
+            <div class="card-header">
+                <h2>User: <span th:text="${user.email}"></span></h2>
+            </div>
+
+            <div class="card-body">
+                <div style="margin-bottom: 20px;">
+                    <span style="font-weight: 600; color: #333;">Current Status:</span>
+                    <span class="badge" th:classappend="${user.status == 'ACTIVE' ? 'badge-active' : 'badge-inactive'}" th:text="${user.status}">ACTIVE</span>
+                </div>
+
+                <div>
+                    <span style="font-weight: 600; color: #333;">User ID:</span>
+                    <span th:text="${user.id}">123</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Management -->
+        <div class="details-card" style="max-width: 800px; margin: 20px auto;">
+            <div class="card-header">
+                <h2>Role Assignment</h2>
+            </div>
+
+            <div class="card-body">
+                <div style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px; color: #333;">Assign Seller Role</h3>
+                    <p style="color: #666; margin-bottom: 15px;">This action will give the user permission to create and manage products on the platform.</p>
+                    
+                    <form method="post" th:action="@{/admin/users/{userId}/roles/seller/assign(userId=${user.id})}" style="display:inline;">
+                        <button type="submit" class="btn btn-success" 
+                                th:disabled="${user.roles != null && (user.roles.contains('ROLE_SELLER') || user.roles.contains('ROLE_ADMIN'))}"
+                                onclick="return confirm('Assign SELLER role to this user?')">
+                            <span th:if="${user.roles == null || (!user.roles.contains('ROLE_SELLER') && !user.roles.contains('ROLE_ADMIN'))}">Assign Seller Role</span>
+                            <span th:if="${user.roles != null && user.roles.contains('ROLE_SELLER')}">Already a Seller</span>
+                            <span th:if="${user.roles != null && user.roles.contains('ROLE_ADMIN')}">Cannot change Admin roles</span>
+                        </button>
+                    </form>
+                </div>
+
+                <hr style="margin: 30px 0; border: 1px solid #eee;">
+
+                <div>
+                    <h3 style="margin-bottom: 15px; color: #333;">Remove Seller Role</h3>
+                    <p style="color: #666; margin-bottom: 15px;">This action will revoke seller permissions from this user. They will only have standard user access.</p>
+                    
+                    <form method="post" th:action="@{/admin/users/{userId}/roles/seller/remove(userId=${user.id})}" style="display:inline;">
+                        <button type="submit" class="btn btn-warning" 
+                                th:disabled="${user.roles == null || !user.roles.contains('ROLE_SELLER')}"
+                                onclick="return confirm('Remove SELLER role from this user?')">
+                            <span th:if="${user.roles != null && user.roles.contains('ROLE_SELLER')}">Remove Seller Role</span>
+                            <span th:if="${user.roles == null || !user.roles.contains('ROLE_SELLER')}">User is not a Seller</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Information -->
+        <div class="details-card" style="max-width: 800px; margin: 20px auto;">
+            <div class="card-header">
+                <h2>Role Information</h2>
+            </div>
+
+            <div class="card-body">
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #333;">ROLE_USER</h4>
+                    <p style="color: #666; margin: 5px 0;">• Browse and purchase products</p>
+                    <p style="color: #666; margin: 5px 0;">• View order history</p>
+                    <p style="color: #666; margin: 5px 0;">• Manage personal profile</p>
+                </div>
+
+                <hr style="margin: 20px 0; border: 1px solid #eee;">
+
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #333;">ROLE_SELLER</h4>
+                    <p style="color: #666; margin: 5px 0;">• All USER permissions</p>
+                    <p style="color: #666; margin: 5px 0;">• Create and manage products</p>
+                    <p style="color: #666; margin: 5px 0;">• View and process orders</p>
+                    <p style="color: #666; margin: 5px 0;">• Manage inventory</p>
+                </div>
+
+                <hr style="margin: 20px 0; border: 1px solid #eee;">
+
+                <div>
+                    <h4 style="color: #333;">ROLE_ADMIN</h4>
+                    <p style="color: #666; margin: 5px 0;">• Full system access</p>
+                    <p style="color: #666; margin: 5px 0;">• Manage users, sellers, and products</p>
+                    <p style="color: #666; margin: 5px 0;">• View analytics and reports</p>
+                    <p style="color: #666; margin: 5px 0;">• System configuration</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

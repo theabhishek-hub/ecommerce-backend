@@ -23,6 +23,10 @@ target/
 *.log
 logs/
 
+.github
+.gitattributes
+ecommerce-backend.iml
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -37,16 +41,10 @@ Thumbs.db
 PERFORMANCE.md
 PROJECT_ANALYSIS.md
 
+DEPLOYMENT_READY_CHECKLIST.md
+
 debug.log
 
-src/main/resources
-application.yml
-application-dev.yml
-application-prod.yml
-application-test.yml
-application-h2.yml
-
-# Bootstrap (local-only)
-src/main/java/com/abhishek/ecommerce/bootstrap/AdminBootstrap.java
-
 Code Citations.md
+copilot-instructions.md
+/.github

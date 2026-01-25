@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .search-sort-container { margin-bottom: 20px; padding: 15px; background: #f9f9f9; display: flex; gap: 15px; }
+        .search-sort-container form { display: flex; gap: 10px; flex: 1; }
+        .search-sort-container input, .search-sort-container select { padding: 8px 12px; border: 1px solid #ddd; }
+        .search-sort-container button { padding: 8px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; gap: 5px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; }
+        .pagination .active { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>User Management</h1>
+            <a th:href="@{/admin}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <div th:if="!${page.empty}">
+            <div class="search-sort-container">
+                <form method="get" th:action="@{/admin/users}">
+                    <input type="text" name="q" placeholder="Search by email..." th:value="${param.q ?: ''}">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${page.content}">
+                            <td th:text="${user.id}">1</td>
+                            <td th:text="${user.email}">user@example.com</td>
+                            <td th:text="${user.fullName}">John Doe</td>
+                            <td>
+                                <span th:if="${!user.roles.isEmpty()}" class="badge" th:classappend="${'badge-' + user.roles[0].toString().toLowerCase()}" th:text="${user.roles[0]}">USER</span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${user.status == 'ACTIVE' ? 'badge-active' : 'badge-inactive'}" th:text="${user.status}">Active</span>
+                            </td>
+                            <td th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy')}">Jan 01, 2025</td>
+                            <td>
+                                <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-sm btn-primary">View</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <a th:if="${!page.first}" th:href="@{/admin/users(page=0,q=${param.q ?: ''})}">First</a>
+                <a th:if="${page.hasPrevious()}" th:href="@{/admin/users(page=${page.number - 1},q=${param.q ?: ''})}">Previous</a>
+                <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                    <span th:if="${i == page.number}" class="active" th:text="${i + 1}">1</span>
+                    <a th:if="${i != page.number}" th:href="@{/admin/users(page=${i},q=${param.q ?: ''})}" th:text="${i + 1}">1</a>
+                </th:block>
+                <a th:if="${page.hasNext()}" th:href="@{/admin/users(page=${page.number + 1},q=${param.q ?: ''})}">Next</a>
+                <a th:if="!${page.last}" th:href="@{/admin/users(page=${page.totalPages - 1},q=${param.q ?: ''})}">Last</a>
+            </div>
+        </div>
+
+        <div th:if="${page.empty}" class="empty-state">
+            <p>No users found.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

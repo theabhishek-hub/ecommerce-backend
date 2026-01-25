@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Management - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .search-sort-container { margin-bottom: 20px; padding: 15px; background: #f9f9f9; display: flex; gap: 15px; }
+        .search-sort-container form { display: flex; gap: 10px; flex: 1; }
+        .search-sort-container input, .search-sort-container select { padding: 8px 12px; border: 1px solid #ddd; }
+        .search-sort-container button { padding: 8px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; gap: 5px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; }
+        .pagination .active { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Seller Management</h1>
+            <a th:href="@{/admin}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <div th:if="!${page.empty}">
+            <div class="search-sort-container">
+                <form method="get" th:action="@{/admin/sellers}">
+                    <select name="status">
+                        <option value="">All Statuses</option>
+                        <option value="PENDING" th:selected="${param.status == 'PENDING'}">Pending</option>
+                        <option value="APPROVED" th:selected="${param.status == 'APPROVED'}">Approved</option>
+                        <option value="REJECTED" th:selected="${param.status == 'REJECTED'}">Rejected</option>
+                    </select>
+                    <button type="submit">Filter</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Seller ID</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="seller : ${page.content}">
+                            <td th:text="${seller.id}">1</td>
+                            <td th:text="${seller.userEmail}">seller@example.com</td>
+                            <td th:text="${seller.userFullName}">Jane Doe</td>
+                            <td>
+                                <span class="badge" th:classappend="${seller.status == 'APPROVED' ? 'badge-success' : seller.status == 'REJECTED' ? 'badge-danger' : 'badge-warning'}" th:text="${#strings.replace(seller.status, '_', ' ')}">PENDING</span>
+                            </td>
+                            <td th:text="${#temporals.format(seller.submittedAt, 'MMM dd, yyyy')}">Jan 01, 2025</td>
+                            <td>
+                                <a th:href="@{/admin/sellers/{id}(id=${seller.id})}" class="btn btn-sm btn-primary">View</a>
+                                <th:block th:if="${seller.status.toString() == 'PENDING'}">
+                                    <form method="post" th:action="@{/admin/sellers/{id}/approve(id=${seller.id})}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    <form method="post" th:action="@{/admin/sellers/{id}/reject(id=${seller.id})}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                    </form>
+                                </th:block>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <a th:if="${!page.first}" th:href="@{/admin/sellers(page=0,status=${param.status ?: ''})}">First</a>
+                <a th:if="${page.hasPrevious()}" th:href="@{/admin/sellers(page=${page.number - 1},status=${param.status ?: ''})}">Previous</a>
+                <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                    <span th:if="${i == page.number}" class="active" th:text="${i + 1}">1</span>
+                    <a th:if="${i != page.number}" th:href="@{/admin/sellers(page=${i},status=${param.status ?: ''})}" th:text="${i + 1}">1</a>
+                </th:block>
+                <a th:if="${page.hasNext()}" th:href="@{/admin/sellers(page=${page.number + 1},status=${param.status ?: ''})}">Next</a>
+                <a th:if="!${page.last}" th:href="@{/admin/sellers(page=${page.totalPages - 1},status=${param.status ?: ''})}">Last</a>
+            </div>
+        </div>
+
+        <div th:if="${page.empty}" class="empty-state">
+            <p>No sellers found.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

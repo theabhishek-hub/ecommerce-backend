@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Preferences</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .header p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .preference-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        .preference-section:last-child {
+            border-bottom: none;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .preference-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .preference-item:last-child {
+            border-bottom: none;
+        }
+        .preference-info {
+            flex: 1;
+        }
+        .preference-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        .preference-description {
+            font-size: 13px;
+            color: #666;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #007bff;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .select-field {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="container">
+        <a th:href="@{/profile}" class="back-link">← Back to Profile</a>
+
+        <div class="card">
+            <div class="header">
+                <h1>Preferences</h1>
+                <p>Manage your notification and account preferences</p>
+            </div>
+
+            <!-- Notification Preferences -->
+            <div class="preference-section">
+                <div class="section-title">📧 Email Notifications</div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Order Updates</div>
+                        <div class="preference-description">Get notifications about your order status</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Promotional Emails</div>
+                        <div class="preference-description">Receive special offers and discounts</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Wishlist Alerts</div>
+                        <div class="preference-description">Be notified when items on your wishlist go on sale</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Product Recommendations</div>
+                        <div class="preference-description">Get personalized product recommendations</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Display Preferences -->
+            <div class="preference-section">
+                <div class="section-title">👁️ Display Preferences</div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Theme</div>
+                        <div class="preference-description">Choose your preferred color theme</div>
+                    </div>
+                    <select class="select-field" disabled>
+                        <option selected>Light Mode</option>
+                        <option>Dark Mode</option>
+                        <option>Auto</option>
+                    </select>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Language</div>
+                        <div class="preference-description">Select your preferred language</div>
+                    </div>
+                    <select class="select-field" disabled>
+                        <option selected>English</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                    </select>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Currency</div>
+                        <div class="preference-description">Display prices in your preferred currency</div>
+                    </div>
+                    <select class="select-field" disabled>
+                        <option selected>USD ($)</option>
+                        <option>EUR (€)</option>
+                        <option>GBP (£)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Privacy & Security -->
+            <div class="preference-section">
+                <div class="section-title">🔒 Privacy & Security</div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Two-Factor Authentication</div>
+                        <div class="preference-description">Add extra security to your account</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Profile Visibility</div>
+                        <div class="preference-description">Control who can see your profile (Sellers only)</div>
+                    </div>
+                    <select class="select-field" disabled>
+                        <option selected>Private</option>
+                        <option>Public</option>
+                        <option>Sellers Only</option>
+                    </select>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <div class="preference-label">Data Sharing</div>
+                        <div class="preference-description">Allow partners to use your data for analytics</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div style="margin-top: 30px; text-align: center;">
+                <button class="btn" onclick="alert('Preferences saving feature coming soon'); return false;">Save Preferences</button>
+            </div>
+        </div>
+
+        <div class="card" style="background: #f0f7ff; border-color: #007bff;">
+            <h3>ℹ️ Note</h3>
+            <p style="color: #0056b3; margin: 0; line-height: 1.6;">
+                Preference management is currently in development. Toggle switches and selectors are placeholders 
+                and will be fully functional soon. Your preferences will be saved and applied across your account.
+            </p>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

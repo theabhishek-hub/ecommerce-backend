@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Seller</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/seller.css}">
+    <style>
+        .seller-apply-container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .seller-apply-container h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .seller-apply-container p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .status-card {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .status-card.not-seller {
+            background-color: #e8f4f8;
+            border: 1px solid #b3dce6;
+        }
+
+        .status-card.requested {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+
+        .status-card.approved {
+            background-color: #d4edda;
+            border: 1px solid #28a745;
+        }
+
+        .status-card.rejected {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+
+        .status-card.suspended {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+
+        .status-label {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .status-card.not-seller .status-value {
+            color: #0066cc;
+        }
+
+        .status-card.requested .status-value {
+            color: #ff9800;
+        }
+
+        .status-card.approved .status-value {
+            color: #28a745;
+        }
+
+        .status-card.rejected .status-value,
+        .status-card.suspended .status-value {
+            color: #dc3545;
+        }
+
+        .status-message {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .benefits-section {
+            margin-bottom: 40px;
+        }
+
+        .benefits-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .benefits-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+        }
+
+        .benefits-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .apply-button {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .apply-button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        .apply-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .dashboard-link {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .dashboard-link:hover {
+            background-color: #218838;
+            text-decoration: none;
+            color: white;
+        }
+
+        .alert-message {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .pending-message {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="seller-apply-container">
+        <h1>Become a Seller</h1>
+        <p>Join our marketplace and start selling products to thousands of customers</p>
+
+        <!-- Success Alert -->
+        <div th:if="${success}" class="alert-message alert-success">
+            <strong>Success!</strong> <span th:text="${success}"></span>
+        </div>
+
+        <!-- Error Alert -->
+        <div th:if="${error}" class="alert-message alert-error">
+            <strong>Error:</strong> <span th:text="${error}"></span>
+        </div>
+
+        <!-- Seller Status Card -->
+        <div th:if="${user}" class="status-card" th:classappend="${user.sellerStatus != null ? user.sellerStatus : 'NOT_A_SELLER'}">
+            <div class="status-label">Your Seller Status</div>
+            <div class="status-value" th:text="${user.sellerStatus != null ? #strings.replace(user.sellerStatus, '_', ' ') : 'NOT A SELLER'}"></div>
+
+            <!-- Not a Seller - Show Benefits & Apply Button -->
+            <div th:if="${user.sellerStatus == null or user.sellerStatus == 'NOT_A_SELLER'}">
+                <div class="status-message">Ready to start selling? Apply now!</div>
+            </div>
+
+            <!-- Requested - Show Pending Message -->
+            <div th:if="${user.sellerStatus == 'REQUESTED'}">
+                <div class="status-message pending-message">
+                    Your application is pending admin approval. We'll notify you once reviewed.
+                </div>
+            </div>
+
+            <!-- Approved - Show Dashboard Link -->
+            <div th:if="${user.sellerStatus == 'APPROVED'}">
+                <div class="status-message">Congratulations! You can now access your seller dashboard.</div>
+            </div>
+
+            <!-- Rejected - Show Retry Message -->
+            <div th:if="${user.sellerStatus == 'REJECTED'}">
+                <div class="status-message">Your application was not approved. Please contact support for details.</div>
+            </div>
+
+            <!-- Suspended - Show Contact Support -->
+            <div th:if="${user.sellerStatus == 'SUSPENDED'}">
+                <div class="status-message">Your seller account is suspended. Please contact support.</div>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div th:if="${user.sellerStatus == null or user.sellerStatus == 'NOT_A_SELLER'}" class="benefits-section">
+            <h3>Benefits of Selling with Us</h3>
+            <ul class="benefits-list">
+                <li>Access to millions of potential customers</li>
+                <li>Easy-to-use seller dashboard</li>
+                <li>Secure payment processing</li>
+                <li>Marketing and visibility tools</li>
+                <li>Dedicated seller support</li>
+                <li>Competitive commission rates</li>
+            </ul>
+        </div>
+
+        <!-- Apply Button or Dashboard Link -->
+        <div th:if="${user}">
+            <!-- Show form when user can apply (NOT in REQUESTED or APPROVED status) -->
+            <div th:unless="${user.sellerStatus == 'REQUESTED' or user.sellerStatus == 'APPROVED' or user.sellerStatus == 'REJECTED' or user.sellerStatus == 'SUSPENDED'}">
+                <h2 style="margin-top: 30px; margin-bottom: 20px; color: #333;">Seller Application Form</h2>
+                <form method="post" th:action="@{/seller/apply}" th:object="${applicationForm}" class="seller-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    
+                    <!-- Business Information Section -->
+                    <div class="form-section">
+                        <h3 style="color: #555; margin-bottom: 15px;">Business Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="businessName">Business Name *</label>
+                            <input type="text" id="businessName" th:field="*{businessName}" class="form-control" placeholder="Your business name" required>
+                            <span th:if="${#fields.hasErrors('businessName')}" th:errors="*{businessName}" class="error-message" style="color: red; font-size: 12px;"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="businessDescription">Business Description *</label>
+                            <textarea id="businessDescription" th:field="*{businessDescription}" class="form-control" placeholder="Describe your business" rows="4" required></textarea>
+                            <span th:if="${#fields.hasErrors('businessDescription')}" th:errors="*{businessDescription}" class="error-message" style="color: red; font-size: 12px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Tax Information Section -->
+                    <div class="form-section">
+                        <h3 style="color: #555; margin-bottom: 15px;">Tax Information</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="panNumber">PAN Number *</label>
+                                <input type="text" id="panNumber" th:field="*{panNumber}" class="form-control" placeholder="e.g., AAAAA0000A" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" required>
+                                <small style="color: #666;">Format: AAAAA0000A</small>
+                                <span th:if="${#fields.hasErrors('panNumber')}" th:errors="*{panNumber}" class="error-message" style="color: red; font-size: 12px;"></span>
+                            </div>
+                            <div class="form-col">
+                                <label for="gstNumber">GST Number (Optional)</label>
+                                <input type="text" id="gstNumber" th:field="*{gstNumber}" class="form-control" placeholder="e.g., 18AABCT1234H1Z0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Section -->
+                    <div class="form-section">
+                        <h3 style="color: #555; margin-bottom: 15px;">Address</h3>
+                        
+                        <div class="form-group">
+                            <label for="streetAddress">Street Address *</label>
+                            <input type="text" id="streetAddress" th:field="*{streetAddress}" class="form-control" placeholder="Street address" required>
+                            <span th:if="${#fields.hasErrors('streetAddress')}" th:errors="*{streetAddress}" class="error-message" style="color: red; font-size: 12px;"></span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="city">City *</label>
+                                <input type="text" id="city" th:field="*{city}" class="form-control" placeholder="City" required>
+                                <span th:if="${#fields.hasErrors('city')}" th:errors="*{city}" class="error-message" style="color: red; font-size: 12px;"></span>
+                            </div>
+                            <div class="form-col">
+                                <label for="state">State *</label>
+                                <input type="text" id="state" th:field="*{state}" class="form-control" placeholder="State" required>
+                                <span th:if="${#fields.hasErrors('state')}" th:errors="*{state}" class="error-message" style="color: red; font-size: 12px;"></span>
+                            </div>
+                            <div class="form-col">
+                                <label for="postalCode">Postal Code *</label>
+                                <input type="text" id="postalCode" th:field="*{postalCode}" class="form-control" placeholder="Postal code" required>
+                                <span th:if="${#fields.hasErrors('postalCode')}" th:errors="*{postalCode}" class="error-message" style="color: red; font-size: 12px;"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <input type="text" id="country" th:field="*{country}" class="form-control" placeholder="Country">
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Section -->
+                    <div class="form-section">
+                        <h3 style="color: #555; margin-bottom: 15px;">Contact Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number *</label>
+                            <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" class="form-control" placeholder="Phone number" required>
+                            <span th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="error-message" style="color: red; font-size: 12px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Bank Information Section -->
+                    <div class="form-section">
+                        <h3 style="color: #555; margin-bottom: 15px;">Bank Information (for Payouts)</h3>
+                        
+                        <div class="form-group">
+                            <label for="bankAccountNumber">Bank Account Number *</label>
+                            <input type="text" id="bankAccountNumber" th:field="*{bankAccountNumber}" class="form-control" placeholder="Bank account number" required>
+                            <span th:if="${#fields.hasErrors('bankAccountNumber')}" th:errors="*{bankAccountNumber}" class="error-message" style="color: red; font-size: 12px;"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bankIfscCode">Bank IFSC Code *</label>
+                            <input type="text" id="bankIfscCode" th:field="*{bankIfscCode}" class="form-control" placeholder="e.g., SBIN0001234" required>
+                            <span th:if="${#fields.hasErrors('bankIfscCode')}" th:errors="*{bankIfscCode}" class="error-message" style="color: red; font-size: 12px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions" style="margin-top: 30px;">
+                        <button type="submit" class="apply-button" style="width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: 600; cursor: pointer; display: block;">Submit Application</button>
+                    </div>
+                </form>
+                
+                <style>
+                    .seller-form {
+                        background: #f9f9f9;
+                        padding: 20px;
+                        border-radius: 8px;
+                        border: 1px solid #ddd;
+                    }
+                    .form-section {
+                        margin-bottom: 25px;
+                        padding-bottom: 20px;
+                        border-bottom: 1px solid #e0e0e0;
+                    }
+                    .form-section:last-of-type {
+                        border-bottom: none;
+                    }
+                    .form-group {
+                        margin-bottom: 15px;
+                    }
+                    .form-group label {
+                        display: block;
+                        margin-bottom: 5px;
+                        font-weight: 600;
+                        color: #333;
+                        font-size: 14px;
+                    }
+                    .form-control {
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                        font-size: 14px;
+                        box-sizing: border-box;
+                    }
+                    .form-control:focus {
+                        outline: none;
+                        border-color: #007bff;
+                        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+                    }
+                    .form-row {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 15px;
+                    }
+                    .form-col {
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .form-col label {
+                        margin-bottom: 5px;
+                    }
+                    .error-message {
+                        display: block;
+                        margin-top: 3px;
+                    }
+                    small {
+                        display: block;
+                        margin-top: 3px;
+                        color: #666;
+                        font-size: 12px;
+                    }
+                </style>
+            </div>
+
+            <!-- Show pending message for REQUESTED status -->
+            <div th:if="${user.sellerStatus == 'REQUESTED'}" style="padding: 20px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <p style="color: #856404; font-size: 16px; margin: 0;">
+                    <strong>Your application is pending admin approval.</strong><br/>
+                    We'll notify you once reviewed.
+                </p>
+            </div>
+
+            <!-- Show dashboard link for APPROVED status -->
+            <a th:if="${user.sellerStatus == 'APPROVED'}" th:href="@{/seller/dashboard}" class="dashboard-link" style="display: block;">
+                Go to Seller Dashboard
+            </a>
+
+            <a th:href="@{/}" style="display: block; padding: 12px; text-align: center; color: #007bff; text-decoration: none; border: 1px solid #007bff; border-radius: 4px; margin-top: 10px;">
+                Back to Home
+            </a>
+        </div>
+        
+        <!-- Debug section (remove in production) -->
+        <div style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px; font-size: 12px;">
+            <strong>Debug Info:</strong><br/>
+            User: <span th:text="${user != null ? 'Present' : 'NULL'}"></span><br/>
+            Seller Status: <span th:text="${user != null ? (user.sellerStatus != null ? user.sellerStatus : 'NULL') : 'N/A'}" style="font-weight: bold; color: red;"></span><br/>
+            Seller Profile: <span th:text="${seller != null ? 'Present' : 'NULL'}"></span><br/>
+            Form Should Show: <span th:text="${!(user.sellerStatus == 'REQUESTED' or user.sellerStatus == 'APPROVED' or user.sellerStatus == 'REJECTED' or user.sellerStatus == 'SUSPENDED') ? 'YES' : 'NO'}" style="font-weight: bold; color: green;"></span>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/alerts}"></div>
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

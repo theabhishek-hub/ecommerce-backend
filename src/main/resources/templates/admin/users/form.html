@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">User Form - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">User Form</h1>
+            <a th:href="@{/admin/users}" class="btn btn-secondary">Back to Users</a>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <!-- User Form -->
+        <div class="form-container" style="max-width: 800px; margin: 20px auto;">
+            <form th:action="${isEditMode} ? @{|/admin/users/${userId}|} : @{/admin/users}" 
+                  method="post" th:object="${user}" class="admin-form">
+                
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" name="fullName" th:field="*{fullName}" 
+                           class="form-control" required placeholder="John Doe">
+                    <span th:if="${#fields.hasErrors('fullName')}" class="form-error" th:errors="*{fullName}">Error</span>
+                </div>
+
+                <div th:if="${!isEditMode}" class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" th:field="*{email}" 
+                           class="form-control" required placeholder="user@example.com">
+                    <span th:if="${#fields.hasErrors('email')}" class="form-error" th:errors="*{email}">Error</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password <span th:unless="${isEditMode}">*</span></label>
+                    <input type="password" id="password" name="password" th:field="*{password}" 
+                           class="form-control" th:required="${!isEditMode}" placeholder="Enter secure password">
+                    <span th:if="${#fields.hasErrors('password')}" class="form-error" th:errors="*{password}">Error</span>
+                    <small th:if="${!isEditMode}" style="color: #666;">Password must be at least 8 characters</small>
+                    <small th:if="${isEditMode}" style="color: #666;">Leave empty to keep current password</small>
+                </div>
+
+                <div class="form-actions" style="margin-top: 30px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span th:text="${isEditMode ? 'Update User' : 'Create User'}">Save</span>
+                    </button>
+                    <a th:href="@{/admin/users}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

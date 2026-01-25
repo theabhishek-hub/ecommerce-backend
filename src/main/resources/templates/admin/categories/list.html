@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Category Management - E-Commerce</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">Category Management</h1>
+            <a th:href="@{/admin}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+        <div th:if="${param.success}" class="alert alert-success">Action completed successfully.</div>
+        <div th:if="${param.error}" class="alert alert-error">An error occurred. Please try again.</div>
+
+        <!-- Create Button -->
+        <div style="margin-bottom: 20px;">
+            <a th:href="@{/admin/categories/new}" class="btn btn-primary">+ Create Category</a>
+        </div>
+
+        <!-- Search, Filter, Sort -->
+        <div style="background-color: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+            <form method="get" th:action="@{/admin/categories}" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 100px; gap: 10px; align-items: end;">
+                <!-- Search -->
+                <div>
+                    <label for="search" style="display: block; margin-bottom: 5px; font-weight: bold;">Search Name</label>
+                    <input type="text" id="search" name="search" th:value="${search}" placeholder="Search..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+
+                <!-- Filter -->
+                <div>
+                    <label for="filter" style="display: block; margin-bottom: 5px; font-weight: bold;">Filter Status</label>
+                    <select id="filter" name="filter" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">All Status</option>
+                        <option value="ACTIVE" th:selected="${filter == 'ACTIVE'}">Active</option>
+                        <option value="INACTIVE" th:selected="${filter == 'INACTIVE'}">Inactive</option>
+                    </select>
+                </div>
+
+                <!-- Sort By -->
+                <div>
+                    <label for="sortBy" style="display: block; margin-bottom: 5px; font-weight: bold;">Sort By</label>
+                    <select id="sortBy" name="sortBy" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="name" th:selected="${sortBy == 'name'}">Name</option>
+                        <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+                        <option value="status" th:selected="${sortBy == 'status'}">Status</option>
+                    </select>
+                </div>
+
+                <!-- Order -->
+                <div>
+                    <label for="order" style="display: block; margin-bottom: 5px; font-weight: bold;">Order</label>
+                    <select id="order" name="order" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="asc" th:selected="${order == 'asc'}">Ascending</option>
+                        <option value="desc" th:selected="${order == 'desc'}">Descending</option>
+                    </select>
+                </div>
+
+                <!-- Search Button -->
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Search</button>
+            </form>
+            <div style="margin-top: 10px;">
+                <a th:href="@{/admin/categories}" class="btn btn-secondary" style="font-size: 12px; padding: 5px 10px;">Clear Filters</a>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasCategories}" class="empty-state">
+            <p>No categories found in the system.</p>
+            <a th:href="@{/admin/categories/new}" class="btn btn-primary">Create First Category</a>
+        </div>
+
+        <!-- Categories Table -->
+        <div th:if="${hasCategories}" class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Category ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="category : ${categories}">
+                        <td th:text="${category.id}">1</td>
+                        <td th:text="${category.name}">Category Name</td>
+                        <td th:text="${category.description}">Category Description</td>
+                        <td>
+                            <span th:if="${category.status == 'ACTIVE'}" class="badge badge-active">Active</span>
+                            <span th:if="${category.status == 'INACTIVE'}" class="badge badge-inactive">Inactive</span>
+                        </td>
+                        <td class="actions">
+                            <a th:href="@{/admin/categories/{categoryId}/edit(categoryId=${category.id})}" class="btn btn-sm btn-primary">Update</a>
+                            <th:block th:if="${category.status == 'ACTIVE'}">
+                                <form method="post" th:action="@{/admin/categories/{categoryId}/deactivate(categoryId=${category.id})}" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                    <button type="submit" class="btn btn-sm btn-warning">Deactivate</button>
+                                </form>
+                            </th:block>
+                            <th:block th:if="${category.status == 'INACTIVE'}">
+                                <form method="post" th:action="@{/admin/categories/{categoryId}/activate(categoryId=${category.id})}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">Activate</button>
+                                </form>
+                            </th:block>
+                            <form method="post" th:action="@{/admin/categories/{categoryId}/delete(categoryId=${category.id})}" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

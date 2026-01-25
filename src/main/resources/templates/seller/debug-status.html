@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Seller Debug Status</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .debug-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .debug-section h3 {
+            margin-top: 0;
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .debug-item {
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #6c757d;
+            padding-left: 12px;
+        }
+        .debug-label {
+            font-weight: bold;
+            color: #333;
+            min-width: 150px;
+            display: inline-block;
+        }
+        .debug-value {
+            color: #666;
+            word-break: break-all;
+        }
+        .status-approved {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-not-approved {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-unknown {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            color: #856404;
+        }
+        .info-box {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            color: #0c5460;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .back-link:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+    
+    <div class="debug-container">
+        <h1 th:text="${title}">Seller Debug Status</h1>
+        
+        <div class="info-box">
+            <strong>ℹ️ Debug Information:</strong> This page shows diagnostic information about your current authentication state and seller status.
+            It helps troubleshoot seller login and navbar issues. Once debugging is complete, this endpoint can be disabled.
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="debug-section">
+            <h3>Authentication Status</h3>
+            <div class="debug-item">
+                <span class="debug-label">Is Authenticated:</span>
+                <span class="debug-value" th:text="${isAuthenticated}">Unknown</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">Current User ID:</span>
+                <span class="debug-value" th:text="${currentUserId}">Not logged in</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">Current Username:</span>
+                <span class="debug-value" th:text="${currentUsername}">Not logged in</span>
+            </div>
+        </div>
+
+        <!-- Security Context Roles Section -->
+        <div class="debug-section">
+            <h3>Roles (from Security Context)</h3>
+            <div th:if="${authRoles}" class="debug-item">
+                <span class="debug-label">Authorities:</span>
+                <span class="debug-value">
+                    <ul th:if="${authRoles.size() > 0}" style="margin: 0; padding-left: 20px;">
+                        <li th:each="role : ${authRoles}" th:text="${role}">ROLE_USER</li>
+                    </ul>
+                    <span th:if="${authRoles.size() == 0}">No roles assigned</span>
+                </span>
+            </div>
+            <div th:if="!${authRoles}" class="debug-item">
+                <span class="debug-value">Not authenticated or roles unavailable</span>
+            </div>
+        </div>
+
+        <!-- Database User Information Section -->
+        <div class="debug-section">
+            <h3>User Information (from Database)</h3>
+            <div class="debug-item">
+                <span class="debug-label">Email:</span>
+                <span class="debug-value" th:text="${userEmail}">Not found</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">Database Roles:</span>
+                <span class="debug-value">
+                    <ul th:if="${userRoles and userRoles.size() > 0}" style="margin: 0; padding-left: 20px;">
+                        <li th:each="role : ${userRoles}" th:text="${role}">ROLE_USER</li>
+                    </ul>
+                    <span th:if="!${userRoles} or ${userRoles.size() == 0}">No roles in database</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Seller Status Section -->
+        <div class="debug-section">
+            <h3>Seller Status</h3>
+            <div class="debug-item">
+                <span class="debug-label">Seller Status:</span>
+                <span class="debug-value" th:text="${sellerStatus}">NOT_A_SELLER</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">Is Approved (DB check):</span>
+                <span class="debug-value" th:classappend="${isSellerApproved} ? 'status-approved' : 'status-not-approved'" 
+                      th:text="${isSellerApproved}">false</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">Is Approved (Method call):</span>
+                <span class="debug-value" th:classappend="${isSellerApprovedMethod} ? 'status-approved' : 'status-not-approved'" 
+                      th:text="${isSellerApprovedMethod}">false</span>
+            </div>
+        </div>
+
+        <!-- Troubleshooting Guide -->
+        <div class="debug-section">
+            <h3>Troubleshooting Guide</h3>
+            <div class="warning-box">
+                <strong>⚠️ Expected Values for Approved Seller:</strong>
+                <ul>
+                    <li>✓ Is Authenticated: true</li>
+                    <li>✓ Authorities: Should include ROLE_SELLER</li>
+                    <li>✓ Database Roles: Should include ROLE_SELLER</li>
+                    <li>✓ Seller Status: APPROVED</li>
+                    <li>✓ Is Approved (DB check): true</li>
+                    <li>✓ Is Approved (Method call): true</li>
+                </ul>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <strong>If values don't match:</strong>
+                <ol>
+                    <li>Check that the seller account was approved by an admin (seller status should be APPROVED in database)</li>
+                    <li>Verify that ROLE_SELLER was assigned when the seller was approved</li>
+                    <li>Try logging out completely and logging back in to refresh the session</li>
+                    <li>Check the application logs for DIAGNOSTIC messages with seller login details</li>
+                    <li>If still having issues, check browser console (F12) for any JavaScript errors</li>
+                </ol>
+            </div>
+        </div>
+
+        <a th:href="@{/seller/dashboard}" class="back-link">Back to Dashboard</a>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

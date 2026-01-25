@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Product Details - E-Commerce</title>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <!-- Include navbar -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">Product Details</h1>
+            <a th:href="@{/admin/products}" class="btn btn-secondary">Back to Products</a>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <!-- Product Details -->
+        <div th:if="${product}" class="product-details-card">
+            <!-- Product Image -->
+            <div th:if="${product.imageUrl}" style="margin-bottom: 30px; text-align: center;">
+                <img th:src="${product.imageUrl}" alt="Product Image" style="max-width: 300px; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <label>Product ID</label>
+                    <span th:text="${product.id}">1</span>
+                </div>
+                <div class="detail-item">
+                    <label>Name</label>
+                    <span th:text="${product.name}">Product Name</span>
+                </div>
+                <div class="detail-item">
+                    <label>SKU</label>
+                    <span th:text="${product.sku}">SKU123</span>
+                </div>
+                <div class="detail-item">
+                    <label>Price</label>
+                    <span th:text="|${product.currency} ${#numbers.formatDecimal(product.priceAmount, 1, 2)}|">$99.99</span>
+                </div>
+                <div class="detail-item">
+                    <label>Category</label>
+                    <span th:text="${product.categoryName ?: 'N/A'}">Category</span>
+                </div>
+                <div class="detail-item">
+                    <label>Brand</label>
+                    <span th:text="${product.brandName ?: 'N/A'}">Brand</span>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <span class="badge" th:classappend="${product.status == 'ACTIVE' ? 'badge-active' : 'badge-inactive'}" th:text="${product.status}">ACTIVE</span>
+                </div>
+                <div class="detail-item">
+                    <label>Created By</label>
+                    <span th:text="${product.createdBy ?: 'System'}">Creator</span>
+                </div>
+                <div class="detail-item" th:if="${product.sellerFullName}">
+                    <label>Seller</label>
+                    <span th:text="${product.sellerFullName}">Seller Name</span>
+                </div>
+                <div class="detail-item" th:if="${product.sellerEmail}">
+                    <label>Seller Email</label>
+                    <span th:text="${product.sellerEmail}">seller@example.com</span>
+                </div>
+            </div>
+
+            <!-- Inventory Section -->
+            <div class="detail-section" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;" th:data-product-id="${product.id}">
+                <h3 style="margin-top: 0;">Inventory Management</h3>
+                <div class="detail-item" style="margin-bottom: 20px;">
+                    <label>Current Stock</label>
+                    <span style="font-size: 1.5rem; font-weight: bold; color: #28a745;" th:text="${product.quantity ?: '0'}">0</span>
+                </div>
+                
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <!-- Increase Stock -->
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4>Increase Stock</h4>
+                        <form id="increaseStockForm" style="display: flex; gap: 10px; align-items: flex-end;">
+                            <div style="flex: 1;">
+                                <label for="increaseQty" style="display: block; margin-bottom: 5px; font-weight: 600;">Quantity</label>
+                                <input type="number" id="increaseQty" min="1" value="1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-success" onclick="updateStock('increase')" style="white-space: nowrap;">+ Add Stock</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Decrease Stock -->
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4>Decrease Stock</h4>
+                        <form id="decreaseStockForm" style="display: flex; gap: 10px; align-items: flex-end;">
+                            <div style="flex: 1;">
+                                <label for="decreaseQty" style="display: block; margin-bottom: 5px; font-weight: 600;">Quantity</label>
+                                <input type="number" id="decreaseQty" min="1" value="1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-warning" onclick="updateStock('reduce')" style="white-space: nowrap;">- Remove Stock</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section" th:if="${product.description}">
+                <label>Description</label>
+                <p th:text="${product.description}">Product description goes here</p>
+            </div>
+
+            <div class="actions">
+                <form method="post" th:action="@{/admin/products/{productId}/toggle(productId=${product.id})}" style="display:inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="btn" th:classappend="${product.status == 'ACTIVE' ? 'btn-warning' : 'btn-success'}" th:text="${product.status == 'ACTIVE' ? 'Deactivate Product' : 'Activate Product'}">Toggle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+    
+    <script>
+        function getAuthToken() {
+            // Try to get JWT token from cookie
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'access_token') {
+                    return decodeURIComponent(value);
+                }
+            }
+            return null;
+        }
+
+        function updateStock(action) {
+            // Get product ID from the data attribute in the inventory section
+            const inventorySection = document.querySelector('[data-product-id]');
+            const productId = inventorySection ? parseInt(inventorySection.getAttribute('data-product-id')) : null;
+            
+            if (!productId) {
+                alert('Product ID not found. Please refresh the page.');
+                return;
+            }
+            
+            const quantity = action === 'increase' 
+                ? document.getElementById('increaseQty').value 
+                : document.getElementById('decreaseQty').value;
+            
+            if (!quantity || quantity < 1) {
+                alert('Please enter a valid quantity');
+                return;
+            }
+            
+            const endpoint = action === 'increase'
+                ? `/api/v1/inventory/products/${productId}/stock/increase`
+                : `/api/v1/inventory/products/${productId}/stock/reduce`;
+            
+            const authToken = getAuthToken();
+            console.log('Updating stock:', { productId, endpoint, quantity, hasAuthToken: !!authToken });
+            
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // Add auth token if available
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+                console.log('Using JWT token for authentication');
+            }
+            
+            fetch(endpoint, {
+                method: 'PUT',
+                headers: headers,
+                credentials: 'include', // Include session cookies as fallback
+                body: JSON.stringify({ quantity: parseInt(quantity) })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        console.error('API Error:', err);
+                        throw err;
+                    }).catch(e => {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Stock updated successfully:', data);
+                // Redirect to product details page immediately - no popup
+                // Use the productId captured at the beginning of the function
+                window.location.href = `/admin/products/${productId}`;
+            })
+            .catch(error => {
+                console.error('Error updating stock:', error);
+                alert(`Error updating stock: ${error.message || 'Failed to update stock'}`);
+            });
+        }
+    </script>
+</body>
+</html>

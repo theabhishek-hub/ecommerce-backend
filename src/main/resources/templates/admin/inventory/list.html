@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Inventory Overview - Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .stock-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .stock-status.in-stock { background: #d4edda; color: #155724; }
+        .stock-status.low-stock { background: #fff3cd; color: #856404; }
+        .stock-status.out-of-stock { background: #f8d7da; color: #721c24; }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; gap: 5px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #007bff; border-radius: 4px; }
+        .pagination .active { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 th:text="${title}">Inventory Overview</h1>
+            <p class="subtitle">View all product inventory across all sellers (Read-Only)</p>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <div th:if="${hasInventory == true}">
+            <!-- Inventory Table -->
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Seller</th>
+                        <th>SKU</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inventory : ${inventoryList}">
+                        <td th:text="${inventory.productName}">Product Name</td>
+                        <td th:text="${inventory.sellerName != null ? inventory.sellerName : 'Admin'}">Seller Name</td>
+                        <td th:text="${inventory.sku}">SKU-123</td>
+                        <td th:text="${inventory.quantity}">0</td>
+                        <td>
+                            <span class="stock-status" 
+                                  th:classappend="${inventory.quantity > 0 ? 'in-stock' : 'out-of-stock'}"
+                                  th:text="${inventory.quantity > 0 ? 'In Stock' : 'Out of Stock'}">
+                                Status
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <a th:if="${pageNumber > 0}" th:href="@{/admin/inventory(page=0)}">First</a>
+                <a th:if="${pageNumber > 0}" th:href="@{/admin/inventory(page=${pageNumber - 1})}">Previous</a>
+                <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                    <span th:if="${i == pageNumber}" class="active" th:text="${i + 1}">1</span>
+                    <a th:if="${i != pageNumber}" th:href="@{/admin/inventory(page=${i})}" th:text="${i + 1}">1</a>
+                </th:block>
+                <a th:if="${pageNumber < totalPages - 1}" th:href="@{/admin/inventory(page=${pageNumber + 1})}">Next</a>
+                <a th:if="${pageNumber < totalPages - 1}" th:href="@{/admin/inventory(page=${totalPages - 1})}">Last</a>
+            </div>
+        </div>
+
+        <div th:if="${hasInventory == false}" class="empty-state">
+            <p>No inventory found.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>
