@@ -1,0 +1,51 @@
+# ============================================================================
+# Docker Build Context - Files to ignore
+# ============================================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+target/
+build/
+*.class
+*.jar
+*.log
+
+# Maven
+.m2
+mvn-log.txt
+
+# Node (if applicable)
+node_modules/
+npm-debug.log
+
+# Documentation
+HELP.md
+*.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Miscellaneous
+.gradle
+.classpath
+.project
+.settings/
