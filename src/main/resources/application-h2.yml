@@ -24,6 +24,10 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
 
+  # ======================= FLYWAY CONFIGURATION =======================
+  flyway:
+    enabled: false  # Disable Flyway in H2 (using Hibernate ddl-auto instead)
+
   # ======================= CACHE CONFIGURATION =======================
   cache:
     type: simple

@@ -23,6 +23,7 @@
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <logback.version>1.5.3</logback.version>
     </properties>
 
     <!-- ================= DEPENDENCIES ================= -->
@@ -184,6 +185,19 @@
             <version>1.38.0</version>
         </dependency>
 
+        <!-- Flyway Database Migrations -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>9.22.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+            <version>9.22.3</version>
+        </dependency>
+
         <!-- Optional: metadata generation for @ConfigurationProperties (no runtime impact) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -201,6 +215,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
                     <source>21</source>
                     <target>21</target>
@@ -228,6 +243,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.5</version>
                 <configuration>
                     <mainClass>com.abhishek.ecommerce.EcommerceBackendApplication</mainClass>
                 </configuration>

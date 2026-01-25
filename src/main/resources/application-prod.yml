@@ -39,6 +39,9 @@ spring:
         cache:
           use_structured_entries: true
 
+  flyway:
+    baseline-on-migrate: true
+
   # ======================= CACHE CONFIGURATION =======================
   cache:
     type: simple  # Simple in-memory caching

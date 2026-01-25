@@ -20,6 +20,10 @@ spring:
     show-sql: false
     open-in-view: false
 
+  # ======================= FLYWAY CONFIGURATION =======================
+  flyway:
+    enabled: false  # Disable Flyway in tests (using Hibernate ddl-auto instead)
+
   # ======================= CACHE CONFIGURATION =======================
   cache:
     type: none  # No caching during tests

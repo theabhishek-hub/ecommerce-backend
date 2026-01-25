@@ -35,6 +35,10 @@ spring:
           batch_size: 20
           fetch_size: 50
 
+  # ======================= FLYWAY CONFIGURATION =======================
+  flyway:
+    enabled: false  # Disable Flyway in development (using Hibernate ddl-auto instead)
+
   # ======================= CACHE CONFIGURATION =======================
   cache:
     type: simple  # Simple in-memory caching only
