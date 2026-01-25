@@ -4,7 +4,7 @@
 # =============================================================================
 
 server:
-  port: ${PORT}
+  port: ${SERVER_PORT}
   compression:
     enabled: true
     min-response-size: 1024
@@ -31,7 +31,7 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        dialect: ${DB_DIALECT}
+        dialect: org.hibernate.dialect.MySQLDialect
         jdbc:
           batch_size: 50
           fetch_size: 100

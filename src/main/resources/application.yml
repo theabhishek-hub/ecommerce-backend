@@ -5,9 +5,9 @@
 
 spring:
   application:
-    name: ${APPLICATION_NAME}
+    name: ecommerce-backend
   
   profiles:
-    active: ${PROFILES_ACTIVE}
+    active: ${SPRING_PROFILES_ACTIVE}
 
 

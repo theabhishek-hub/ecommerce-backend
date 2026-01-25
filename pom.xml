@@ -15,9 +15,9 @@
     </parent>
 
     <groupId>com.abhishek</groupId>
-    <artifactId>AbhiOnlineDukaan</artifactId>
+    <artifactId>ecommerce-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>AbhiOnlineDukaan</name>
+    <name>ecommerce-backend</name>
     <description>Modular monolithic AbhiOnlineDukaan backend built with Spring Boot</description>
 
     <properties>
