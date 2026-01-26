@@ -1,10 +1,6 @@
 # =============================================================================
 # TEST ENVIRONMENT CONFIGURATION
 # All values are placeholders - Override in test setup if needed
-# =============================================================================
-
-server:
-  port: 8081
 
 # ======================= DATABASE CONFIGURATION =======================
 spring:

@@ -124,7 +124,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health  # Only health endpoint in production for security
+        include: health, info # Only health endpoint in production for security
       base-path: /actuator
   endpoint:
     health:

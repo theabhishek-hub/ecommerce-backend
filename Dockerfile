@@ -27,15 +27,8 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Install curl for health checks
-RUN apk add --no-cache curl
-
 # Copy the built JAR from the builder stage
 COPY --from=builder /build/target/*.jar app.jar
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-8080}/actuator/health || exit 1
 
 # Expose port (Render will set PORT env variable)
 EXPOSE ${PORT:-8080}
