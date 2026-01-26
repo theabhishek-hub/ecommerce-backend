@@ -69,6 +69,35 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDto(savedUser);
     }
 
+    @Override
+    @Transactional
+    public UserResponseDto findOrCreateOAuthUser(String email, String fullName, String provider) {
+        log.info("findOrCreateOAuthUser: Attempting to find or create OAuth user with email={}, provider={}", email, provider);
+
+        // First, check if user already exists with this email
+        return userRepository.findByEmail(email)
+                .map(existingUser -> {
+                    log.info("findOrCreateOAuthUser: User already exists for email={}, returning existing user", email);
+                    return userMapper.toDto(existingUser);
+                })
+                .orElseGet(() -> {
+                    // User does not exist, create new OAuth user
+                    log.info("findOrCreateOAuthUser: Creating new OAuth user with email={}, provider={}", email, provider);
+                    
+                    User newUser = new User();
+                    newUser.setEmail(email);
+                    newUser.setFullName(fullName);
+                    newUser.setRoles(java.util.Set.of(com.abhishek.ecommerce.shared.enums.Role.ROLE_USER));
+                    newUser.setStatus(UserStatus.ACTIVE);
+                    newUser.setProvider(com.abhishek.ecommerce.shared.enums.AuthProvider.valueOf(provider.toUpperCase()));
+
+                    User savedUser = userRepository.save(newUser);
+                    log.info("findOrCreateOAuthUser: Successfully created new OAuth user with email={}, id={}", email, savedUser.getId());
+
+                    return userMapper.toDto(savedUser);
+                });
+    }
+
     // ========================= UPDATE =========================
     @Override
     public UserResponseDto updateUser(Long userId, UserUpdateRequestDto dto) {

@@ -7,6 +7,7 @@ import com.abhishek.ecommerce.security.jwt.JwtUtil;
 import com.abhishek.ecommerce.user.entity.User;
 import com.abhishek.ecommerce.shared.enums.UserStatus;
 import com.abhishek.ecommerce.user.repository.UserRepository;
+import com.abhishek.ecommerce.user.service.UserService;
 import com.abhishek.ecommerce.auth.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
+    private final UserService userService;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
 
@@ -72,17 +74,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
 
         try {
-            // 1. Create or retrieve user
+            // 1. Create or retrieve user using dedicated service method
+            // This ensures email uniqueness and prevents duplicate user creation
+            var userDto = userService.findOrCreateOAuthUser(email, name, "GOOGLE");
+            
+            // Fetch the user from repository to get all fields needed for token generation and redirects
             User user = userRepository.findByEmail(email)
-                    .orElseGet(() -> {
-                        User newUser = new User();
-                        newUser.setEmail(email);
-                        newUser.setFullName(name);
-                        newUser.setRoles(Set.of(Role.ROLE_USER));
-                        newUser.setProvider(AuthProvider.GOOGLE);
-                        newUser.setStatus(UserStatus.ACTIVE);
-                        return userRepository.save(newUser);
-                    });
+                    .orElseThrow(() -> new IllegalStateException("User not found after findOrCreateOAuthUser: " + email));
 
             // Ensure user has at least ROLE_USER
             if (user.getRoles() == null || user.getRoles().isEmpty()) {

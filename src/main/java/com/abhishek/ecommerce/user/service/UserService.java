@@ -16,6 +16,17 @@ public interface UserService {
     // CREATE
     UserResponseDto createUser(UserCreateRequestDto requestDto);
 
+    /**
+     * Find existing OAuth user by email OR create new OAuth user.
+     * This method ensures email uniqueness to prevent duplicate user creation.
+     * 
+     * @param email OAuth user email
+     * @param fullName OAuth user full name
+     * @param provider OAuth provider (e.g., GOOGLE, LOCAL)
+     * @return Existing or newly created user
+     */
+    UserResponseDto findOrCreateOAuthUser(String email, String fullName, String provider);
+
     // UPDATE
     UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto);
 
