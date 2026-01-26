@@ -31,8 +31,7 @@ WORKDIR /app
 COPY --from=builder /build/target/*.jar app.jar
 
 # Expose port (Render will set PORT env variable)
-EXPOSE ${PORT:-8080}
 
 # Run the application
 # Set reasonable JVM options for containerized environment
-ENTRYPOINT ["sh", "-c", "java -XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0 -Dserver.port=${PORT:-8080} -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0 -jar app.jar"]

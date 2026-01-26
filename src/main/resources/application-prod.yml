@@ -29,7 +29,7 @@ spring:
       ddl-auto: none  # NEVER use update/create in production
     open-in-view: false  # Disable LazyInitializationException by closing session, perform queries in service layer
     properties:
-      hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+      hibernate.dialect: org.hibernate.dialect.MySQLDialect
       hibernate.format_sql: false
       hibernate.use_sql_comments: false
       hibernate.jdbc.batch_size: 20
