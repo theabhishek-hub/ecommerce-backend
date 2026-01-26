@@ -4,7 +4,7 @@
 # =============================================================================
 
 server:
-  port: ${SERVER_PORT}
+  port: ${PORT}
   compression:
     enabled: true
     min-response-size: 1024
