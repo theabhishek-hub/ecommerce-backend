@@ -309,18 +309,28 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 18px;
+    }
+}
+
 @media (max-width: 768px) {
     .products-section {
-        padding: 20px;
+        padding: 20px 10px;
     }
 
     .section-title {
         font-size: 1.5rem;
+        margin-bottom: 20px;
     }
 
     .search-filter-bar {
         grid-template-columns: 1fr;
         padding: 15px;
+        margin-bottom: 20px;
+        gap: 10px;
     }
 
     .search-group {
@@ -331,30 +341,17 @@
     .search-group select,
     .search-group button {
         width: 100%;
+        padding: 10px;
+        font-size: 14px;
     }
 
     .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 15px;
-    }
-
-    .product-name {
-        min-height: 2em;
-    }
-
-    .pagination-section {
-        margin-top: 25px;
-    }
-}
-
-@media (max-width: 480px) {
-    .products-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 12px;
     }
 
     .product-image {
-        height: 150px;
+        height: 180px;
     }
 
     .product-info {
@@ -363,19 +360,167 @@
 
     .product-name {
         font-size: 13px;
-        min-height: 2.4em;
+        min-height: 1.8em;
+        margin-bottom: 5px;
     }
 
     .product-price {
         font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .add-to-cart-btn {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .favorite-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+
+    .pagination-section {
+        margin-top: 25px;
+        gap: 5px;
+    }
+
+    .pagination-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-section {
+        padding: 15px 8px;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+
+    .search-filter-bar {
+        grid-template-columns: 1fr;
+        padding: 12px;
+        margin-bottom: 15px;
+        gap: 8px;
+    }
+
+    .search-group input,
+    .search-group select,
+    .search-group button {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .product-card {
+        border-radius: 8px;
+    }
+
+    .product-image {
+        height: 140px;
+    }
+
+    .product-info {
+        padding: 10px;
+    }
+
+    .product-name {
+        font-size: 12px;
+        min-height: 2.2em;
+        margin-bottom: 4px;
+    }
+
+    .product-description {
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+
+    .product-rating {
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+
+    .product-price {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .product-original-price {
+        font-size: 11px;
+    }
+
+    .product-badge {
+        top: 5px;
+        right: 5px;
+        padding: 4px 8px;
+        font-size: 9px;
     }
 
     .product-actions {
         flex-direction: column;
         gap: 6px;
+        margin-top: 8px;
+    }
+
+    .add-to-cart-btn {
+        font-size: 11px;
+        padding: 6px;
+        min-height: 40px;
     }
 
     .favorite-btn {
         width: 100%;
+        height: auto;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .empty-products {
+        padding: 40px 15px;
+    }
+
+    .empty-products-icon {
+        font-size: 2.5rem;
+    }
+
+    .empty-products h3 {
+        font-size: 1.1rem;
+    }
+
+    .pagination-section {
+        margin-top: 20px;
+        gap: 3px;
+    }
+
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .filter-sidebar {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .filter-title {
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .filter-option {
+        margin-bottom: 10px;
+    }
+
+    .filter-option label {
+        font-size: 13px;
     }
 }

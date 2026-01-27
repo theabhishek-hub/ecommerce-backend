@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title}">Product Details</title>
+    <style>
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            img { max-width: 100% !important; height: auto !important; }
+            table { font-size: 12px; }
+            table th, table td { padding: 8px !important; }
+            input, select, textarea { max-width: 100% !important; }
+            button { min-height: 44px; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            h1 { font-size: 1.2rem; }
+            div[style*="display: flex"] { flex-direction: column; }
+            input, select, textarea, button { width: 100% !important; margin-bottom: 10px; }
+        }
+    </style>
 </head>
 <body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 0; margin: 0;">
     <div th:replace="~{layout/navbar :: navbar}"></div>
@@ -22,7 +38,7 @@
         <div th:if="${product}" style="background: white; padding: 20px; border-radius: 8px;">
             <!-- Product Image -->
             <div style="text-align: center; margin-bottom: 30px;" th:if="${product.imageUrl and product.imageUrl != ''}">
-                <img th:src="${product.imageUrl}" alt="Product Image" style="max-width: 400px; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                <img th:src="${product.imageUrl}" alt="Product Image" style="max-width: 100%; max-height: 400px; width: auto; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
             </div>
 
             <div th:if="!${product.imageUrl or product.imageUrl == ''}" style="text-align: center; padding: 60px 20px; background: #f9f9f9; border-radius: 8px; margin-bottom: 30px;">

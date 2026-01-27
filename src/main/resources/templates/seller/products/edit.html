@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Product</title>
+    <style>
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            div[style*="max-width: 600px"] { padding: 20px !important; margin: 20px auto !important; }
+            input, select, textarea { max-width: 100% !important; }
+            button { min-height: 44px; width: 100%; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            h1 { font-size: 1.2rem; }
+            div[style*="max-width: 600px"] { padding: 15px !important; margin: 10px auto !important; }
+            input, select, textarea, button { width: 100% !important; margin-bottom: 10px; padding: 10px !important; }
+        }
+    </style>
 </head>
 <body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 0; margin: 0;">
     <div th:replace="~{layout/navbar :: navbar}"></div>

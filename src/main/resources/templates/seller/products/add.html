@@ -216,6 +216,46 @@
             color: #666;
             margin-top: 8px;
         }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-container {
+                max-width: 100% !important;
+                padding: 15px !important;
+            }
+            input, select, textarea {
+                max-width: 100% !important;
+            }
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                min-height: 44px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                max-width: 100% !important;
+                padding: 10px !important;
+            }
+            h1 { font-size: 1.2rem; }
+            .form-group {
+                margin-bottom: 12px;
+            }
+            label {
+                font-size: 13px;
+            }
+            input, select, textarea {
+                padding: 10px !important;
+                font-size: 14px !important;
+                width: 100% !important;
+            }
+            .btn-primary, .btn-secondary {
+                width: 100% !important;
+                padding: 12px !important;
+                font-size: 14px !important;
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 <body>

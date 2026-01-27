@@ -328,50 +328,213 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+    .user-container {
+        padding: 30px 20px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
     .user-container {
-        padding: 20px;
+        padding: 20px 12px;
     }
 
     .welcome-section {
         flex-direction: column;
         align-items: flex-start;
-        padding: 25px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-radius: 8px;
     }
 
     .welcome-content h1 {
         font-size: 1.6rem;
+        margin-bottom: 5px;
+    }
+
+    .welcome-content .subtitle {
+        font-size: 0.9rem;
     }
 
     .welcome-actions {
         width: 100%;
+        gap: 8px;
+    }
+
+    .welcome-actions button,
+    .welcome-actions a {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 13px;
     }
 
     .dashboard-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
     }
 
     .section-card {
-        padding: 20px;
+        padding: 15px;
+    }
+
+    .section-card h3 {
+        font-size: 15px;
     }
 
     .orders-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
     .settings-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
     .cta-section {
-        padding: 30px 20px;
+        padding: 25px 15px;
+        border-radius: 8px;
     }
 
     .cta-content h2 {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
     }
 
     .cta-content p {
-        font-size: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-container {
+        padding: 12px 8px;
+    }
+
+    .welcome-section {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+        margin-bottom: 15px;
+        gap: 12px;
+    }
+
+    .welcome-content h1 {
+        font-size: 1.3rem;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+
+    .welcome-content .subtitle {
+        font-size: 0.85rem;
+        margin-top: 2px;
+    }
+
+    .welcome-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .welcome-actions button,
+    .welcome-actions a {
+        width: 100%;
+        padding: 10px;
+        font-size: 12px;
+        min-height: 40px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .section-card {
+        padding: 12px;
+        border-radius: 6px;
+    }
+
+    .section-card h3 {
+        font-size: 13px;
+        margin: 0 0 8px 0;
+    }
+
+    .section-card p {
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .section-card a {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    .orders-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .order-item {
+        padding: 10px;
+    }
+
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .settings-item {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .cta-section {
+        padding: 15px 10px;
+        border-radius: 6px;
+        margin-top: 20px;
+    }
+
+    .cta-content h2 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+
+    .cta-content p {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 40px;
+    }
+
+    .btn-sm {
+        padding: 6px 10px;
+        font-size: 11px;
+        min-height: auto;
+    }
+
+    .btn-lg {
+        padding: 10px 16px;
+        font-size: 12px;
+        min-height: 44px;
+        width: 100%;
     }
 }

@@ -207,30 +207,9 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .dashboard-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-    }
-
-    .stat-card {
-        flex-direction: row;
-        padding: 15px;
-        gap: 15px;
-    }
-
-    .stat-icon {
-        min-width: 50px;
-        height: 50px;
-        font-size: 32px;
-    }
-
-    .stat-content h3 {
-        font-size: 14px;
-    }
-
-    .stat-number {
-        font-size: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     }
 
     .action-buttons {
@@ -238,27 +217,101 @@
     }
 }
 
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        padding: 12px;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .stat-icon {
+        min-width: 45px;
+        height: 45px;
+        font-size: 28px;
+        margin: 0 auto;
+    }
+
+    .stat-content h3 {
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .stat-number {
+        font-size: 20px;
+    }
+
+    .action-buttons {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 8px;
+    }
+
+    .add-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
 @media (max-width: 480px) {
     .dashboard-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
 
     .stat-card {
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 12px;
+        padding: 10px;
+    }
+
+    .stat-icon {
+        min-width: 40px;
+        height: 40px;
+        font-size: 24px;
+        margin: 0 auto;
+    }
+
+    .stat-content h3 {
+        font-size: 12px;
+    }
+
+    .stat-number {
+        font-size: 18px;
+        font-weight: 700;
     }
 
     .action-buttons {
         grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .add-btn {
+        padding: 10px;
+        font-size: 11px;
+        width: 100%;
+        min-height: 40px;
     }
 
     .empty-state {
-        padding: 60px 20px;
+        padding: 40px 12px;
     }
 
     .empty-state .icon {
-        font-size: 48px;
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .empty-state h3 {
+        font-size: 1rem;
+    }
+
+    .empty-state p {
+        font-size: 12px;
     }
 }

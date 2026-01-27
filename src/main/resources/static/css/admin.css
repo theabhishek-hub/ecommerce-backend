@@ -542,55 +542,105 @@ body {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+    .admin-container {
+        padding: 30px 20px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .admin-table {
+        font-size: 13px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 12px;
+    }
+}
+
 @media (max-width: 768px) {
     .admin-container {
-        padding: 20px 15px;
+        padding: 20px 12px;
     }
 
     .admin-header {
         flex-direction: column;
         align-items: flex-start;
+        margin-bottom: 20px;
     }
 
     .admin-header h1 {
         font-size: 1.5rem;
     }
 
+    .admin-header .subtitle {
+        font-size: 13px;
+    }
+
     .dashboard-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 25px;
     }
 
     .stat-card {
         flex-direction: column;
         text-align: center;
+        padding: 20px;
     }
 
     .stat-icon {
         font-size: 2rem;
         min-width: auto;
+        margin-bottom: 10px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .stat-label {
+        font-size: 13px;
     }
 
     .details-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .admin-table {
+        font-size: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .admin-table th,
     .admin-table td {
-        padding: 10px;
-        font-size: 13px;
+        padding: 8px;
+    }
+
+    .admin-table thead {
+        font-size: 12px;
     }
 
     .action-buttons {
         flex-direction: column;
+        gap: 8px;
     }
 
     .btn {
         width: 100%;
         text-align: center;
+        padding: 8px 12px;
+        font-size: 13px;
     }
 
     .admin-table .actions {
         flex-direction: column;
+        gap: 4px;
     }
 
     .admin-table .actions form {
@@ -600,9 +650,160 @@ body {
 
     .admin-table .actions .btn {
         width: 100%;
+        padding: 6px;
+        font-size: 11px;
     }
 
     .nav-buttons {
         grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .filter-section {
+        padding: 15px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-container {
+        padding: 12px 8px;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .admin-header h1 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+
+    .admin-header .subtitle {
+        font-size: 11px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .stat-card {
+        padding: 12px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .stat-icon {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .stat-label {
+        font-size: 11px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .admin-table {
+        font-size: 11px;
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-table table {
+        min-width: 100%;
+        border-collapse: collapse;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 6px;
+    }
+
+    .admin-table thead {
+        font-size: 10px;
+    }
+
+    .admin-table tbody {
+        font-size: 11px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 11px;
+        min-height: 36px;
+    }
+
+    .btn-sm {
+        padding: 5px 8px;
+        font-size: 10px;
+        min-height: auto;
+    }
+
+    .admin-table .actions {
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .admin-table .actions form {
+        display: block !important;
+        width: 100%;
+    }
+
+    .admin-table .actions .btn {
+        width: 100%;
+        padding: 5px;
+        font-size: 10px;
+        min-height: auto;
+    }
+
+    .nav-buttons {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .nav-buttons .btn {
+        min-height: 40px;
+    }
+
+    .filter-section {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    /* Ensure tables are scrollable on mobile */
+    table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
     }
 }
